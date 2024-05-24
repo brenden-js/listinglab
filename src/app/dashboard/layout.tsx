@@ -2,17 +2,17 @@ import {UserButton} from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import {headers} from "next/headers";
-// import {TRPCReactProvider} from "@/trpc/react";
 import {PromptsProvider} from "@/app/dashboard/prompts";
 import {SideNavigation} from "@/app/dashboard/components/side-navigation";
 import MobileSidebar from "@/app/dashboard/components/sidebar";
+import {TRPCReactProvider} from "@/trpc/react";
 
 
 export default function Layout({children}: { children: React.ReactNode }) {
   return (
-      // <TRPCReactProvider headers={headers()}>
+      <TRPCReactProvider headers={headers()}>
         <PromptsProvider>
-          <div className="flex h-full">
+          <div className="flex min-h-[100vh]">
             <div className="hidden lg:flex lg:flex-shrink-0">
               <div className="flex w-52 flex-col">
                 <div className="flex min-h-0 flex-1 flex-col border-r border-gray-200">
@@ -46,6 +46,6 @@ export default function Layout({children}: { children: React.ReactNode }) {
             </div>
           </div>
         </PromptsProvider>
-      // </TRPCReactProvider>
+      </TRPCReactProvider>
   )
 }
