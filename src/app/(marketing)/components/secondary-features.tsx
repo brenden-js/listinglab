@@ -44,11 +44,11 @@ const features = [
     },
   },
   {
-    name: 'Authority Blogs',
+    name: 'Investment reports',
     summary:
-      'Generate insightful exciting articles quickly.',
+      'Generate insightful reports to investment clients.',
     description:
-      'Become the online authority in your market with insightful and useful articles on the latest listings in your area, with hundreds of data points automatically gathered.',
+      'Create reports on the numbers. We provide the usual data points such as estimated rent, NOI, cap rate, and more that investors are looking for.',
     image: screenshotBlog,
     icon: function InventoryIcon() {
       return (
@@ -232,10 +232,10 @@ export function SecondaryFeatures() {
       <div className={"mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"}>
         <div className="mx-auto max-w-2xl md:text-center">
           <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-            Your content ideas rapidly brought to life by AI.
+            Create the content your clients need, at scale.
           </h2>
           <p className="mt-4 text-lg tracking-tight text-slate-700">
-            Limitless possibilities, test and explore different models, with the slickest interface for real-estate AI generation on the globe.
+            Quickly iterate on your listing content ideas, and see what works fast. Attract your ideal clients with content that resonates with their needs.
           </p>
         </div>
         <FeaturesMobile />

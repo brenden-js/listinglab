@@ -12,28 +12,28 @@ import screenshotGenerations from '@/images/screenshots/generations.png'
 
 const features = [
   {
-    title: 'One powerful dashboard',
+    title: 'Hundreds of data points in a click',
     description:
-      "Combine powerful real estate data, state-of-the-art LLM's, and an easy-to-use UI to help you quickly share your expertise.",
+      "We handle finding and neatly packaging together virtually all the data points you could want; listing data, property features, mortgage data, investment numbers, comparable sales, neighborhood features and more.",
     image: screenshotDashboard,
   },
-  {
-    title: "Leverage state-of-the-art AI models",
+    {
+    title: 'Add your local expertise',
     description:
-      "Draw on your real estate experience and expertise to craft custom prompts, and feed them into top-tier AI models that turn your ideas and insights into valuable content for your market.",
+      'Step by step, input what the data does not show about each property; things like the neighborhood vibe and feel, local holiday celebrations, traffic patterns, or anything else your clientele needs to know.',
+    image: screenshotGenerations
+  },
+  {
+    title: "Leverage your choice of state-of-the-art AI models",
+    description:
+      "Experiment and tune your AI to create content that expresses your unique brand voice.",
     image: screenshotExperiment,
   },
   {
-    title: 'Get all relevant listing data, automatically',
+    title: 'Create the content your clientele needs',
     description:
-      "Create a virtually limitless amount of content, ranging from investment analysis to super-niche social media posts (think 'Why This House is Perfect for Gardeners' posted to a gardening community). Use our proprietary data set, including current listing info, neighborhood info, and cost factors such as taxes, mortgages, and other pricing data points.",
+      "Create a virtually limitless amount of content, ranging from investment analysis to super-niche social media posts (think 'Why This House is Perfect for Gardeners' posted to a gardening community).",
     image: screenshotData,
-  },
-  {
-    title: 'Safely archive your data',
-    description:
-      'Your generations are saved so that you can take a break, repost to another social media platform, or remix your content for a new meta analysis of your listings (think best listings in X City this month).',
-    image: screenshotGenerations
   },
 ]
 
@@ -72,10 +72,10 @@ export function PrimaryFeatures() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-2xl md:mx-auto md:text-center xl:max-w-none">
           <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-5xl">
-            A powerful interface for quickly generating real estate content.
+            A tool to effortlessly express your property expertise to investors, buyers, and sellers.
           </h2>
           <p className="mt-6 text-lg tracking-tight text-blue-100">
-            Designed from the ground up to help you leverage your expertise into engaging content fast.
+            Pick the data points you want, combine your local expertise, and tell the story you want about the listings in your area.
           </p>
         </div>
         <Tab.Group
