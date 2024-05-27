@@ -19,7 +19,7 @@ export default function Layout({children}: { children: React.ReactNode }) {
                   <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                     <div className="flex flex-shrink-0 items-center px-4">
                       <Link href={'/'}>
-                        <Image src={'/logo.png'} alt={'homeverse logo'} height={42} width={42} />
+                        <Image src={'/logo.png'} alt={'listing lab logo'} height={42} width={42} />
                       </Link>
                     </div>
                     <SideNavigation />
