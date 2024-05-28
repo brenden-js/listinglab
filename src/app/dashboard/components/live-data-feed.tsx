@@ -1,49 +1,26 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
+"use client"
 import {CheckCircledIcon, CrossCircledIcon, ReloadIcon} from "@radix-ui/react-icons";
-import {iot, mqtt} from "aws-iot-device-sdk-v2";
-import {Resource} from "sst";
-import {useAuth} from "@clerk/nextjs";
 import {House, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
+import {useHouseUpdateContext} from "@/app/dashboard/contexts/realtime-messages";
 
 
 export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
+    const {updates} = useHouseUpdateContext();
 
-    // const statusStates = useMemo(() => {
-    //   const states = {
-    //     basic: 'loading',
-    //     neighborhood: 'loading',
-    //     investment: 'loading',
-    //   };
-    //
-    //   messages.forEach((message) => {
-    //     const { type, status } = message as MessageData;
-    //
-    //     if (type === 'basic' && (status === 'complete' || status === 'not_found')) {
-    //       states.basic = status;
-    //     } else if (type === 'neighborhood' && (status === 'complete' || status === 'not_found')) {
-    //       states.neighborhood = status;
-    //     } else if (type === 'investment' && (status === 'complete' || status === 'not_found')) {
-    //       states.investment = status;
-    //     }
-    //   });
-    //
-    //   return states;
-    // }, [messages]);
+    if (!house) {
+        return <div>No house found</div>
+    }
 
-    // useEffect(() => {
-    //   const shouldDisconnect =
-    //     statusStates.basic !== 'loading' &&
-    //     statusStates.neighborhood !== 'loading' &&
-    //     statusStates.investment !== 'loading';
-    //
-    //   if (shouldDisconnect) {
-    //     channel.unsubscribe();
-    //   }
-    //
-    //   return () => {
-    //     channel.unsubscribe();
-    //   };
-    // }, [statusStates]);
+    // Helper function to get the update status for a given category
+    const getUpdateStatus = (category: "basic" | "investment" | "neighborhood") => {
+        const update = updates.find(
+            (u) =>
+                u.updateCategory === category &&
+                u.messageCategory === "house-update" &&
+                u.houseId === house.id
+        );
+        return update ? update.updateType : "loading";
+    };
 
     if (!house) {
         return <p>Nothing found...</p>
@@ -58,9 +35,9 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
                     <div className={"text-sm"}>
                         {house.lat ? (<CheckCircledIcon className={"h-5 w-5"}/>) : (
                             <div>
-                                {/*{statusStates.basic === 'loading' && <ReloadIcon className={"animate-spin h-4 w-4"} />}*/}
-                                {/*{statusStates.basic === 'complete' && <CheckCircledIcon className={"h-4 w-4"} />}*/}
-                                {/*{statusStates.basic === 'not_found' && <CrossCircledIcon className={"h-4 w-4"} />}*/}
+                                {getUpdateStatus("basic") === "loading" && <ReloadIcon className={"animate-spin h-4 w-4"}/>}
+                                {getUpdateStatus("basic") === "complete" && <CheckCircledIcon className={"h-4 w-4"}/>}
+                                {getUpdateStatus("basic") === "fail" && <CrossCircledIcon className={"h-4 w-4"}/>}
                             </div>
                         )}
                     </div>
@@ -70,9 +47,12 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
                     <div className={"text-sm"}>
                         {house.nearbyPlaces ? (<CheckCircledIcon className={"h-5 w-5"}/>) : (
                             <div>
-                                {/*{statusStates.neighborhood === 'loading' && <ReloadIcon className={"animate-spin h-4 w-4"} />}*/}
-                                {/*{statusStates.neighborhood === 'complete' && <CheckCircledIcon className={"h-4 w-4"} />}*/}
-                                {/*{statusStates.neighborhood === 'not_found' && <CrossCircledIcon className={"h-4 w-4"} />}*/}
+                                {getUpdateStatus("neighborhood") === "loading" &&
+                                    <ReloadIcon className={"animate-spin h-4 w-4"}/>}
+                                {getUpdateStatus("neighborhood") === "complete" &&
+                                    <CheckCircledIcon className={"h-4 w-4"}/>}
+                                {getUpdateStatus("neighborhood") === "fail" &&
+                                    <CrossCircledIcon className={"h-4 w-4"}/>}
                             </div>
                         )}
                     </div>
@@ -82,15 +62,15 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
                     <div className={"text-sm"}>
                         {house.investment ? (<CheckCircledIcon className={"h-5 w-5"}/>) : (
                             <div>
-                                {/*{statusStates.investment === 'loading' && (*/}
-                                {/*  <ReloadIcon className={"animate-spin h-4 w-4"} />*/}
-                                {/*)}*/}
-                                {/*{statusStates.investment === "complete" && (*/}
-                                {/*  <CheckCircledIcon className={"h-4 w-4"} />*/}
-                                {/*)}*/}
-                                {/*{statusStates.investment === "not_found" && (*/}
-                                {/*  <CrossCircledIcon className={"h-4 w-4"} />*/}
-                                {/*)}*/}
+                                {getUpdateStatus("investment") === "loading" && (
+                                    <ReloadIcon className={"animate-spin h-4 w-4"}/>
+                                )}
+                                {getUpdateStatus("investment") === "complete" && (
+                                    <CheckCircledIcon className={"h-4 w-4"}/>
+                                )}
+                                {getUpdateStatus("investment") === "fail" && (
+                                    <CrossCircledIcon className={"h-4 w-4"}/>
+                                )}
                             </div>)}
                     </div>
                 </div>
