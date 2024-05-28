@@ -1,7 +1,7 @@
 import {clerkMiddleware, createRouteMatcher} from "@clerk/nextjs/server";
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)/((?!inngest).*)'],
 };
 
 const isProtectedRoute = createRouteMatcher([

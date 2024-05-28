@@ -2,13 +2,13 @@ import {eq} from "drizzle-orm";
 import axios, {type AxiosRequestConfig, type AxiosResponse} from "axios";
 import process from "process";
 import {v4 as uuidv4} from "uuid";
-import {inngest} from "@/app/api/inngest/client";
+import {inngest} from "@/inngest/client";
 import {generations, houses, userApiLimits} from "@/app/api/trpc/db/schema";
 import {db} from "@/app/api/trpc/db";
-import {publishStatusMessage} from "@/app/api/inngest/functions/helpers/mqtt";
 import {HouseDetailsResponse} from "@/app/api/trpc/routers/types";
-import {GoogleNearbyPlacesAPIResponse} from "@/app/api/inngest/types";
-import {getMortgageAndEquity} from "@/app/api/inngest/functions/helpers/equity-principal-equations";
+import {GoogleNearbyPlacesAPIResponse} from "@/inngest/types";
+import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
+import {publishStatusMessage} from "@/inngest/functions/helpers/mqtt";
 
 export const incrementHouseUsage = inngest.createFunction(
   {id: "Handle incrementing a user's house usage."},
@@ -31,7 +31,7 @@ export const handleEnrichHouse = inngest.createFunction(
 
     const foundListing = await step.run("Get house details", async () => {
 
-      await publishStatusMessage({type: 'basic', status: 'loading'}, event.data.userId)
+      // await publishStatusMessage({type: 'basic', status: 'loading'}, event.data.userId)
       const options: AxiosRequestConfig = {
         method: 'GET',
         url: 'https://realty-in-us.p.rapidapi.com/properties/v3/detail',
@@ -70,7 +70,6 @@ export const handleEnrichHouse = inngest.createFunction(
       })
 
       await publishStatusMessage({type: 'basic', status: 'complete'}, event.data.userId)
-
 
       return {
         lat: formatted.data.home.location.address.coordinate.lat,

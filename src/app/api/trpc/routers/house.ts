@@ -8,7 +8,7 @@ import {and, eq} from "drizzle-orm";
 import {generations, houses, prompts, userApiLimits, userSubscriptions} from "@/app/api/trpc/db/schema";
 import {BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandOutput} from "@aws-sdk/client-bedrock-runtime";
 import {AutocompleteResponse, OpenAIStreamPayload} from "@/app/api/trpc/routers/types";
-import {inngest} from "@/app/api/inngest/client";
+import {inngest} from "@/inngest/client";
 import {v4} from "uuid";
 import {db} from "@/app/api/trpc/db";
 import {models} from "@/app/dashboard/data/models";

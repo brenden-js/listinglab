@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "listinglab",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,7 +7,8 @@
     "dev": "sst dev next dev",
     "lint": "next lint",
     "start": "next start",
-    "inngest": "pnpm dlx inngest-cli@latest dev",
+    "nextdev": "next dev",
+    "inngest": "npx inngest-cli@latest dev -u http://localhost:3000/api/inngest --no-discovery --no-poll",
     "stripe": "stripe listen --forward-to localhost:3000/api/inngest/webhook",
     "db:push": "dotenv drizzle-kit push:sqlite",
     "db:studio": "dotenv drizzle-kit studio"

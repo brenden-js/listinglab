@@ -1,7 +1,7 @@
 import {Stripe} from "stripe";
 import {eq} from "drizzle-orm";
 import {db} from "@/app/api/trpc/db";
-import {inngest} from "@/app/api/inngest/client";
+import {inngest} from "@/inngest/client";
 import {userApiLimits, userSubscriptions} from "@/app/api/trpc/db/schema";
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
