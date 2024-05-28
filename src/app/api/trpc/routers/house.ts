@@ -3,17 +3,15 @@ import {z} from "zod";
 import axios, {type AxiosRequestConfig, type AxiosResponse} from 'axios';
 import process from "process";
 import {TRPCError} from "@trpc/server";
-import {type OpenAIStreamPayload} from "@/server/api/OpenAIStream";
-import {env} from "@/env.mjs";
 import {type OpenAIResponse} from "@/lib/types";
-import {inngest} from "@/server/inngest/client";
-import {createId} from "@paralleldrive/cuid2";
-import {type AutocompleteResponse} from "@/server/api/routers/types";
-import {db} from "@/server/db";
 import {and, eq} from "drizzle-orm";
-import {generations, houses, prompts, userApiLimits, userSubscriptions} from "@/server/db/schema";
+import {generations, houses, prompts, userApiLimits, userSubscriptions} from "@/app/api/trpc/db/schema";
 import {BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandOutput} from "@aws-sdk/client-bedrock-runtime";
-import {models} from "@/data/models";
+import {AutocompleteResponse, OpenAIStreamPayload} from "@/app/api/trpc/routers/types";
+import {inngest} from "@/app/api/inngest/client";
+import {v4} from "uuid";
+import {db} from "@/app/api/trpc/db";
+import {models} from "@/app/dashboard/data/models";
 
 export const houseRouter = createTRPCRouter({
   searchHouse: protectedProcedure
@@ -55,7 +53,7 @@ export const houseRouter = createTRPCRouter({
 
       // send an event to enrich this house
 
-      const newId = createId()
+      const newId = v4()
 
       await inngest.send({
         name: "house/enrich",
@@ -255,7 +253,7 @@ export const houseRouter = createTRPCRouter({
           const res = await axios("https://api.openai.com/v1/chat/completions", {
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${env.OPENAI_SECRET_KEY}`,
+              Authorization: `Bearer ${process.env.OPENAI_SECRET_KEY}`,
             },
             method: "POST",
             data: JSON.stringify(payload),
@@ -280,8 +278,8 @@ export const houseRouter = createTRPCRouter({
               maxAttempts: 3,
               region: 'us-east-1',
               credentials: {
-                accessKeyId: env.AWS_API_ACCESS_KEY,
-                secretAccessKey: env.AWS_API_SECRET_KEY
+                accessKeyId: process.env.AWS_API_ACCESS_KEY!,
+                secretAccessKey: process.env.AWS_API_SECRET_KEY!
               }
             }
           )
@@ -362,7 +360,7 @@ export const houseRouter = createTRPCRouter({
               }
             )
             const res: InvokeModelCommandOutput = await client.send(command);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const format = JSON.parse(new TextDecoder().decode(res.body)) as {
               id: string,
               type: 'message',
@@ -374,7 +372,7 @@ export const houseRouter = createTRPCRouter({
               usage: { input_tokens: number, output_tokens: number }
             };
             console.log('Claude 3 response : ', format)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
             generation = format.content[0].text
             generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
 

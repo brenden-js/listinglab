@@ -5,6 +5,7 @@ import {CallToAction} from "@/app/(marketing)/components/call-to-action";
 import {Pricing} from "@/app/(marketing)/components/pricing";
 import {Faqs} from "@/app/(marketing)/components/faqs";
 
+
 export default function Home() {
   return (
     <>

@@ -2,10 +2,10 @@ import {UserButton} from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import {headers} from "next/headers";
-import {PromptsProvider} from "@/app/dashboard/prompts";
 import {SideNavigation} from "@/app/dashboard/components/side-navigation";
 import MobileSidebar from "@/app/dashboard/components/sidebar";
 import {TRPCReactProvider} from "@/trpc/react";
+import {PromptsProvider} from "@/app/dashboard/contexts/prompts";
 
 
 export default function Layout({children}: { children: React.ReactNode }) {

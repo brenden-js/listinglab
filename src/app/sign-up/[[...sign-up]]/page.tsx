@@ -1,5 +1,6 @@
-import {auth, SignUp} from "@clerk/nextjs";
+import { SignUp} from "@clerk/nextjs";
 import {redirect} from "next/navigation";
+import {auth} from "@clerk/nextjs/server";
 
 export default function Page() {
   const user = auth()

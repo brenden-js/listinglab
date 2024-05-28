@@ -24,7 +24,7 @@ export function CallToAction() {
             Start now with our free tier.
           </h2>
           <p className="mt-4 text-lg tracking-tight text-white">
-            Join us in creating real estate content that goes beyond the data, and brings local expertise directly to clientele.
+            Join us in creating real estate content that goes beyond the data, and brings your real estate expertise directly to clientele.
           </p>
           <Link href={'/sign-up'}>
             <Button className="mt-10">

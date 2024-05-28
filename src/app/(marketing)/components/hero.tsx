@@ -46,7 +46,7 @@ export function Hero() {
           </svg>
           <span className="relative text-blue-700">real estate content</span>
         </span>{' '}
-        imaginable for your clientele.
+        imaginable.
       </h1>
       <p className="mx-auto mt-6 max-w-2xl text-lg tracking-tight text-slate-700">
         Become the online authority for listings in your area with the most powerful platform available for generating real estate content.

@@ -1,20 +1,14 @@
 import {z} from "zod";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "@/server/api/trpc";
-import {prompts, userApiLimits, userSubscriptions} from "@/server/db/schema";
 import {and, eq} from "drizzle-orm";
-import {db} from "@/server/db";
 import {stripe} from "@/lib/stripe";
 import {absoluteUrl} from "@/lib/utils";
 import {TRPCError} from "@trpc/server";
-import {clerkClient} from "@clerk/nextjs";
 import {v4 as uuidv4} from "uuid";
-import {Redis} from '@upstash/redis';
-import {env} from "@/env.mjs";
-
+import {prompts, userApiLimits, userSubscriptions} from "@/app/api/trpc/db/schema";
+import {createTRPCRouter, protectedProcedure} from "@/app/api/trpc/trpc";
+import {db} from "@/app/api/trpc/db";
+import {clerkClient} from "@clerk/nextjs/server";
 
 
 export const userRouter = createTRPCRouter({

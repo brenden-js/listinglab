@@ -29,6 +29,7 @@ export default function Chat(
 
         connection.on("connect", async () => {
             try {
+                console.log('Connected to mqtt')
                 await connection.subscribe(topic, mqtt.QoS.AtLeastOnce);
                 setConnection(connection);
             } catch (e) {

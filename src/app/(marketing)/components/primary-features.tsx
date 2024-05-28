@@ -18,7 +18,7 @@ const features = [
     image: screenshotDashboard,
   },
     {
-    title: 'Add your local expertise',
+    title: 'Add your real estate expertise',
     description:
       'Step by step, input what the data does not show about each property; things like the neighborhood vibe and feel, local holiday celebrations, traffic patterns, or anything else your clientele needs to know.',
     image: screenshotGenerations
@@ -72,10 +72,10 @@ export function PrimaryFeatures() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-2xl md:mx-auto md:text-center xl:max-w-none">
           <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-5xl">
-            A tool to effortlessly express your property expertise to investors, buyers, and sellers.
+            Effortlessly express your property expertise to investors, buyers, and sellers.
           </h2>
           <p className="mt-6 text-lg tracking-tight text-blue-100">
-            Pick the data points you want, combine your local expertise, and tell the story you want about the listings in your area.
+            Pick the data points you want, combine your real estate expertise, and tell the story you want about the listings in your area.
           </p>
         </div>
         <Tab.Group
