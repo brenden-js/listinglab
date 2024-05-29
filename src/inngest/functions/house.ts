@@ -8,7 +8,7 @@ import {db} from "@/app/api/trpc/db";
 import {HouseDetailsResponse} from "@/app/api/trpc/routers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/types";
 import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
-import {publishStatusMessage} from "@/inngest/functions/helpers/mqtt";
+
 
 export const incrementHouseUsage = inngest.createFunction(
   {id: "Handle incrementing a user's house usage."},
@@ -69,7 +69,7 @@ export const handleEnrichHouse = inngest.createFunction(
         zipCode: formatted.data.home.location.address.postal_code
       })
 
-      await publishStatusMessage({type: 'basic', status: 'complete'}, event.data.userId)
+      // await publishStatusMessage({type: 'basic', status: 'complete'}, event.data.userId)
 
       return {
         lat: formatted.data.home.location.address.coordinate.lat,
@@ -107,7 +107,7 @@ export const handleEnrichHouse = inngest.createFunction(
       await db.update(houses)
         .set({nearbyPlaces: JSON.stringify(places.places)})
         .where(eq(houses.id, event.data.createdId))
-      await publishStatusMessage({type: 'neighborhood', status: 'complete'}, event.data.userId)
+      // await publishStatusMessage({type: 'neighborhood', status: 'complete'}, event.data.userId)
     })
 
     await step.run("Get mortgage and investment info", async () => {
@@ -118,7 +118,7 @@ export const handleEnrichHouse = inngest.createFunction(
       const data = getMortgageAndEquity(foundListing.price)
 
       await db.update(houses).set({ investment: JSON.stringify(data) })
-      await publishStatusMessage({type: 'investment', status: 'complete'}, event.data.userId)
+      // await publishStatusMessage({type: 'investment', status: 'complete'}, event.data.userId)
     })
   }
 )

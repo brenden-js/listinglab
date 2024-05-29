@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {useState, useEffect} from "react";
 import {iot, mqtt} from "aws-iot-device-sdk-v2";

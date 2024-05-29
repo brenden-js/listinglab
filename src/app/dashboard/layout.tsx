@@ -7,13 +7,15 @@ import MobileSidebar from "@/app/dashboard/components/sidebar";
 import {TRPCReactProvider} from "@/trpc/react";
 import {PromptsProvider} from "@/app/dashboard/contexts/prompts";
 import {HouseUpdateProvider} from "@/app/dashboard/contexts/realtime-messages";
+import {Resource} from "sst";
 
 
 export default function Layout({children}: { children: React.ReactNode }) {
     return (
         <TRPCReactProvider headers={headers()}>
             <PromptsProvider>
-                <HouseUpdateProvider>
+                <HouseUpdateProvider endpoint={Resource.MyRealtime.endpoint}
+                                     authorizer={Resource.MyRealtime.authorizer}>
                     <div className="flex min-h-[100vh]">
                         <div className="hidden lg:flex lg:flex-shrink-0">
                             <div className="flex w-52 flex-col">

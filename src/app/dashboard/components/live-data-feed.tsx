@@ -1,26 +1,24 @@
 "use client"
 import {CheckCircledIcon, CrossCircledIcon, ReloadIcon} from "@radix-ui/react-icons";
 import {House, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
-import {useHouseUpdateContext} from "@/app/dashboard/contexts/realtime-messages";
 
 
 export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
-    const {updates} = useHouseUpdateContext();
 
     if (!house) {
         return <div>No house found</div>
     }
 
     // Helper function to get the update status for a given category
-    const getUpdateStatus = (category: "basic" | "investment" | "neighborhood") => {
-        const update = updates.find(
-            (u) =>
-                u.updateCategory === category &&
-                u.messageCategory === "house-update" &&
-                u.houseId === house.id
-        );
-        return update ? update.updateType : "loading";
-    };
+    // const getUpdateStatus = (category: "basic" | "investment" | "neighborhood") => {
+    //     const update = updates.find(
+    //         (u) =>
+    //             u.updateCategory === category &&
+    //             u.messageCategory === "house-update" &&
+    //             u.houseId === house.id
+    //     );
+    //     return update ? update.updateType : "loading";
+    // };
 
     if (!house) {
         return <p>Nothing found...</p>
@@ -35,9 +33,9 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
                     <div className={"text-sm"}>
                         {house.lat ? (<CheckCircledIcon className={"h-5 w-5"}/>) : (
                             <div>
-                                {getUpdateStatus("basic") === "loading" && <ReloadIcon className={"animate-spin h-4 w-4"}/>}
-                                {getUpdateStatus("basic") === "complete" && <CheckCircledIcon className={"h-4 w-4"}/>}
-                                {getUpdateStatus("basic") === "fail" && <CrossCircledIcon className={"h-4 w-4"}/>}
+                                {/*{getUpdateStatus("basic") === "loading" && <ReloadIcon className={"animate-spin h-4 w-4"}/>}*/}
+                                {/*{getUpdateStatus("basic") === "complete" && <CheckCircledIcon className={"h-4 w-4"}/>}*/}
+                                {/*{getUpdateStatus("basic") === "fail" && <CrossCircledIcon className={"h-4 w-4"}/>}*/}
                             </div>
                         )}
                     </div>
@@ -47,12 +45,12 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
                     <div className={"text-sm"}>
                         {house.nearbyPlaces ? (<CheckCircledIcon className={"h-5 w-5"}/>) : (
                             <div>
-                                {getUpdateStatus("neighborhood") === "loading" &&
-                                    <ReloadIcon className={"animate-spin h-4 w-4"}/>}
-                                {getUpdateStatus("neighborhood") === "complete" &&
-                                    <CheckCircledIcon className={"h-4 w-4"}/>}
-                                {getUpdateStatus("neighborhood") === "fail" &&
-                                    <CrossCircledIcon className={"h-4 w-4"}/>}
+                                {/*{getUpdateStatus("neighborhood") === "loading" &&*/}
+                                {/*    <ReloadIcon className={"animate-spin h-4 w-4"}/>}*/}
+                                {/*{getUpdateStatus("neighborhood") === "complete" &&*/}
+                                {/*    <CheckCircledIcon className={"h-4 w-4"}/>}*/}
+                                {/*{getUpdateStatus("neighborhood") === "fail" &&*/}
+                                {/*    <CrossCircledIcon className={"h-4 w-4"}/>}*/}
                             </div>
                         )}
                     </div>
@@ -62,15 +60,15 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
                     <div className={"text-sm"}>
                         {house.investment ? (<CheckCircledIcon className={"h-5 w-5"}/>) : (
                             <div>
-                                {getUpdateStatus("investment") === "loading" && (
-                                    <ReloadIcon className={"animate-spin h-4 w-4"}/>
-                                )}
-                                {getUpdateStatus("investment") === "complete" && (
-                                    <CheckCircledIcon className={"h-4 w-4"}/>
-                                )}
-                                {getUpdateStatus("investment") === "fail" && (
-                                    <CrossCircledIcon className={"h-4 w-4"}/>
-                                )}
+                                {/*{getUpdateStatus("investment") === "loading" && (*/}
+                                {/*    <ReloadIcon className={"animate-spin h-4 w-4"}/>*/}
+                                {/*)}*/}
+                                {/*{getUpdateStatus("investment") === "complete" && (*/}
+                                {/*    <CheckCircledIcon className={"h-4 w-4"}/>*/}
+                                {/*)}*/}
+                                {/*{getUpdateStatus("investment") === "fail" && (*/}
+                                {/*    <CrossCircledIcon className={"h-4 w-4"}/>*/}
+                                {/*)}*/}
                             </div>)}
                     </div>
                 </div>
