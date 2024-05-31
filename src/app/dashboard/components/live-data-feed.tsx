@@ -1,24 +1,17 @@
 "use client"
 import {CheckCircledIcon, CrossCircledIcon, ReloadIcon} from "@radix-ui/react-icons";
 import {House, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
+import {useHouseUpdateContext} from "@/app/dashboard/contexts/realtime-messages";
 
 
 export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
 
+    const { updates } = useHouseUpdateContext()
     if (!house) {
         return <div>No house found</div>
     }
 
-    // Helper function to get the update status for a given category
-    // const getUpdateStatus = (category: "basic" | "investment" | "neighborhood") => {
-    //     const update = updates.find(
-    //         (u) =>
-    //             u.updateCategory === category &&
-    //             u.messageCategory === "house-update" &&
-    //             u.houseId === house.id
-    //     );
-    //     return update ? update.updateType : "loading";
-    // };
+    console.log('Updates here:', updates)
 
     if (!house) {
         return <p>Nothing found...</p>

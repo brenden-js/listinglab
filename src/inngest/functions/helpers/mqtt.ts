@@ -25,13 +25,12 @@ function createConnection(endpoint: string, authorizer: string): mqtt.MqttClient
   );
 }
 
-export async function publishStatusMessage(message: StatusMessageData, userId: string): Promise<void> {
+export async function publishStatusFromServer(message: StatusMessageData): Promise<void> {
   const connection = createConnection(endpoint, authorizer);
-  const userTopic = `${topic}/${userId}`;
   try {
     await connection.connect();
     const stringMessage = JSON.stringify(message)
-    await connection.publish(userTopic, stringMessage, mqtt.QoS.AtLeastOnce);
+    await connection.publish('house-updates', stringMessage, mqtt.QoS.AtLeastOnce);
     console.log(`Message published: ${stringMessage}`);
   } catch (error) {
     console.error('Error publishing message:', error);
