@@ -13,7 +13,7 @@ export interface StatusMessageData {
 
 const data = new IoTDataPlaneClient();
 
-export async function publishStatusFromServer(message: HouseUpdateContextValue['updates']): Promise<void> {
+export async function publishStatusFromServer(message: HouseUpdateContextValue['updates'][0]): Promise<void> {
   await data.send(
   new PublishCommand({
     payload: Buffer.from(

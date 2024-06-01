@@ -5,7 +5,7 @@ import {iot, mqtt} from 'aws-iot-device-sdk-v2';
 // Define the shape of the context value
 export interface HouseUpdateContextValue {
     updates: {
-        houseId: string; // Add this line
+        houseId: string;
         messageCategory: 'house-update';
         updateType: 'complete' | 'fail';
         updateCategory: 'basic' | 'investment' | 'neighborhood';

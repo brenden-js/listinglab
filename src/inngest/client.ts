@@ -1,5 +1,5 @@
 import {EventSchemas, Inngest} from "inngest";
-import {AllInngestEvents} from "events";
+import {AllInngestEvents} from "@/inngest/events";
 
 // Create a client to send and receive events
 export const inngest = new Inngest(
