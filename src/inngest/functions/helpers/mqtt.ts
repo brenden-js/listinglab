@@ -1,6 +1,6 @@
 import { Resource } from 'sst';
-import {iot, mqtt} from "aws-iot-device-sdk-v2";
-import { v4 as uuidv4 } from 'uuid';
+import { IoTDataPlaneClient, PublishCommand } from "@aws-sdk/client-iot-data-plane";
+import {HouseUpdateContextValue} from "@/app/dashboard/contexts/house-updates-context";
 
 const endpoint = Resource.MyRealtime.endpoint;
 const authorizer = Resource.MyRealtime.authorizer;
@@ -11,30 +11,15 @@ export interface StatusMessageData {
     status: 'loading' | 'complete' | 'not_found';
 }
 
-function createConnection(endpoint: string, authorizer: string): mqtt.MqttClientConnection {
-  const client = new mqtt.MqttClient();
-  const id = uuidv4(); // Using the 'uuid' package to generate a unique client ID
+const data = new IoTDataPlaneClient();
 
-  return client.new_connection(
-    iot.AwsIotMqttConnectionConfigBuilder.new_with_websockets()
-      .with_clean_session(true)
-      .with_client_id(`client_${id}`)
-      .with_endpoint(endpoint)
-      .with_custom_authorizer("", authorizer, "", "PLACEHOLDER_TOKEN")
-      .build()
-  );
-}
-
-export async function publishStatusFromServer(message: StatusMessageData): Promise<void> {
-  const connection = createConnection(endpoint, authorizer);
-  try {
-    await connection.connect();
-    const stringMessage = JSON.stringify(message)
-    await connection.publish('house-updates', stringMessage, mqtt.QoS.AtLeastOnce);
-    console.log(`Message published: ${stringMessage}`);
-  } catch (error) {
-    console.error('Error publishing message:', error);
-  } finally {
-    await connection.disconnect();
-  }
+export async function publishStatusFromServer(message: HouseUpdateContextValue['updates']): Promise<void> {
+  await data.send(
+  new PublishCommand({
+    payload: Buffer.from(
+      JSON.stringify(message)
+    ),
+    topic: `house-updates`,
+  })
+);
 }

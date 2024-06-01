@@ -1,7 +1,7 @@
 "use client"
 import {CheckCircledIcon, CrossCircledIcon, ReloadIcon} from "@radix-ui/react-icons";
 import {House, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
-import {useHouseUpdateContext} from "@/app/dashboard/contexts/realtime-messages";
+import {useHouseUpdateContext} from "@/app/dashboard/contexts/house-updates-context";
 
 
 export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {

@@ -3,7 +3,7 @@ import React, {createContext, useState, useEffect, useContext} from 'react';
 import {iot, mqtt} from 'aws-iot-device-sdk-v2';
 
 // Define the shape of the context value
-interface HouseUpdateContextValue {
+export interface HouseUpdateContextValue {
     updates: {
         houseId: string; // Add this line
         messageCategory: 'house-update';
@@ -63,7 +63,7 @@ export const HouseUpdateProvider: React.FC<{
         });
 
         connection.on('message', (_fullTopic, payload) => {
-            console.log('Message received... attempting to decode')
+            console.log('Message received... attempting to decode', payload)
             const message = new TextDecoder('utf8').decode(new Uint8Array(payload));
             try {
                 const {messageCategory, updateType, updateCategory, houseId} = JSON.parse(message);
