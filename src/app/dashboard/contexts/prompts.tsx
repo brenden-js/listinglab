@@ -276,10 +276,6 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
     }
     const [state, setState] = useState(initState);
 
-    useEffect(() => {
-        console.log('New state', state);
-    }, [state]);
-
     return (
         <CurrentPromptContext.Provider value={state}>
             {children}

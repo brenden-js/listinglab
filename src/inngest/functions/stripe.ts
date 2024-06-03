@@ -44,7 +44,7 @@ export const handleCheckoutSessionCompleted = inngest.createFunction(
       {id: `updatelimits-usr:${subData.userId}-sub:${subData.subId}`},
       async () => {
         await db.update(userApiLimits)
-          .set({periodEnd: new Date(subData.periodEnd), housesQuota: 25, textQuota: 125})
+          .set({periodEnd: new Date(subData.periodEnd), housesQuota: 25, textQuota: 125, maxTokens: 4000})
           .where(eq(userApiLimits.userId, subData.userId))
       }
     )
