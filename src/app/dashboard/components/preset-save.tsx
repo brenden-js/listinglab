@@ -17,6 +17,7 @@ import {api} from "@/trpc/react";
 import {ReloadIcon} from "@radix-ui/react-icons";
 import {Textarea} from "@/components/ui/textarea";
 import {CurrentPromptContext} from "@/app/dashboard/contexts/prompts";
+import {toast} from "sonner";
 
 export function PresetSave() {
   const [formData, setFormData] = useState({ name: ""})
@@ -30,7 +31,7 @@ export function PresetSave() {
 
   useEffect(() => {
     if (promptMutation.isSuccess) {
-      // toast.success("Saved prompt.")
+      toast.success("Succesfully saved prompt.")
       setOpen(false)
       changePrompt(prompt, promptMutation.data, formData.name)
     }

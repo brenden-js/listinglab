@@ -17,6 +17,7 @@ import {
 import {CurrentPromptContext} from "@/app/dashboard/contexts/prompts";
 import {PresetSave} from "@/app/dashboard/components/preset-save";
 import { Preset} from "@/app/dashboard/data/community-prompts";
+import {toast} from "sonner";
 
 export const PresetIndex = () => {
   const [open, setOpen] = React.useState(false)
@@ -141,7 +142,7 @@ export const PresetIndex = () => {
                 setShowDeleteDialog(false)
                 await getPrompts.refetch()
                 changePrompt("","", "")
-                // toast.success('Deleted prompt.')
+                toast.success('Succesfully deleted prompt.')
               }}
             >
               Delete

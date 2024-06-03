@@ -18,6 +18,7 @@ import {Input} from "@/components/ui/input";
 import { ReloadIcon} from "@radix-ui/react-icons";
 import clsx from "clsx";
 import {CurrentPromptContext, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
+import {toast} from "sonner";
 
 export const HousesDrawer = () => {
   const {selectedHouses, addHouse, removeHouse} = useContext(CurrentPromptContext)
@@ -27,11 +28,11 @@ export const HousesDrawer = () => {
       addHouse(data)
       setRawAddress("")
       setNewHousePreview(data)
-      // toast.success('Found house, getting additional data!')
+      toast.success('Found house, getting additional data!')
     },
     onError: ({message}) => {
       console.log('Error', message)
-      // toast.error('Could not get house')
+      toast.error('Unable to find this house, try again later.')
     }
   })
   const [rawAddress, setRawAddress] = useState("")

@@ -5,6 +5,7 @@ import {type inferRouterOutputs} from "@trpc/server";
 import {type TRPCClientErrorLike} from '@trpc/react-query';
 import {api} from "@/trpc/react";
 import {AppRouter} from "@/app/api/trpc/root";
+import {toast} from "sonner";
 
 
 export type UnhydratedHouse = {
@@ -126,12 +127,12 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
 
     const addHouse = (newHouse: UnhydratedHouse | House) => {
         if (!newHouse) {
-            // toast.error('Could not add house')
+            toast.error('Could not add house.')
             return
         }
         setState((prevState) => {
             if (prevState.selectedHouses.length >= 1) {
-                // toast.error('Maximum number of houses reached', { id: newHouse.id })
+                toast.error('Maximum number of houses reached.', { id: newHouse.id })
                 return {...prevState} // return here, state update has finished and we can stop executing the function
             }
 
@@ -191,14 +192,14 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
         setState((prevState) => {
 
             if (prevState.selectedHouses.length === 0) {
-                // toast.error('No houses found')
+                toast.error('No houses selected.')
                 return prevState;
             }
 
             const house = prevState.selectedHouses.find((house: House | UnhydratedHouse) => house?.id === houseId)
 
             if (house === undefined) {
-                // toast.error('House id not found')
+                toast.error('Could not find that house.')
                 console.error('House with id, houseId: ', houseId, 'could not be found in the state');
                 return prevState;
             }
@@ -247,7 +248,7 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
                 selectedHouses: updated
             }
         })
-        // toast.success('Succesfully updated local expertise')
+        toast.success('Succesfully updated local expertise')
     }
 
     const initState = {

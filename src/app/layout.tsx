@@ -2,6 +2,7 @@ import "@/app/globals.css";
 
 import {Inter} from "next/font/google";
 import {ClerkProvider} from "@clerk/nextjs";
+import {Toaster} from "@/components/ui/sonner"
 
 
 const inter = Inter({
@@ -20,7 +21,8 @@ export default function RootLayout({children}: { children: React.ReactNode; }) {
         <ClerkProvider>
             <html lang="en" className="h-full bg-white">
             <body className={inter.className + " h-full"}>
-            {children}
+            <main>{children}</main>
+            <Toaster/>
             </body>
             </html>
         </ClerkProvider>

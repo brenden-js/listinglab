@@ -6,6 +6,7 @@ import {CopyToClipboard} from "@/app/dashboard/components/copy-to-clipboard";
 import {api} from "@/trpc/react";
 import {useContext, useEffect, useState} from "react";
 import {CurrentPromptContext, ModelId} from "@/app/dashboard/contexts/prompts";
+import {toast} from "sonner";
 
 export const GenerationsSection = () => {
     const genMutation = api.house.generateText.useMutation()
@@ -13,14 +14,15 @@ export const GenerationsSection = () => {
 
     useEffect(() => {
         if (genMutation.error) {
-            // toast.error(genMutation.error.message)
+            toast.error('Something happened when creating your generation.')
+            console.error(genMutation.error)
         }
     }, [genMutation.error]);
 
     const [generatedAnswer, setGeneratedAnswer] = useState<string>("");
     const generateAnswer = async () => {
         if (!selectedHouses.length) {
-            // toast.error('No houses selected.')
+            toast.error('No houses selected.')
             return
         }
 
@@ -36,10 +38,7 @@ export const GenerationsSection = () => {
                 top_p: advOptions.top_p
             })
             if (response.status === "Out of Credits") {
-                // toast.error('Upgrade your account to get access to more generations.', {
-                //   position: "bottom-center",
-                //   duration: 5000
-                // })
+                toast.error('Out of credits, upgrade your subscription.')
             } else {
                 setGeneratedAnswer(response.generation)
             }
