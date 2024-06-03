@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {CurrentPromptContext} from "@/app/dashboard/contexts/prompts";
 import {PresetSave} from "@/app/dashboard/components/preset-save";
-import {Preset, communityPrompts} from "@/app/dashboard/data/community-prompts";
+import { communityPrompts} from "@/app/dashboard/data/community-prompts";
 import {toast} from "sonner";
 import {cn} from "@/lib/utils";
 

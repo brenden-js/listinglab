@@ -13,7 +13,7 @@ import {clerkClient} from "@clerk/nextjs/server";
 
 export const userRouter = createTRPCRouter({
   addPrompt: protectedProcedure
-    .input(z.object({name: z.string().min(1), prompt: z.string().min(5)}))
+    .input(z.object({name: z.string().min(1), prompt: z.string()}))
     .mutation(async ({ctx, input}) => {
       if (!ctx.authObject.userId) {
         throw new Error("Not authed")
@@ -89,7 +89,7 @@ export const userRouter = createTRPCRouter({
       if (!ctx.authObject.userId) {
         throw new Error('Not authed')
       }
-      const settingsUrl = absoluteUrl("/dashboard");
+      const settingsUrl = absoluteUrl("/dashboard/subscriptions");
       const userSubscription = await db.query.userSubscriptions.findFirst({
         where: eq(userSubscriptions.userId, ctx.authObject.userId)
       })
