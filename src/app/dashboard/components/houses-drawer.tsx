@@ -40,9 +40,10 @@ export const HousesDrawer = () => {
     await houseMutation.mutateAsync({stAddress: rawAddress});
   };
 
+
   const [newHousePreview, setNewHousePreview] = useState<UnhydratedHouse>()
   return (
-    <Drawer>
+    <Drawer onClose={() => setNewHousePreview(undefined)}>
       <DrawerTrigger
         className=""
         asChild
