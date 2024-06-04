@@ -12,6 +12,7 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
         basic: 'loading',
         neighborhood: 'loading',
         investment: 'loading',
+        recentlySold: 'loading'
     });
 
     useEffect(() => {
@@ -31,7 +32,7 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
         return <div>No house found</div>
     }
 
-    const getUpdateIcon = (category: 'basic' | 'investment' | 'neighborhood') => {
+    const getUpdateIcon = (category: 'basic' | 'investment' | 'neighborhood' | 'recentlySold') => {
         if (updateStatus[category] === 'loading') {
             return <ReloadIcon className="animate-spin h-4 w-4"/>;
         } else if (updateStatus[category] === 'complete') {
@@ -64,6 +65,13 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.investment ?
                             <CheckCircledIcon className="h-5 w-5"/> : getUpdateIcon('investment')}</div>
+                    </div>
+                </div>
+                <div className={"flex justify-between"}>
+                    <p className={"text-sm"}>Recently sold</p>
+                    <div className={"text-sm"}>
+                        <div className="text-sm">{house.recentlySold ?
+                            <CheckCircledIcon className="h-5 w-5"/> : getUpdateIcon('recentlySold')}</div>
                     </div>
                 </div>
             </div>

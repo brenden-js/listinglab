@@ -19,6 +19,7 @@ export type UnhydratedHouse = {
     lat: null
     nearbyPlaces: null
     investment: null
+    recentlySold: null
 }
 
 export type House =

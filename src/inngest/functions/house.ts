@@ -5,7 +5,7 @@ import {v4 as uuidv4} from "uuid";
 import {inngest} from "@/inngest/client";
 import {generations, houses, userApiLimits} from "@/app/api/trpc/db/schema";
 import {db} from "@/app/api/trpc/db";
-import {HouseDetailsResponse} from "@/app/api/trpc/routers/types";
+import {HouseDetailsResponse, RecentlySoldResponse} from "@/app/api/trpc/routers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/types";
 import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
 import {publishStatusFromServer} from "@/inngest/functions/helpers/mqtt";
@@ -33,7 +33,6 @@ export const handleEnrichHouse = inngest.createFunction(
 
         const foundListing = await step.run("Get house details", async () => {
 
-            // await publishStatusMessage({type: 'basic', status: 'loading'}, event.data.userId)
             const options: AxiosRequestConfig = {
                 method: 'GET',
                 url: 'https://realty-in-us.p.rapidapi.com/properties/v3/detail',
@@ -71,17 +70,18 @@ export const handleEnrichHouse = inngest.createFunction(
                 zipCode: formatted.data.home.location.address.postal_code
             })
             const message: HouseUpdateContextValue['updates'][0] = {
-                    houseId: event.data.createdId,
-                    messageCategory: 'house-update',
-                    updateType: 'complete',
-                    updateCategory: 'basic'
-                }
+                houseId: event.data.createdId,
+                messageCategory: 'house-update',
+                updateType: 'complete',
+                updateCategory: 'basic'
+            }
             await publishStatusFromServer(message)
 
             return {
                 lat: formatted.data.home.location.address.coordinate.lat,
                 lon: formatted.data.home.location.address.coordinate.lon,
-                price: formatted.data.home.list_price
+                price: formatted.data.home.list_price,
+                stAddress: formatted.data.home.location.address.line
             }
         })
 
@@ -134,11 +134,59 @@ export const handleEnrichHouse = inngest.createFunction(
 
             await db.update(houses).set({investment: JSON.stringify(data)})
             const message: HouseUpdateContextValue['updates'][0] = {
-                    houseId: event.data.createdId,
-                    messageCategory: 'house-update',
-                    updateType: 'complete',
-                    updateCategory: 'investment'
+                houseId: event.data.createdId,
+                messageCategory: 'house-update',
+                updateType: 'complete',
+                updateCategory: 'investment'
+            }
+            await publishStatusFromServer(message)
+        })
+
+        await step.run("Get recently sold listings", async () => {
+            const options: AxiosRequestConfig = {
+                method: 'POST',
+                url: 'https://realty-in-us.p.rapidapi.com/properties/v3/list',
+                params: {
+                    limit: 10,
+                    offset: 0,
+                    status: ['sold'],
+                    search_location: {
+                        radius: 25,
+                        location: foundListing.stAddress
+                    },
+                    sort: {
+                        direction: 'desc',
+                        field: 'list_date'
+                    }
+                },
+                headers: {
+                    'X-RapidAPI-Key': process.env.HOUSE_DATA_API_KEY,
+                    'X-RapidAPI-Host': 'realty-in-us.p.rapidapi.com'
                 }
+            }
+
+            const response: AxiosResponse = await axios.request(options);
+            const formatted = response.data as RecentlySoldResponse
+
+            const minimizedArray = formatted.data.home_search.results.map((soldListing) => {
+                return {
+                    soldPrice: soldListing.last_sold_price,
+                    soldDate: soldListing.last_sold_date,
+                    beds: soldListing.description.beds,
+                    baths: soldListing.description.baths,
+                    lotSqft: soldListing.description.lot_sqft,
+                    sqft: soldListing.description.sqft,
+                    pricePerSqft: soldListing.last_sold_price / soldListing.description.sqft
+                }
+            })
+
+            await db.update(houses).set({ recentlySold: minimizedArray.toString()}).where(eq(houses.id, event.data.createdId))
+            const message: HouseUpdateContextValue['updates'][0] = {
+                houseId: event.data.createdId,
+                messageCategory: 'house-update',
+                updateType: 'complete',
+                updateCategory: 'recentlySold'
+            }
             await publishStatusFromServer(message)
         })
     }

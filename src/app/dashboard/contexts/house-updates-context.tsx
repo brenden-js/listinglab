@@ -8,7 +8,7 @@ export interface HouseUpdateContextValue {
         houseId: string;
         messageCategory: 'house-update';
         updateType: 'complete' | 'fail';
-        updateCategory: 'basic' | 'investment' | 'neighborhood';
+        updateCategory: 'basic' | 'investment' | 'neighborhood' | 'recentlySold';
     }[];
     isConnected: boolean;
 }

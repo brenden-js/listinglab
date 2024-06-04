@@ -10,7 +10,7 @@
     "nextdev": "next dev",
     "inngest": "npx inngest-cli@latest dev -u http://localhost:3000/api/inngest --no-discovery --no-poll",
     "stripe": "stripe listen --forward-to localhost:3000/api/inngest/webhook",
-    "db:push": "drizzle-kit push:sqlite",
+    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
