@@ -7,7 +7,7 @@ import {type OpenAIResponse} from "@/lib/types";
 import {and, eq} from "drizzle-orm";
 import {generations, houses} from "@/app/api/trpc/db/schema";
 import {BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandOutput} from "@aws-sdk/client-bedrock-runtime";
-import {AutocompleteResponse, OpenAIStreamPayload} from "@/app/api/trpc/routers/types";
+import {OpenAIStreamPayload, SearchAddressResult} from "@/app/api/trpc/routers/types";
 import {inngest} from "@/inngest/client";
 import {v4} from "uuid";
 import {db} from "@/app/api/trpc/db";
@@ -28,38 +28,27 @@ export const houseRouter = createTRPCRouter({
             if (apiLimits.housesUsage >= apiLimits.housesQuota) {
                 throw new TRPCError({message: "You have reached your usage.", code: "UNAUTHORIZED"})
             }
-            const options = {
-                method: 'GET',
-                url: process.env.HOUSE_DATA_API_URL,
-                params: {
-                    input: `${input.stAddress}`,
-                    limit: '1'
-                },
-                headers: {
-                    'X-RapidAPI-Key': process.env.HOUSE_DATA_API_KEY,
-                    'X-RapidAPI-Host': 'realty-in-us.p.rapidapi.com'
-                }
-            } as AxiosRequestConfig;
+            // const options = {
+            //     method: 'GET',
+            //     url: '',
+            //     params: {
+            //         address: ''
+            //     },
+            //     headers: {
+            //         'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
+            //         'x-rapidapi-host': ''
+            //     }
+            // };
 
-            const response: AxiosResponse = await axios.request(options);
-
-            const autoCompleteResponse = response.data as AutocompleteResponse
-
-            if (autoCompleteResponse.autocomplete.length < 1) {
-                throw new Error('House not found')
-            }
-
-            // format for returning to client
-            const house = autoCompleteResponse.autocomplete[0]
-
-            if (!house?.mpr_id) {
-                console.log('Heres the house', house)
-                throw new TRPCError({code: "INTERNAL_SERVER_ERROR", message: "Could not find house. Internal Code 99"})
-            }
-
-            if (!ctx.authObject.userId) {
-                throw new TRPCError({code: "UNAUTHORIZED"})
-            }
+            // const response: AxiosResponse = await axios.request(options);
+            //
+            // const searchResult = response.data as SearchAddressResult
+            //
+            // const house = searchResult.data
+            //
+            // if (searchResult.status === false) {
+            //     throw new TRPCError({code: "NOT_FOUND", message: "Could not find house matching that address."})
+            // }
 
             // send an event to enrich this house
 
@@ -69,21 +58,21 @@ export const houseRouter = createTRPCRouter({
                 name: "house/enrich",
                 data: {
                     id: `enrich-${newId}`,
-                    lookupId: house.mpr_id,
+                    lookupId: '123',
                     createdId: newId,
                     userId: ctx.authObject.userId
                 }
             })
 
-            if (!house.line || !house.postal_code || !house.city || !house.state_code) {
-                throw new TRPCError({code: "INTERNAL_SERVER_ERROR", message: "Internal code 100"})
-            }
+            // if (!house. || !house.postal_code || !house.city || !house.state_code) {
+            //     throw new TRPCError({code: "INTERNAL_SERVER_ERROR", message: "Internal code 100"})
+            // }
 
             return {
-                stAddress: house.line,
-                zipCode: house.postal_code,
-                city: house.city,
-                state: house.state_code,
+                stAddress: '123 main',
+                zipCode: '1345',
+                city: 'city',
+                state: 'state',
                 id: newId,
                 expertise: null,
                 lat: null,
@@ -110,15 +99,12 @@ export const houseRouter = createTRPCRouter({
     getHouses: protectedProcedure
         .query(async ({ctx}) => {
             if (!ctx.authObject.userId) {
-                throw new TRPCError({code: "UNAUTHORIZED", message: "Internal code 98"})
+                throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
             }
-            const recents = await db.query.houses.findMany({
+            return db.query.houses.findMany({
                 where: eq(houses.userId, ctx.authObject.userId),
                 with: {generations: true}
-            })
-            return recents.map((recent) => {
-                return {...recent}
-            })
+            });
         }),
     getHouseGenerations: protectedProcedure
         .input(z.string())

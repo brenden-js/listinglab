@@ -29,7 +29,7 @@ export default function Layout({children}: { children: React.ReactNode }) {
                                                        width={42}/>
                                             </Link>
                                         </div>
-                                        <SideNavigation/>
+                                        <SideNavigation />
                                     </div>
                                     <div className="flex flex-shrink-0 border-t border-gray-200 p-4">
                                         <div className="flex items-center">

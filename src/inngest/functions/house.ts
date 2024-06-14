@@ -80,7 +80,7 @@ export const handleEnrichHouse = inngest.createFunction(
             return {
                 lat: formatted.data.home.location.address.coordinate.lat,
                 lon: formatted.data.home.location.address.coordinate.lon,
-                price: formatted.data.home.list_price,
+                price: 100,
                 stAddress: formatted.data.home.location.address.line
             }
         })
