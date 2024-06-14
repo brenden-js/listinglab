@@ -143,37 +143,40 @@ export const handleEnrichHouse = inngest.createFunction(
         })
 
         await step.run("Get recently sold listings", async () => {
-
-            const params = new URLSearchParams();
-            params.append('limit', '10');
-            params.append('offset', '0');
-            params.append('search_location[radius]', '25');
-            params.append('search_location[location]', foundListing.stAddress);
-
-            const requestBody = {
-                status: ['sold'],
+            const data = JSON.stringify({
+                limit: 10,
+                offset: 0,
+                postal_code: '90004',
+                status: [
+                    'sold'
+                ],
                 sort: {
                     direction: 'desc',
                     field: 'list_date'
                 }
-                // Add any other required parameters like postal_code if needed
-            };
+            });
 
-            const options: AxiosRequestConfig = {
-                method: 'POST',
-                url: 'https://realty-in-us.p.rapidapi.com/properties/v3/list',
-                params: params,
-                data: requestBody,
-                headers: {
-                    'X-RapidAPI-Key': process.env.HOUSE_DATA_API_KEY,
-                    'X-RapidAPI-Host': 'realty-in-us.p.rapidapi.com',
-                    'Content-Type': 'application/json'
+            let response;
+
+            try {
+                response = await axios.post('https://realty-in-us.p.rapidapi.com/properties/v3/list', data, {
+                    headers: {
+                        'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
+                        'x-rapidapi-host': 'realty-in-us.p.rapidapi.com',
+                        'Content-Type': 'application/json'
+                    },
+                    withCredentials: true
+                });
+
+                console.log('response...........',response.data);
+
+                if (!response) {
+                    return new Error('Could not get api response')
                 }
+            } catch (error) {
+                console.error(error);
             }
-
-            const response: AxiosResponse = await axios.request(options);
-            const formatted = response.data as RecentlySoldResponse
-            console.log("FORMATTED................ ", formatted)
+            const formatted = response!.data as RecentlySoldResponse
 
             const minimizedArray = formatted.data.home_search.results.map((soldListing) => {
                 return {
@@ -183,9 +186,12 @@ export const handleEnrichHouse = inngest.createFunction(
                     baths: soldListing.description.baths,
                     lotSqft: soldListing.description.lot_sqft,
                     sqft: soldListing.description.sqft,
-                    pricePerSqft: soldListing.last_sold_price / soldListing.description.sqft
+                    pricePerSqft: (soldListing.last_sold_price / soldListing.description.sqft).toFixed(2),
+                    stAddress: soldListing.location.address.line
                 }
             })
+
+            console.log("minimzedArray...................",minimizedArray)
 
             await db.update(houses).set({recentlySold: minimizedArray.toString()}).where(eq(houses.id, event.data.createdId))
             const message: HouseUpdateContextValue['updates'][0] = {
