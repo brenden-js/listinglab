@@ -16,8 +16,8 @@ const PopupVideoPlayer = () => {
     }
     return (
         <>
-            <Button className="flex items-center gap-2 transition-colors duration-300 hover:text-blue-800"
-                    variant={'outline'} onClick={() => setIsOpen(true)}
+            <Button className="flex items-center gap-2 transition-colors duration-300 hover:text-blue-300"
+                    onClick={() => setIsOpen(true)}
             >
                 <PlayIcon className="transition-colors duration-300"/>
                 Watch Demo
