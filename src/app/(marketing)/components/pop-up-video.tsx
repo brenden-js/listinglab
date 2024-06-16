@@ -25,7 +25,6 @@ const PopupVideoPlayer = () => {
             <Dialog
                 open={isOpen}
                 onOpenChange={setIsOpen}
-                className="fixed inset-0 z-50 flex items-center justify-center"
             >
                 <DialogContent
                     className="w-full max-w-[90vw] max-h-[80vh] overflow-auto rounded-lg bg-white p-4 flex flex-col items-center justify-center">
