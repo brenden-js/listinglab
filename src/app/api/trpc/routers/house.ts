@@ -65,7 +65,7 @@ export const houseRouter = createTRPCRouter({
                 name: "house/enrich",
                 data: {
                     id: `enrich-${newId}`,
-                    lookupId: '123',
+                    lookupId: house.mpr_id,
                     createdId: newId,
                     userId: ctx.authObject.userId
                 }

@@ -50,43 +50,43 @@ export const HouseUpdateProvider: React.FC<{
     }
 
     useEffect(() => {
-        // const connection = createConnection(endpoint, authorizer);
-        // connection.on('connect', async () => {
-        //     try {
-        //         console.log('Connected to MQTT from realtime-messages');
-        //         await connection.subscribe('house-updates', mqtt.QoS.AtLeastOnce);
-        //         setIsConnected(true);
-        //         setConnection(connection);
-        //     } catch (e) {
-        //         console.error('Error connecting to MQTT:', e);
-        //     }
-        // });
-        //
-        // connection.on('message', (_fullTopic, payload) => {
-        //     console.log('Message received... attempting to decode', payload)
-        //     const message = new TextDecoder('utf8').decode(new Uint8Array(payload));
-        //     try {
-        //         const {messageCategory, updateType, updateCategory, houseId} = JSON.parse(message);
-        //         if (messageCategory === 'house-update') {
-        //             setUpdates((prevUpdates) => [
-        //                 ...prevUpdates,
-        //                 {messageCategory, updateType, updateCategory, houseId},
-        //             ]);
-        //         }
-        //     } catch (error) {
-        //         console.error('Error parsing message:', error);
-        //     }
-        // });
-        //
-        // connection.on('error', console.error);
-        // connection.connect();
-        //
-        // // Disconnect from the MQTT broker when the component unmounts
-        // return () => {
-        //     connection.disconnect();
-        //     setIsConnected(false);
-        //     setConnection(null);
-        // };
+        const connection = createConnection(endpoint, authorizer);
+        connection.on('connect', async () => {
+            try {
+                console.log('Connected to MQTT from realtime-messages');
+                await connection.subscribe('house-updates', mqtt.QoS.AtLeastOnce);
+                setIsConnected(true);
+                setConnection(connection);
+            } catch (e) {
+                console.error('Error connecting to MQTT:', e);
+            }
+        });
+
+        connection.on('message', (_fullTopic, payload) => {
+            console.log('Message received... attempting to decode', payload)
+            const message = new TextDecoder('utf8').decode(new Uint8Array(payload));
+            try {
+                const {messageCategory, updateType, updateCategory, houseId} = JSON.parse(message);
+                if (messageCategory === 'house-update') {
+                    setUpdates((prevUpdates) => [
+                        ...prevUpdates,
+                        {messageCategory, updateType, updateCategory, houseId},
+                    ]);
+                }
+            } catch (error) {
+                console.error('Error parsing message:', error);
+            }
+        });
+
+        connection.on('error', console.error);
+        connection.connect();
+
+        // Disconnect from the MQTT broker when the component unmounts
+        return () => {
+            connection.disconnect();
+            setIsConnected(false);
+            setConnection(null);
+        };
     }, [endpoint, authorizer]);
 
     // Provide the updates and connection state to the context

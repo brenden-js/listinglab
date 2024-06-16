@@ -9,7 +9,7 @@ import {PlayIcon} from "@radix-ui/react-icons";
 const PopupVideoPlayer = () => {
     const [isOpen, setIsOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
-    const vimeoVideoUrl = 'https://vimeo.com/951746102' // Replace with your Vimeo video URL
+    const vimeoVideoUrl = 'https://vimeo.com/959782721'
 
     const handlePlayerReady = () => {
         setIsLoading(false)

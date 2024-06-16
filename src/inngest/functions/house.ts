@@ -46,6 +46,8 @@ export const handleEnrichHouse = inngest.createFunction(
             const anotherResponse: AxiosResponse = await axios.request(options);
             const formatted = anotherResponse.data as HouseDetailsResponse
 
+            console.log('Formatted.................', formatted)
+
             await db.insert(houses).values({
                 id: event.data.createdId,
                 baths: formatted.data.home.description.baths,

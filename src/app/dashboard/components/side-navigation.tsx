@@ -1,7 +1,7 @@
 "use client"
 import {usePathname} from "next/navigation";
 import Link from "next/link";
-import {HomeIcon, LightningBoltIcon} from "@radix-ui/react-icons";
+import {HomeIcon, LightningBoltIcon, MagicWandIcon} from "@radix-ui/react-icons";
 
 export function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
@@ -12,7 +12,7 @@ export const SideNavigation = () => {
   const path = usePathname()
 
   const navigation = [
-    {name: 'Dashboard', href: '/dashboard', icon: HomeIcon, current: path === '/dashboard'},
+    {name: 'Generate', href: '/dashboard', icon: MagicWandIcon, current: path === '/dashboard'},
     {name: 'Subscriptions', href: '/dashboard/subscriptions', icon: LightningBoltIcon, current: path === '/dashboard/subscriptions'},
     {name: 'Houses', href: '/dashboard/houses', icon: HomeIcon, current: path === '/dashboard/houses'}
   ]
