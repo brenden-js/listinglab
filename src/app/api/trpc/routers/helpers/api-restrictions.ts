@@ -2,7 +2,7 @@ import {userApiLimits, userSubscriptions} from "@/app/api/trpc/db/schema";
 import {eq} from "drizzle-orm";
 import {db} from "@/app/api/trpc/db";
 import {TRPCError} from "@trpc/server";
-import {Model} from "@/app/dashboard/data/models";
+import {Model} from "@/lib/data/models";
 
 export interface ApiLimits {
   userId: string;

@@ -11,7 +11,7 @@ import {AutocompleteResponse, OpenAIStreamPayload, SearchAddressResult} from "@/
 import {inngest} from "@/inngest/client";
 import {v4} from "uuid";
 import {db} from "@/app/api/trpc/db";
-import {models} from "@/app/dashboard/data/models";
+import {models} from "@/lib/data/models";
 import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/app/api/trpc/routers/helpers/api-restrictions";
 
 export const houseRouter = createTRPCRouter({

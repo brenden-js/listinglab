@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/drawer";
 import {Card,  CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {models} from "@/app/dashboard/data/models";
+import {models} from "@/lib/data/models";
 import {CurrentPromptContext} from "@/app/dashboard/contexts/prompts";
 
 export function ModelSelector() {
