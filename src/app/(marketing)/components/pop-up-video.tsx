@@ -12,7 +12,7 @@ const PopupVideoPlayer = () => {
     const vimeoVideoUrl = 'https://www.youtube.com/watch?v=me1ZuKsKQUA'
 
     const handlePlayerReady = () => {
-        setIsLoading(false)
+        setIsLoading(false);
     }
     return (
         <>
