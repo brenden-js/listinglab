@@ -1,17 +1,10 @@
 "use client"
 import React, {createContext, useState, useEffect, useContext} from 'react';
 import {iot, mqtt} from 'aws-iot-device-sdk-v2';
+import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
 
 // Define the shape of the context value
-export interface HouseUpdateContextValue {
-    updates: {
-        houseId: string;
-        messageCategory: 'house-update';
-        updateType: 'complete' | 'fail';
-        updateCategory: 'basic' | 'investment' | 'neighborhood' | 'recentlySold';
-    }[];
-    isConnected: boolean;
-}
+
 
 // Create the context
 const HouseUpdateContext = createContext<HouseUpdateContextValue>({

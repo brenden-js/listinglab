@@ -1,6 +1,6 @@
 import { Resource } from 'sst';
 import { IoTDataPlaneClient, PublishCommand } from "@aws-sdk/client-iot-data-plane";
-import {HouseUpdateContextValue} from "@/app/dashboard/contexts/house-updates-context";
+import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
 
 const endpoint = Resource.MyRealtime.endpoint;
 const authorizer = Resource.MyRealtime.authorizer;
