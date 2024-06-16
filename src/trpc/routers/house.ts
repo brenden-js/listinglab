@@ -5,14 +5,14 @@ import process from "process";
 import {TRPCError} from "@trpc/server";
 import {type OpenAIResponse} from "@/lib/types";
 import {and, eq} from "drizzle-orm";
-import {generations, houses} from "@/app/api/trpc/db/schema";
 import {BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandOutput} from "@aws-sdk/client-bedrock-runtime";
-import {AutocompleteResponse, OpenAIStreamPayload, SearchAddressResult} from "@/app/api/trpc/routers/types";
+import {AutocompleteResponse, OpenAIStreamPayload, SearchAddressResult} from "@/trpc/routers/types";
 import {inngest} from "@/inngest/client";
 import {v4} from "uuid";
-import {db} from "@/app/api/trpc/db";
 import {models} from "@/lib/data/models";
-import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/app/api/trpc/routers/helpers/api-restrictions";
+import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/trpc/routers/helpers/api-restrictions";
+import {db} from "@/db";
+import {generations, houses} from "@/db/schema";
 
 export const houseRouter = createTRPCRouter({
     searchHouse: protectedProcedure

@@ -1,6 +1,6 @@
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import superjson from "superjson";
-import {AppRouter} from "@/app/api/trpc/root";
+import {AppRouter} from "@/trpc/root";
 
 
 export const transformer = superjson;

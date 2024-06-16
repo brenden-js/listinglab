@@ -5,10 +5,10 @@ import {stripe} from "@/lib/stripe";
 import {absoluteUrl} from "@/lib/utils";
 import {TRPCError} from "@trpc/server";
 import {v4 as uuidv4} from "uuid";
-import {prompts, userApiLimits, userSubscriptions} from "@/app/api/trpc/db/schema";
-import {createTRPCRouter, protectedProcedure} from "@/app/api/trpc/trpc";
-import {db} from "@/app/api/trpc/db";
+import {createTRPCRouter, protectedProcedure} from "@/trpc/trpc";
 import {clerkClient} from "@clerk/nextjs/server";
+import {prompts, userApiLimits, userSubscriptions} from "@/db/schema";
+import {db} from "@/db";
 
 
 export const userRouter = createTRPCRouter({

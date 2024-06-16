@@ -4,7 +4,7 @@ import React, {createContext, useEffect, useState} from 'react';
 import {type inferRouterOutputs} from "@trpc/server";
 import {type TRPCClientErrorLike} from '@trpc/react-query';
 import {api} from "@/trpc/react";
-import {AppRouter} from "@/app/api/trpc/root";
+import {AppRouter} from "@/trpc/root";
 import {toast} from "sonner";
 
 

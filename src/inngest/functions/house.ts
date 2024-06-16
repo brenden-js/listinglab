@@ -5,7 +5,7 @@ import {v4 as uuidv4} from "uuid";
 import {inngest} from "@/inngest/client";
 import {generations, houses, userApiLimits} from "@/app/api/trpc/db/schema";
 import {db} from "@/app/api/trpc/db";
-import {HouseDetailsResponse, RecentlySoldResponse} from "@/app/api/trpc/routers/types";
+import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/types";
 import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
 import {publishStatusFromServer} from "@/inngest/functions/helpers/mqtt";

@@ -1,8 +1,10 @@
 import {Stripe} from "stripe";
 import {eq} from "drizzle-orm";
-import {db} from "@/app/api/trpc/db";
+
 import {inngest} from "@/inngest/client";
-import {userApiLimits, userSubscriptions} from "@/app/api/trpc/db/schema";
+import {userApiLimits, userSubscriptions} from "@/db/schema";
+import {db} from "@/db";
+
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-04-10",

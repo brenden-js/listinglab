@@ -1,8 +1,8 @@
-import {userApiLimits, userSubscriptions} from "@/app/api/trpc/db/schema";
 import {eq} from "drizzle-orm";
-import {db} from "@/app/api/trpc/db";
 import {TRPCError} from "@trpc/server";
 import {Model} from "@/lib/data/models";
+import {db} from "@/db";
+import {userApiLimits, userSubscriptions} from "@/db/schema";
 
 export interface ApiLimits {
   userId: string;

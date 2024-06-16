@@ -5,7 +5,7 @@ import {
 import { headers } from "next/headers";
 
 import { getUrl, transformer } from "./shared";
-import {AppRouter} from "@/app/api/trpc/root";
+import {AppRouter} from "@/trpc/root";
 
 export const api = createTRPCProxyClient<AppRouter>({
   links: [
