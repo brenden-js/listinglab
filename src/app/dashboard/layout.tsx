@@ -6,18 +6,18 @@ import {SideNavigation} from "@/app/dashboard/components/side-navigation";
 import MobileSidebar from "@/app/dashboard/components/sidebar";
 import {TRPCReactProvider} from "@/trpc/react";
 import {PromptsProvider} from "@/app/dashboard/contexts/prompts";
-import {HouseUpdateProvider} from "@/app/dashboard/contexts/house-updates-context";
-import {Resource} from "sst";
+// import {HouseUpdateProvider} from "@/app/dashboard/contexts/house-updates-context";
+// import {Resource} from "sst";
 
 
 export default function Layout({children}: { children: React.ReactNode }) {
     return (
         <TRPCReactProvider headers={headers()}>
             <PromptsProvider>
-                <HouseUpdateProvider endpoint={Resource.MyRealtime.endpoint}
-                                     authorizer={Resource.MyRealtime.authorizer}
-                                     topic={'house-updates'}
-                >
+                {/*<HouseUpdateProvider endpoint={Resource.MyRealtime.endpoint}*/}
+                {/*                     authorizer={Resource.MyRealtime.authorizer}*/}
+                {/*                     topic={'house-updates'}*/}
+                {/*>*/}
                     <div className="flex min-h-[100vh]">
                         <div className="hidden lg:flex lg:flex-shrink-0">
                             <div className="flex w-52 flex-col">
@@ -53,7 +53,7 @@ export default function Layout({children}: { children: React.ReactNode }) {
                             </div>
                         </div>
                     </div>
-                </HouseUpdateProvider>
+                {/*</HouseUpdateProvider>*/}
             </PromptsProvider>
         </TRPCReactProvider>
     )
