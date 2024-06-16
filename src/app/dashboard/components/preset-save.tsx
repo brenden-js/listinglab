@@ -35,7 +35,7 @@ export function PresetSave() {
       setOpen(false)
       changePrompt(prompt, promptMutation.data, formData.name)
     }
-  }, [promptMutation.data, promptMutation.isSuccess])
+  }, [changePrompt, formData.name, prompt, promptMutation.data, promptMutation.isSuccess])
 
   const [open, setOpen] = useState(false)
 
