@@ -3,13 +3,13 @@ import axios, {type AxiosRequestConfig, type AxiosResponse} from "axios";
 import process from "process";
 import {v4 as uuidv4} from "uuid";
 import {inngest} from "@/inngest/client";
-import {generations, houses, userApiLimits} from "@/app/api/trpc/db/schema";
-import {db} from "@/app/api/trpc/db";
+import {generations, houses, userApiLimits} from "@/db/schema";
+import {db} from "@/db";
 import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/types";
 import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
 import {publishStatusFromServer} from "@/inngest/functions/helpers/mqtt";
-import {HouseUpdateContextValue} from "@/app/dashboard/contexts/house-updates-context";
+import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
 
 
 export const incrementHouseUsage = inngest.createFunction(
