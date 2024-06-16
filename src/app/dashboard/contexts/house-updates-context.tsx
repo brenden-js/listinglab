@@ -31,7 +31,7 @@ export const HouseUpdateProvider: React.FC<{
 }> = ({children, authorizer, endpoint, topic}) => {
 
     const [updates, setUpdates] = useState<HouseUpdateContextValue['updates']>([]);
-    const [isConnected, setIsConnected] = useState(false);
+    const [isConnected, setIsConnected] = useState(false)
     const [connection, setConnection] = useState<mqtt.MqttClientConnection | null>(null);
 
     // Helper function to create an MQTT connection
