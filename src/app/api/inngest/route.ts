@@ -12,12 +12,11 @@ import {
 export const {GET, POST, PUT} = serve({
     client: inngest,
     functions: [
-        handleCheckoutSessionCompleted,
-        handleInvoicePaidEvent,
         handleAddGeneration,
-        incrementTextUsage,
-        incrementHouseUsage,
-        handleEnrichHouse,
+    handleEnrichHouse,
+    incrementHouseUsage,
+    incrementTextUsage,
+        handleCheckoutSessionCompleted, handleInvoicePaidEvent
     ],
     serveHost: process.env.NODE_ENV === "production"
         ? `https://listinglab.ai`

@@ -6,7 +6,7 @@ import {inngest} from "@/inngest/client";
 import {generations, houses, userApiLimits} from "@/db/schema";
 import {db} from "@/db";
 import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/types";
-import {GoogleNearbyPlacesAPIResponse} from "@/inngest/types";
+import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
 import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
 import {publishStatusFromServer} from "@/inngest/functions/helpers/mqtt";
 import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";

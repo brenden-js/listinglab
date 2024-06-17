@@ -1,17 +1,12 @@
-export const types = ["CHAT"] as const
-
-export type ModelType = (typeof types)[number]
-
-export interface Model<Type = string> {
+export interface Model {
   id: string
   name: string
   description: string
-  strengths?: string
   pro: boolean
   maxInput: number
 }
 
-export const models: Model<ModelType>[] = [
+export const models: Model[] = [
   // {
   //   id: "gpt-4",
   //   name: "GPT 4",

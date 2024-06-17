@@ -15,7 +15,7 @@ import {
 import {Card,  CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {models} from "@/lib/data/models";
-import {CurrentPromptContext} from "@/app/dashboard/contexts/prompts";
+import {CurrentPromptContext, ModelId, ModelName} from "@/app/dashboard/contexts/prompts";
 
 export function ModelSelector() {
   const { setModelName, setModelId, advOptions }= useContext(CurrentPromptContext)
@@ -42,8 +42,8 @@ export function ModelSelector() {
                   <DrawerClose key={model.id} asChild>
                     <Card
                       onClick={() => {
-                        setModelName(model.name)
-                        setModelId(model.id)
+                        setModelName(model.name as ModelName)
+                        setModelId(model.id as ModelId)
                       }}
                       className="my-3 transition-colors hover:bg-gray-100 cursor-pointer"
                     >
