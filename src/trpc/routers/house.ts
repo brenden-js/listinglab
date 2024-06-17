@@ -64,10 +64,9 @@ export const houseRouter = createTRPCRouter({
             await inngest.send({
                 name: "house/enrich",
                 data: {
-                    id: `enrich-${newId}`,
                     lookupId: house.mpr_id,
                     createdId: newId,
-                    userId: ctx.authObject.userId
+                    userId: ctx.authObject.userId,
                 }
             })
 
@@ -338,7 +337,8 @@ export const houseRouter = createTRPCRouter({
 
                 if (generation && generationId) {
                     await inngest.send({
-                        name: "house/add-generation", data: {
+                        name: "house/add-generation",
+                        data: {
                             id: generationId,
                             houseId: input.houses[0]!.id,
                             text: generation,

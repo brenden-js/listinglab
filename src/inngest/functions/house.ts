@@ -30,7 +30,6 @@ export const handleEnrichHouse = inngest.createFunction(
     {id: "Handle enriching house"},
     {event: "house/enrich"},
     async ({event, step}) => {
-
         const foundListing = await step.run("Get house details", async () => {
 
             const options: AxiosRequestConfig = {
@@ -170,7 +169,7 @@ export const handleEnrichHouse = inngest.createFunction(
                     withCredentials: true
                 });
 
-                console.log('response...........',response.data);
+                console.log('response...........', response.data);
 
                 if (!response) {
                     return new Error('Could not get api response')
@@ -193,7 +192,7 @@ export const handleEnrichHouse = inngest.createFunction(
                 }
             })
 
-            console.log("minimzedArray...................",minimizedArray)
+            console.log("minimzedArray...................", minimizedArray)
 
             await db.update(houses).set({recentlySold: minimizedArray.toString()}).where(eq(houses.id, event.data.createdId))
             const message: HouseUpdateContextValue['updates'][0] = {
@@ -225,7 +224,6 @@ export const handleAddGeneration = inngest.createFunction(
     {id: 'add-generation'},
     {event: 'house/add-generation'},
     async ({event}) => {
-
         await db.insert(generations).values({
             id: uuidv4(),
             createdAt: new Date(),

@@ -1,13 +1,12 @@
 import {EventSchemas, Inngest} from "inngest";
 import type {Stripe} from "stripe";
 
-// Create a client to send and receive events
 type CheckoutSessionCompletedEvent = {
-  data: Stripe.Event
+  data: Stripe.Checkout.Session
 }
 
 type MonthlyInvoicePaidEvent = {
-  data: Stripe.Event
+  data: Stripe.Invoice
 }
 
 type HouseEnrich = {
@@ -31,8 +30,8 @@ type AddGenerationToHouse = {
 type Events = {
     "house/add-generation": AddGenerationToHouse;
     "house/enrich": HouseEnrich;
-    "stripe/checkout-session-completed": CheckoutSessionCompletedEvent;
-    "stripe/invoice-paid": MonthlyInvoicePaidEvent
+    "stripe/checkout.session.completed": CheckoutSessionCompletedEvent;
+    "stripe/invoice.paid": MonthlyInvoicePaidEvent
 }
 export const inngest = new Inngest(
     {
