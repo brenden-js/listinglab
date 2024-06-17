@@ -1,5 +1,4 @@
 import {eq} from "drizzle-orm";
-
 import {inngest} from "@/inngest/client";
 import {userApiLimits, userSubscriptions} from "@/db/schema";
 import {db} from "@/db";
@@ -7,7 +6,7 @@ import {stripe} from "@/lib/stripe";
 
 export const handleCheckoutSessionCompleted = inngest.createFunction(
     {id: 'handle-checkout-session-completed'},
-    {event: 'stripe/checkout.session.completed'},
+    {event: 'payments/checkout-session-completed'},
     async ({event, step}) => {
 
         if (!event.data.subscription) {
@@ -52,7 +51,7 @@ export const handleCheckoutSessionCompleted = inngest.createFunction(
 
 export const handleInvoicePaid = inngest.createFunction(
     {id: "handle-invoice-paid"},
-    {event: "stripe/invoice.paid"},
+    {event: "payments/invoice-paid"},
     async ({event, step}) => {
         if (typeof event.data.subscription !== "string") {
             throw new Error('An error happened when handling an invoice paid event. The subscription type is not a string.')
