@@ -7,12 +7,12 @@ import {type OpenAIResponse} from "@/lib/types";
 import {and, eq} from "drizzle-orm";
 import {BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandOutput} from "@aws-sdk/client-bedrock-runtime";
 import {AutocompleteResponse, OpenAIStreamPayload, SearchAddressResult} from "@/trpc/routers/types";
-import {inngest} from "@/inngest/client";
 import {v4} from "uuid";
 import {models} from "@/lib/data/models";
 import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/trpc/routers/helpers/api-restrictions";
 import {db} from "@/db";
 import {generations, houses} from "@/db/schema";
+import {inngest} from "@/inngest/client";
 
 export const houseRouter = createTRPCRouter({
     searchHouse: protectedProcedure

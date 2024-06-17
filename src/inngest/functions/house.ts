@@ -2,7 +2,6 @@ import {eq} from "drizzle-orm";
 import axios, {type AxiosRequestConfig, type AxiosResponse} from "axios";
 import process from "process";
 import {v4 as uuidv4} from "uuid";
-import {inngest} from "@/inngest/client";
 import {generations, houses, userApiLimits} from "@/db/schema";
 import {db} from "@/db";
 import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/types";
@@ -10,6 +9,7 @@ import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
 import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
 import {publishStatusFromServer} from "@/inngest/functions/helpers/mqtt";
 import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
+import {inngest} from "@/inngest/client";
 
 
 export const incrementHouseUsage = inngest.createFunction(
@@ -208,7 +208,7 @@ export const handleEnrichHouse = inngest.createFunction(
 )
 
 export const incrementTextUsage = inngest.createFunction(
-    {id: "Handle incrementing a user's text usage."},
+    {id: "increment-text-usage"},
     {event: "house/add-generation"},
     async ({event}) => {
         const userApiLimit = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, event.data.userId)})

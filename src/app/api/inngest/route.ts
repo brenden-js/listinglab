@@ -13,9 +13,9 @@ export const {GET, POST, PUT} = serve({
     client: inngest,
     functions: [
         handleAddGeneration,
-    handleEnrichHouse,
-    incrementHouseUsage,
-    incrementTextUsage,
+        handleEnrichHouse,
+        incrementHouseUsage,
+        incrementTextUsage,
         handleCheckoutSessionCompleted, handleInvoicePaidEvent
     ],
     serveHost: process.env.NODE_ENV === "production"
