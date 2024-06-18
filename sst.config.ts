@@ -13,7 +13,12 @@ export default $config({
             authorizer: "authorizer.handler",
         });
         new sst.aws.Nextjs("ListingLab", {
-            link: [realtime]
+            link: [realtime],
+            domain: {
+                name: "listinglab.ai",
+                dns: false,
+                cert: "arn:aws:acm:us-east-1:479299194412:certificate/b80c91e2-e7aa-4c2e-95f0-7fce0a1eeed2"
+            }
         });
     },
 });
