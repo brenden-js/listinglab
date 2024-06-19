@@ -9,6 +9,7 @@ import {createTRPCRouter, protectedProcedure} from "@/trpc/trpc";
 import {clerkClient} from "@clerk/nextjs/server";
 import {prompts, userApiLimits, userSubscriptions} from "@/db/schema";
 import {db} from "@/db";
+import {Resource} from "sst";
 
 
 export const userRouter = createTRPCRouter({
