@@ -39,7 +39,7 @@ const LoadingSkeletons = () => (
 
 
 export default function HousesPageOverview() {
-    const currentCity = "Temecula"
+    const currentCity = "All houses"
     const houses = api.house.getHouses.useQuery()
     return (
         <div className={"h-full flex flex-col"}>
