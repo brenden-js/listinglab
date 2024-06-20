@@ -30,7 +30,7 @@ export const houseRouter = createTRPCRouter({
             }
             const options = {
                 method: 'GET',
-                url: process.env.HOUSE_DATA_API_URL,
+                url: "https://realty-in-us.p.rapidapi.com/locations/v2/auto-complete",
                 params: {
                     input: `${input.stAddress}`,
                     limit: '1'
