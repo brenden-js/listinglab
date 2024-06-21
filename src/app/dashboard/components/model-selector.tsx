@@ -16,9 +16,11 @@ import {Card,  CardDescription, CardHeader, CardTitle} from "@/components/ui/car
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {models} from "@/lib/data/models";
 import {CurrentPromptContext, ModelId, ModelName} from "@/app/dashboard/contexts/prompts";
+import {useAuth} from "@clerk/nextjs";
 
 export function ModelSelector() {
   const { setModelName, setModelId, advOptions }= useContext(CurrentPromptContext)
+  const auth = useAuth()
   return (
     <div className="w-1/4 flex flex-col items-center pr-4 truncate">
       <Drawer>
