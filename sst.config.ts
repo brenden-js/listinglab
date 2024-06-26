@@ -46,7 +46,7 @@ export default $config({
         new sst.aws.Nextjs("ListingLab", {
             link: [
                 realtime, clerkPublic, clerkSecret, dbUrl, dbToken, openAiKey, houseApiKey, googleApiKey, stripeSecretKey,
-                stripePublicKey, stripeWebhookSecret, awsApiAccessKey
+                stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestEventKey
             ],
             domain: getDomain(),
             environment: {
