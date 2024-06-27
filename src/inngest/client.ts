@@ -139,6 +139,6 @@ export const inngest = new Inngest(
     {
         id: "listinglab",
         schemas: new EventSchemas().fromRecord<Events>(),
-        eventKey: process.env.INNGEST_EVENT_KEY!
+        eventKey: process.env.INNGEST_EVENT_KEY
     },
 );

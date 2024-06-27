@@ -30,6 +30,7 @@ export default $config({
         const awsApiAccessKey = new sst.Secret("AwsApiAccessKey")
         const awsApiSecretKey = new sst.Secret("AwsApiSecretKey")
 
+        const inngestSigningKey = new sst.Secret("InngestSigningKey")
         const inngestEventKey = new sst.Secret("InngestEventKey")
 
         const prodDomain = {
@@ -46,7 +47,7 @@ export default $config({
         new sst.aws.Nextjs("ListingLab", {
             link: [
                 realtime, clerkPublic, clerkSecret, dbUrl, dbToken, openAiKey, houseApiKey, googleApiKey, stripeSecretKey,
-                stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestEventKey
+                stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestSigningKey, inngestEventKey
             ],
             domain: getDomain(),
             environment: {
@@ -67,6 +68,7 @@ export default $config({
                 NEXT_PUBLIC_APP_URL: $app.stage === 'snoob' ? 'https://listinglab.ai' : 'http:localhost:3000',
                 AWS_API_ACCESS_KEY: awsApiAccessKey.value,
                 AWS_API_SECRET_KEY: awsApiSecretKey.value,
+                INNGEST_SIGNING_KEY: inngestSigningKey.value,
                 INNGEST_EVENT_KEY: inngestEventKey.value
             }
         });

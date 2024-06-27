@@ -18,7 +18,7 @@ export const {GET, POST, PUT} = serve({
         incrementTextUsage,
         handleCheckoutSessionCompleted, handleInvoicePaid
     ],
-    serveHost: process.env.NODE_ENV === "production"
-        ? `https://listinglab.ai`
-        : "http://localhost:3000",
+    serveHost: process.env.NODE_ENV === "development"
+        ? "http://localhost:3000"
+        : `https://listinglab.ai`,
 });

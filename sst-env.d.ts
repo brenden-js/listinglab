@@ -35,6 +35,10 @@ declare module "sst" {
       type: "sst.sst.Secret"
       value: string
     }
+    InngestSigningKey: {
+      type: "sst.sst.Secret"
+      value: string
+    }
     MyRealtime: {
       authorizer: string
       endpoint: string
