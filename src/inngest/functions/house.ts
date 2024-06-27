@@ -70,6 +70,7 @@ export const handleEnrichHouse = inngest.createFunction(
                 yearBuilt: formatted.data.home.description.year_built,
                 zipCode: formatted.data.home.location.address.postal_code
             })
+            console.log("Succesfully added house.")
             const message: HouseUpdateContextValue['updates'][0] = {
                 houseId: event.data.createdId,
                 messageCategory: 'house-update',

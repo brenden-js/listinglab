@@ -1,5 +1,7 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
+import {Resource} from "sst";
+
 export default $config({
     app(input) {
         return {
@@ -44,7 +46,7 @@ export default $config({
             return undefined
         }
 
-        new sst.aws.Nextjs("ListingLab", {
+        const next = new sst.aws.Nextjs("ListingLab", {
             link: [
                 realtime, clerkPublic, clerkSecret, dbUrl, dbToken, openAiKey, houseApiKey, googleApiKey, stripeSecretKey,
                 stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestSigningKey, inngestEventKey
@@ -70,7 +72,13 @@ export default $config({
                 AWS_API_SECRET_KEY: awsApiSecretKey.value,
                 INNGEST_SIGNING_KEY: inngestSigningKey.value,
                 INNGEST_EVENT_KEY: inngestEventKey.value
-            }
+            },
+            permissions: [
+                {
+                    actions: ["iot:Publish"],
+                    resources: ["arn:aws:iot:us-west-2:479299194412:topic/*"]
+                }
+            ]
         });
     },
 });
