@@ -6,7 +6,7 @@ import {TRPCError} from "@trpc/server";
 import {type OpenAIResponse} from "@/lib/types";
 import {and, eq} from "drizzle-orm";
 import {BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandOutput} from "@aws-sdk/client-bedrock-runtime";
-import {AutocompleteResponse, OpenAIStreamPayload, SearchAddressResult} from "@/trpc/routers/types";
+import {AutocompleteResponse, OpenAIStreamPayload, SearchAddressResult} from "@/trpc/routers/helpers/types";
 import {v4} from "uuid";
 import {models} from "@/lib/data/models";
 import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/trpc/routers/helpers/api-restrictions";
@@ -98,9 +98,8 @@ export const houseRouter = createTRPCRouter({
             if (!ctx.authObject.userId) {
                 throw new TRPCError({message: "No auth found", code: "UNAUTHORIZED"})
             }
-            const res = await db.update(houses).set({expertise: input.expertise})
+            await db.update(houses).set({expertise: input.expertise})
                 .where(and(eq(houses.userId, ctx.authObject.userId), eq(houses.id, input.houseId)))
-            console.log(res)
         }),
     getHouses: protectedProcedure
         .query(async ({ctx}) => {
@@ -349,6 +348,7 @@ export const houseRouter = createTRPCRouter({
                     })
                     return {status: "Generated succesfully", generation}
                 } else {
+                    // add some serious admin notifications here
                     throw new TRPCError({message: 'No generation and generation Id found', code: "INTERNAL_SERVER_ERROR"})
                 }
             }

@@ -4,7 +4,7 @@ import process from "process";
 import {v4 as uuidv4} from "uuid";
 import {generations, houses, userApiLimits} from "@/db/schema";
 import {db} from "@/db";
-import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/types";
+import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/helpers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
 import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
 import {publishStatusFromServer} from "@/inngest/functions/helpers/mqtt";
@@ -83,7 +83,8 @@ export const handleEnrichHouse = inngest.createFunction(
                 lat: formatted.data.home.location.address.coordinate.lat,
                 lon: formatted.data.home.location.address.coordinate.lon,
                 price: 100,
-                stAddress: formatted.data.home.location.address.line
+                stAddress: formatted.data.home.location.address.line,
+                zipCode: formatted.data.home.location.address.postal_code
             }
         })
 
@@ -148,7 +149,7 @@ export const handleEnrichHouse = inngest.createFunction(
             const data = JSON.stringify({
                 limit: 10,
                 offset: 0,
-                postal_code: '90004',
+                postal_code: foundListing.zipCode,
                 status: [
                     'sold'
                 ],
@@ -170,11 +171,7 @@ export const handleEnrichHouse = inngest.createFunction(
                     withCredentials: true
                 });
 
-                console.log('response...........', response.data);
-
-                if (!response) {
-                    return new Error('Could not get api response')
-                }
+                if (!response) { return new Error('Could not get api response') }
             } catch (error) {
                 console.error(error);
             }

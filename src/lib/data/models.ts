@@ -13,13 +13,13 @@ export const models: Model[] = [
   //   description:
   //     "Created by OpenAI.",
   // },
-  {
-    id: "amazon.titan-text-lite-v1",
-    name: "Titan - Lite",
-    description: "Lite is a light weight efficient model, ideal for fine-tuning of English-language tasks, including like summarizations and copy writing, where customers want a smaller, more cost-effective model that is also highly customizable.",
-    pro: false,
-    maxInput: 4096
-  },
+  // {
+  //   id: "amazon.titan-text-lite-v1",
+  //   name: "Titan - Lite",
+  //   description: "Lite is a light weight efficient model, ideal for fine-tuning of English-language tasks, including like summarizations and copy writing, where customers want a smaller, more cost-effective model that is also highly customizable.",
+  //   pro: false,
+  //   maxInput: 4096
+  // },
   {
     id: "gpt-4-turbo-preview",
     name: "GPT-4",

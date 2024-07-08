@@ -50,7 +50,7 @@ export const handleCheckoutSessionCompleted = inngest.createFunction(
 
 
 export const handleInvoicePaid = inngest.createFunction(
-    {id: "handle-invoice-paid"},
+    {id: `updateStripe`},
     {event: "payments/invoice-paid"},
     async ({event, step}) => {
         if (typeof event.data.subscription !== "string") {
@@ -62,7 +62,7 @@ export const handleInvoicePaid = inngest.createFunction(
             .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id))
 
         await step.run(
-            {id: `updateApiLimit-usr:${subscription.metadata.userId!}-sub:${subscription.id}`},
+            {id: `updateApiLimit-user:${subscription.metadata.userId!}-sub:${subscription.id}`},
             async () => {
                 await db.update(userApiLimits)
                     .set({periodEnd: new Date(subscription.current_period_end * 1000)})

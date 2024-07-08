@@ -1,6 +1,5 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
-import {Resource} from "sst";
 
 export default $config({
     app(input) {
