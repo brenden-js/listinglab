@@ -1,6 +1,8 @@
 
 import { TooltipTrigger, TooltipContent, Tooltip, TooltipProvider } from "@/components/ui/tooltip"
 import {type ReactNode} from "react";
+import {Button} from "@/components/ui/button";
+import {toast} from "sonner";
 
 export function CopyToClipboard({children} : { children: ReactNode}) {
   const handleClick = async () => {
@@ -9,25 +11,17 @@ export function CopyToClipboard({children} : { children: ReactNode}) {
       return;  // exits if `children` is not a string
     }
     await navigator.clipboard.writeText(children.toString())
-    // toast.success("Copied to clipboard.")
+    toast.success("Copied to clipboard.")
   }
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div onClick={handleClick} className="mb-6 px-8 transition-colors hover:bg-gray-100 flex flex-col w-full rounded-md min-h-[196px] p-3 border bg-muted cursor-pointer items-center gap-2">
-            <div className={"flex items-center"}>
+
+          <div className="mb-6 px-8 transition-colors flex flex-col w-full rounded-md min-h-[196px] p-3 border bg-muted items-center gap-2">
+            <Button variant={"ghost"} onClick={handleClick} className={"flex items-center hover:bg-gray-200"}>
               <CopyIcon className="mr-2 w-4 h-4" />
               <span>Copy</span>
-            </div>
+            </Button>
             {children}
           </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span className="text-sm">Copy to clipboard</span>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   )
 }
 
