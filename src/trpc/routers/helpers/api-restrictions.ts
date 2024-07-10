@@ -2,7 +2,7 @@ import {eq} from "drizzle-orm";
 import {TRPCError} from "@trpc/server";
 import {Model} from "@/lib/data/models";
 import {db} from "@/db";
-import {userApiLimits, userSubscriptions} from "@/db/schema";
+import {userApiLimits} from "@/db/schema";
 
 export interface ApiLimits {
   userId: string;
@@ -13,35 +13,55 @@ export interface ApiLimits {
   textQuota: number;
   maxTokens: number;
   periodEnd: Date;
+  stripeCurrentPeriodEnd?: Date;
 }
 export const getOrCreateApiLimits = async (userId: string) => {
     const apiLimits = await db.query.userApiLimits.findFirst({ where: eq(userApiLimits.userId, userId) });
 
-    if (apiLimits) {
+    // if the api limits are not found, create them
+    if (!apiLimits) {
+        const newApiLimits = {
+            userId,
+            createdAt: new Date(),
+            housesUsage: 0,
+            housesQuota: 3,
+            textUsage: 0,
+            textQuota: 3,
+            maxTokens: 750,
+            periodEnd: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000),
+            stripeCustomerId: null,
+            stripeSubscriptionId: null,
+            stripePriceId: null,
+            stripeCurrentPeriodEnd: null
+        };
+        await db.insert(userApiLimits).values(newApiLimits);
+        return newApiLimits;
+    }
+
+    const now = new Date();
+
+    const gracePeriod = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+    // check if the stripe subscription is valid, if so, return the api limits
+    if (apiLimits.stripeCurrentPeriodEnd && apiLimits.stripeCurrentPeriodEnd > new Date(now.getTime() - gracePeriod)) {
+        // return the api limits
         return apiLimits;
     }
 
-    const stripeSub = await db.query.userSubscriptions.findFirst({ where: eq(userSubscriptions.userId, userId) });
-    const subValid = stripeSub?.stripeCurrentPeriodEnd && stripeSub.stripeCurrentPeriodEnd > new Date();
+    // check if the api limits are expired, if so, update them to 30 days from now and reset the usage
 
-    const maxTokens = subValid ? 4000 : 750;
-    const housesQuota = subValid ? 25 : 3;
-    const textQuota = subValid ? 125 : 3;
-    const periodEnd = subValid ? stripeSub.stripeCurrentPeriodEnd : new Date();
+    if (apiLimits.periodEnd < new Date()) {
+        // update the api limits to 30 days from now and reset the usage
+        await db.update(userApiLimits).set({
+            periodEnd: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000),
+            housesUsage: 0,
+            textUsage: 0,
+            maxTokens: 750
+        }).where(eq(userApiLimits.userId, userId))
+        return { userId, createdAt: new Date(), housesUsage: 0, housesQuota: 3, textUsage: 0, textQuota: 3, maxTokens: 750, periodEnd: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000) };
+    }
 
-    const newApiLimits = {
-        userId,
-        createdAt: new Date(),
-        housesUsage: 0,
-        housesQuota,
-        textUsage: 0,
-        textQuota,
-        maxTokens,
-        periodEnd,
-    };
-
-    await db.insert(userApiLimits).values(newApiLimits);
-    return newApiLimits;
+    return apiLimits
 };
 
 
@@ -59,10 +79,10 @@ export const getSelectedModel = (selectedModelId: string, models: Model[], apiLi
         throw new TRPCError({ message: "Invalid model selection.", code: "BAD_REQUEST" });
     }
 
-    if (selectedModel.pro && !(apiLimits.periodEnd > new Date())) {
+    if (selectedModel.pro && (apiLimits.stripeCurrentPeriodEnd && apiLimits.stripeCurrentPeriodEnd < new Date()) || (apiLimits.stripeCurrentPeriodEnd === null)) {
         throw new TRPCError({
             message: "Your current subscription does not allow for the use of Pro models.",
-            code: "BAD_REQUEST"
+            code: "UNAUTHORIZED"
         });
     }
 

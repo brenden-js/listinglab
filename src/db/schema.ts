@@ -79,17 +79,6 @@ export const generationsRelations = relations(generations, ({one}) => ({
     })
 }))
 
-export const userSubscriptions = sqlLiteTable(
-    "userSubscription",
-    {
-        id: integer("id", {mode: "number"}).notNull().primaryKey({autoIncrement: true}),
-        userId: text("userId").notNull(),
-        stripeCustomerId: text("stripeCustomerId").unique().notNull(),
-        stripeSubscriptionId: text("stripeSubscriptionId", {length: 255}).unique().notNull(),
-        stripePriceId: text("stripePriceId").notNull(),
-        stripeCurrentPeriodEnd: integer("stripeCurrentPeriodEnd", {mode: "timestamp"}).notNull(),
-    }
-);
 
 export const userApiLimits = sqlLiteTable(
     "userApiLimit",
@@ -103,6 +92,10 @@ export const userApiLimits = sqlLiteTable(
         housesUsage: integer("housesUsage").notNull(),
         textQuota: integer("textQuota").notNull(),
         textUsage: integer("textUsage").notNull(),
-        maxTokens: integer("maxTokens").notNull()
+        maxTokens: integer("maxTokens").notNull(),
+        stripeCustomerId: text("stripeCustomerId").unique(),
+        stripeSubscriptionId: text("stripeSubscriptionId", {length: 255}).unique(),
+        stripePriceId: text("stripePriceId"),
+        stripeCurrentPeriodEnd: integer("stripeCurrentPeriodEnd", {mode: "timestamp"}),
     }
 )

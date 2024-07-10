@@ -1,6 +1,6 @@
 import {serve} from "inngest/next";
 import {inngest} from "@/inngest/client";
-import {handleCheckoutSessionCompleted, handleInvoicePaid} from "@/inngest/functions/stripe";
+import {handleSubscriptionPurchased} from "@/inngest/functions/stripe";
 import {
     handleAddGeneration,
     handleEnrichHouse,
@@ -16,7 +16,7 @@ export const {GET, POST, PUT} = serve({
         handleEnrichHouse,
         incrementHouseUsage,
         incrementTextUsage,
-        handleCheckoutSessionCompleted, handleInvoicePaid
+        handleSubscriptionPurchased
     ],
     serveHost: process.env.NODE_ENV === "development"
         ? "http://localhost:3000"

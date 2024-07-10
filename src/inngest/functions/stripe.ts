@@ -1,10 +1,10 @@
 import {eq} from "drizzle-orm";
 import {inngest} from "@/inngest/client";
-import {userApiLimits, userSubscriptions} from "@/db/schema";
+import {userApiLimits} from "@/db/schema";
 import {db} from "@/db";
 import {stripe} from "@/lib/stripe";
 
-export const handleCheckoutSessionCompleted = inngest.createFunction(
+export const handleSubscriptionPurchased = inngest.createFunction(
     {id: 'handle-checkout-session-completed'},
     {event: 'payments/checkout-session-completed'},
     async ({event, step}) => {
@@ -19,55 +19,22 @@ export const handleCheckoutSessionCompleted = inngest.createFunction(
 
         const subscription = await stripe.subscriptions.retrieve(event.data.subscription)
 
-        const subData = await step.run(
-            {id: `savesub-${subscription.id}`},
-            async () => {
-                if (!event.data.metadata?.userId) {
-                    throw new Error('No userId was found in metadata')
-                }
-                const end = subscription.current_period_end * 1000
-                await db.insert(userSubscriptions).values({
-                    userId: event.data.metadata.userId,
-                    stripeSubscriptionId: subscription.id,
-                    stripeCustomerId: subscription.customer as string,
-                    stripePriceId: subscription.items.data[0]!.price.id,
-                    stripeCurrentPeriodEnd: new Date(end),
-                })
-                return {userId: event.data.metadata.userId, periodEnd: end, subId: subscription.id}
-            }
-        );
-
-        await step.run(
-            {id: `updatelimits-usr:${subData.userId}-sub:${subData.subId}`},
-            async () => {
-                await db.update(userApiLimits)
-                    .set({periodEnd: new Date(subData.periodEnd), housesQuota: 25, textQuota: 125, maxTokens: 4000})
-                    .where(eq(userApiLimits.userId, subData.userId))
-            }
-        )
-    }
-);
-
-
-export const handleInvoicePaid = inngest.createFunction(
-    {id: `updateStripe`},
-    {event: "payments/invoice-paid"},
-    async ({event, step}) => {
-        if (typeof event.data.subscription !== "string") {
-            throw new Error('An error happened when handling an invoice paid event. The subscription type is not a string.')
+        if (!event.data.metadata?.userId) {
+            throw new Error('No userId was found in metadata')
         }
-        const subscription = await stripe.subscriptions.retrieve(event.data.subscription)
-        await db.update(userSubscriptions)
-            .set({stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),})
-            .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id))
+        const end = subscription.current_period_end * 1000
+        await db.update(userApiLimits).set({
+            userId: event.data.metadata.userId,
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId: subscription.customer as string,
+            stripePriceId: subscription.items.data[0]!.price.id,
+            stripeCurrentPeriodEnd: new Date(end),
+            periodEnd: new Date(end),
+            housesQuota: 25,
+            textQuota: 125,
+            maxTokens: 4000
+        }).where(eq(userApiLimits.userId, event.data.metadata.userId))
 
-        await step.run(
-            {id: `updateApiLimit-user:${subscription.metadata.userId!}-sub:${subscription.id}`},
-            async () => {
-                await db.update(userApiLimits)
-                    .set({periodEnd: new Date(subscription.current_period_end * 1000)})
-                    .where(eq(userApiLimits.userId, subscription.metadata.userId!))
-            }
-        )
+        return {userId: event.data.metadata.userId, periodEnd: end, subId: subscription.id}
     }
 )
