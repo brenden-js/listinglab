@@ -10,6 +10,7 @@ export default function PremiumAccountButton() {
 
   useEffect(() => {
     if (getStripeSesh.data?.url) {
+      console.log('Redirecting to stripe...', getStripeSesh.data.url)
       window.location.href = getStripeSesh.data.url
     }
   }, [getStripeSesh.data?.url])

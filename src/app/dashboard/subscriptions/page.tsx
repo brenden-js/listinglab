@@ -5,7 +5,7 @@ import {api} from "@/trpc/react";
 import PremiumAccountButton from "@/app/dashboard/components/premium-account-button";
 
 export default function Component() {
-  const apiLimits = api.user.getUserAPILimit.useQuery()
+  const apiLimits = api.user.getSubscription.useQuery()
   return (
     <div className="hidden h-full flex-col md:flex">
       <div

@@ -10,7 +10,7 @@ export default $config({
         };
     },
     async run() {
-        const realtime = new sst.aws.Realtime("MyRealtime", {
+        const realtime = new sst.aws.Realtime("RealtimeLink", {
             authorizer: "authorizer.handler",
         });
 
@@ -66,11 +66,12 @@ export default $config({
                 NEXT_PUBLIC_STRIPE_PUBLISHABLE_API_KEY: stripePublicKey.value,
                 STRIPE_SECRET_KEY: stripeSecretKey.value,
                 STRIPE_WEBHOOK_SECRET: stripeWebhookSecret.value,
-                NEXT_PUBLIC_APP_URL: $app.stage === 'snoob' ? 'https://listinglab.ai' : 'http:localhost:3000',
+                NEXT_PUBLIC_APP_URL: $app.stage === 'snoob' ? 'https://listinglab.ai' : 'http://localhost:3000',
                 AWS_API_ACCESS_KEY: awsApiAccessKey.value,
                 AWS_API_SECRET_KEY: awsApiSecretKey.value,
                 INNGEST_SIGNING_KEY: inngestSigningKey.value,
-                INNGEST_EVENT_KEY: inngestEventKey.value
+                INNGEST_EVENT_KEY: inngestEventKey.value,
+
             },
             permissions: [
                 {

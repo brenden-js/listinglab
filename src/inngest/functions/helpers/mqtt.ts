@@ -2,8 +2,8 @@ import {Resource} from 'sst';
 import {IoTDataPlaneClient, PublishCommand} from "@aws-sdk/client-iot-data-plane";
 import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
 
-const endpoint = Resource.MyRealtime.endpoint;
-const authorizer = Resource.MyRealtime.authorizer;
+const endpoint = Resource.RealtimeLink.endpoint;
+const authorizer = Resource.RealtimeLink.authorizer;
 const topic = `${Resource.App.name}/${Resource.App.stage}`;
 
 export interface StatusMessageData {

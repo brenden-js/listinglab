@@ -5,18 +5,21 @@ import {db} from "@/db";
 import {userApiLimits} from "@/db/schema";
 
 export interface ApiLimits {
-  userId: string;
-  createdAt: Date;
-  housesUsage: number;
-  housesQuota: number;
-  textUsage: number;
-  textQuota: number;
-  maxTokens: number;
-  periodEnd: Date;
-  stripeCurrentPeriodEnd?: Date;
+    userId: string;
+    createdAt: Date;
+    housesUsage: number;
+    housesQuota: number;
+    textUsage: number;
+    textQuota: number;
+    maxTokens: number;
+    periodEnd: Date;
+    stripeCurrentPeriodEnd?: Date | null;
+    stripeCustomerId?: string | null;
+    stripeSubscriptionId?: string | null;
 }
+
 export const getOrCreateApiLimits = async (userId: string) => {
-    const apiLimits = await db.query.userApiLimits.findFirst({ where: eq(userApiLimits.userId, userId) });
+    const apiLimits = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, userId)});
 
     // if the api limits are not found, create them
     if (!apiLimits) {
@@ -58,7 +61,19 @@ export const getOrCreateApiLimits = async (userId: string) => {
             textUsage: 0,
             maxTokens: 750
         }).where(eq(userApiLimits.userId, userId))
-        return { userId, createdAt: new Date(), housesUsage: 0, housesQuota: 3, textUsage: 0, textQuota: 3, maxTokens: 750, periodEnd: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000) };
+        return {
+            userId,
+            createdAt: new Date(),
+            housesUsage: 0,
+            housesQuota: 3,
+            textUsage: 0,
+            textQuota: 3,
+            maxTokens: 750,
+            periodEnd: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000),
+            stripeCurrentPeriodEnd: null,
+            stripeCustomerId: null,
+            stripeSubscriptionId: null,
+        };
     }
 
     return apiLimits
@@ -76,7 +91,7 @@ export const getSelectedModel = (selectedModelId: string, models: Model[], apiLi
     const selectedModel = models.find(model => model.id === selectedModelId);
 
     if (!selectedModel) {
-        throw new TRPCError({ message: "Invalid model selection.", code: "BAD_REQUEST" });
+        throw new TRPCError({message: "Invalid model selection.", code: "BAD_REQUEST"});
     }
 
     if (selectedModel.pro && (apiLimits.stripeCurrentPeriodEnd && apiLimits.stripeCurrentPeriodEnd < new Date()) || (apiLimits.stripeCurrentPeriodEnd === null)) {

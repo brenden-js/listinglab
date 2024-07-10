@@ -14,8 +14,8 @@ export default function Layout({children}: { children: React.ReactNode }) {
     return (
         <TRPCReactProvider headers={headers()}>
             <PromptsProvider>
-                <HouseUpdateProvider endpoint={Resource.MyRealtime.endpoint}
-                                     authorizer={Resource.MyRealtime.authorizer}
+                <HouseUpdateProvider endpoint={Resource.RealtimeLink.endpoint}
+                                     authorizer={Resource.RealtimeLink.authorizer}
                                      topic={'house-updates'}
                 >
                     <div className="flex min-h-[100vh]">

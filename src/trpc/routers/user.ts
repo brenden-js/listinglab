@@ -7,9 +7,10 @@ import {TRPCError} from "@trpc/server";
 import {v4 as uuidv4} from "uuid";
 import {createTRPCRouter, protectedProcedure} from "@/trpc/trpc";
 import {clerkClient} from "@clerk/nextjs/server";
-import {prompts, userApiLimits, userSubscriptions} from "@/db/schema";
+import {prompts, userApiLimits} from "@/db/schema";
 import {db} from "@/db";
 import {Resource} from "sst";
+import {getOrCreateApiLimits} from "@/trpc/routers/helpers/api-restrictions";
 
 
 export const userRouter = createTRPCRouter({
@@ -53,42 +54,14 @@ export const userRouter = createTRPCRouter({
             if (!ctx.authObject.userId) {
                 throw new Error('Not authed')
             }
-            const data = await db.query.userSubscriptions.findFirst({where: eq(userSubscriptions.userId, ctx.authObject.userId)});
-            if (!data || data.stripeCurrentPeriodEnd < new Date()) {
-                return {isPremium: false}
+
+            const apiLimits = await getOrCreateApiLimits(ctx.authObject.userId)
+            const now = new Date();
+            const gracePeriod = 24 * 60 * 60 * 1000;
+            if (apiLimits.stripeCurrentPeriodEnd && apiLimits.stripeCurrentPeriodEnd > new Date(now.getTime() - gracePeriod)) {
+                return {isPremium: true, ...apiLimits}
             } else {
-                return {isPremium: true}
-            }
-        }),
-    getUserAPILimit: protectedProcedure
-        .query(async ({ctx}) => {
-            if (!ctx.authObject.userId) {
-                throw new Error('Not authed')
-            }
-            let data;
-            try {
-                data = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, ctx.authObject.userId)})
-            } catch (e) {
-                console.log('Here is the error', e)
-            }
-            console.log('DATA...', data)
-            if (!data) {
-                const stripeSub = await db.query.userSubscriptions.findFirst({where: eq(userSubscriptions.userId, ctx.authObject.userId)})
-                const subValid = stripeSub?.stripeCurrentPeriodEnd && stripeSub.stripeCurrentPeriodEnd > new Date()
-                const values = {
-                    userId: ctx.authObject.userId,
-                    createdAt: new Date(),
-                    housesUsage: 0,
-                    housesQuota: subValid ? 25 : 3,
-                    textUsage: 0,
-                    textQuota: subValid ? 125 : 3,
-                    maxTokens: subValid ? 4000 : 750,
-                    periodEnd: subValid ? stripeSub.stripeCurrentPeriodEnd : new Date()
-                }
-                await db.insert(userApiLimits).values(values)
-                return values
-            } else {
-                return data
+                return {isPremium: false, ...apiLimits}
             }
         }),
     getStripeSession: protectedProcedure
@@ -97,8 +70,8 @@ export const userRouter = createTRPCRouter({
                 throw new Error('Not authed')
             }
             const settingsUrl = absoluteUrl("/dashboard/subscriptions");
-            const userSubscription = await db.query.userSubscriptions.findFirst({
-                where: eq(userSubscriptions.userId, ctx.authObject.userId)
+            const userSubscription = await db.query.userApiLimits.findFirst({
+                where: eq(userApiLimits.userId, ctx.authObject.userId)
             })
 
             // if there exists a subscription, send to stripe management dashboard
@@ -128,7 +101,7 @@ export const userRouter = createTRPCRouter({
                             price_data: {
                                 currency: "USD",
                                 product_data: {
-                                    name: "Home Mentor Pro",
+                                    name: "Listing Lab Pro",
                                     description: "Access Pro models and increase usage quotas."
                                 },
                                 unit_amount: 2500,
