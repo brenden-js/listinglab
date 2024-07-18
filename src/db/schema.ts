@@ -114,10 +114,10 @@ export const usersToCities = sqlLiteTable(
     "usersToCities",
     {
         id: integer("id", {mode: "number"}).primaryKey({autoIncrement: true}),
-        createdAt: integer("createdAt", {mode: "timestamp"}).notNull(),
-        updatedAt: integer("updatedAt", {mode: "timestamp"}),
         userId: text("userId").notNull(),
         cityId: text("cityId").notNull(),
+        cityName: text("cityName").notNull(),
+        state: text("state").notNull(),
     }
 )
 

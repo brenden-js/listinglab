@@ -11,7 +11,7 @@ import {v4} from "uuid";
 import {models} from "@/lib/data/models";
 import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/trpc/routers/helpers/api-restrictions";
 import {db} from "@/db";
-import {generations, houses} from "@/db/schema";
+import {cities, generations, houses, usersToCities} from "@/db/schema";
 import {inngest} from "@/inngest/client";
 
 export const houseRouter = createTRPCRouter({
@@ -132,6 +132,36 @@ export const houseRouter = createTRPCRouter({
                 where: and(eq(houses.userId, ctx.authObject.userId), eq(houses.id, input)),
                 with: {generations: true}
             });
+        }),
+    getUserCities: protectedProcedure
+        .query(async ({ctx}) => {
+            if (!ctx.authObject.userId) {
+                throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
+            }
+            return db.query.usersToCities.findMany({
+                where: eq(usersToCities.userId, ctx.authObject.userId)
+            });
+        }),
+    setUserCity: protectedProcedure
+        .input(z.object({cityName: z.string()}))
+        .mutation(async ({ctx, input}) => {
+            if (!ctx.authObject.userId) {
+                throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
+            }
+            // create a new city if it doesn't exist
+            const city = await db.query.cities.findFirst({where: eq(cities.id, input.cityId)})
+
+            if (!city) {
+                await db.insert(cities).values({
+        }),
+    searchCity: protectedProcedure
+        .input(z.object({cityName: z.string()}))
+        .mutation(async ({ctx, input}) => {
+            if (!ctx.authObject.userId) {
+                throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
+            }
+            // TODO: search for city
+            return {cityName: input.cityName, state: "CA"}
         }),
     generateText: protectedProcedure
         .input(z.object({

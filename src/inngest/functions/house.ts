@@ -239,9 +239,14 @@ export const handleAddGeneration = inngest.createFunction(
 
 export const scheduledNewListingsScan = inngest.createFunction(
     {id: 'handle-scheduled-new-listings-scan'},
-    {cron: '0 */15 * * * *'},
+    {cron: '*/15 4-23 * * *'},
     async () => {
+        console.log('Running scheduled new listings scan...')
         const cities = await db.query.cities.findMany()
+        if (!cities.length) {
+            console.log('No cities found, exiting...')
+            return
+        }
         for (const city of cities) {
             // create an event for each city
             const event = {
