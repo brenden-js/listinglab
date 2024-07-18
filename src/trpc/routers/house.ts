@@ -148,11 +148,26 @@ export const houseRouter = createTRPCRouter({
             if (!ctx.authObject.userId) {
                 throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
             }
-            // create a new city if it doesn't exist
-            const city = await db.query.cities.findFirst({where: eq(cities.id, input.cityId)})
+            // get the user's current city
+            const userCity = await db.query.usersToCities.findMany({where: eq(usersToCities.userId, ctx.authObject.userId)})
 
-            if (!city) {
-                await db.insert(cities).values({
+            // if the user has no city, create a new one
+            if (!userCity.length) {
+                await db.insert(usersToCities).values({
+                    userId: ctx.authObject.userId,
+                    cityId: v4(),
+                    state: "CA",
+                    cityName: input.cityName
+                })
+                return {status: "City set successfully"}
+            }
+
+            // if the user has a city, update it
+            await db.update(usersToCities).set({
+                cityName: input.cityName
+            }).where(eq(usersToCities.userId, ctx.authObject.userId))
+
+            return {status: "City updated successfully"}
         }),
     searchCity: protectedProcedure
         .input(z.object({cityName: z.string()}))

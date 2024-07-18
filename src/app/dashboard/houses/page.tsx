@@ -5,10 +5,11 @@ import {House} from "@/app/dashboard/contexts/prompts";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {cn} from "@/lib/utils";
 import clsx from "clsx";
 import {Input} from "@/components/ui/input";
+import {toast} from "sonner";
 
 const HousePreviewCard = ({house}: { house: House }) => {
     if (!house) return null;
@@ -51,12 +52,10 @@ const CityCard = ({city, selected, onClick}: {
     return (
         <button
             key={city.id}
-            className={clsx("w-full rounded-md mt-2 mb-4 cursor-pointer hover:border-gray-400 duration-100 min-w-[400px] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2",
+            className={clsx("w-[360px] rounded-md mt-2 mb-4 cursor-pointer hover:border-gray-400 duration-100 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2",
                 selected ? 'border-indigo-500 ring-1 ring-indigo-500 hover:border-indigo-600 border-2 border-transparent' : 'border-2 border-gray-300'
             )}
-            onClick={() => {
-                onClick()
-            }}
+            onClick={onClick}
         >
             <div className={"flex flex-row items-center justify-between py-5 px-5"}>
                 <div className="flex-col items-start">
@@ -72,7 +71,7 @@ const CityCard = ({city, selected, onClick}: {
     )
 }
 
-const AddCityForm = ({onClose}: { onClose: () => void }) => {
+const AddCityForm = ({onClose, onSuccess}: { onClose: () => void, onSuccess: () => void }) => {
     const [cityName, setCityName] = useState("")
 
     const [searchResult, setSearchResult] = useState<{ cityName: string, state: string } | undefined>(undefined)
@@ -86,9 +85,10 @@ const AddCityForm = ({onClose}: { onClose: () => void }) => {
     }
 
     const handleAddCity = async () => {
-        const result = await addCity.mutateAsync(cityName)
-        if (result.isSuccess) {
+        const result = await addCity.mutateAsync({cityName})
+        if (result.status === "City set successfully") {
             onClose()
+            toast.success("City set successfully")
         }
     }
 
@@ -101,13 +101,16 @@ const AddCityForm = ({onClose}: { onClose: () => void }) => {
             </div>
             {searchResult && (
                 <div className="flex flex-col gap-2">
-                    <div className="text-sm text-muted-foreground">
+                    <h4 className="font-medium">Found City</h4>
+                    <div className="text-sm mb-1">
                         {searchResult.cityName}, {searchResult.state}
                     </div>
-                    <Button variant="secondary" onClick={() => {
+                    <Button variant="default" disabled={addCity.isPending} onClick={async () => {
+                        await handleAddCity()
                         setSearchResult(undefined)
+                        onSuccess()
                         onClose()
-                    }} className={"ml-3"}>
+                    }}>
                         Accept and continue
                     </Button>
                     <Button variant="secondary" onClick={() => setSearchResult(undefined)}>
@@ -120,7 +123,7 @@ const AddCityForm = ({onClose}: { onClose: () => void }) => {
                     <Button variant="secondary" onClick={onClose}>
                         Cancel
                     </Button>
-                    <Button variant="default" onClick={handleSearchCity}>
+                    <Button className={"ml-3"} variant="default" onClick={handleSearchCity}>
                         Search City
                     </Button>
                 </div>
@@ -131,6 +134,18 @@ const AddCityForm = ({onClose}: { onClose: () => void }) => {
 
 export default function HousesPageOverview() {
     const currentCities = api.house.getUserCities.useQuery()
+
+    // function that invalidates the currentCities query and when a new city is added, it will update the selectedCity state
+    const onAddCitySuccess = () => {
+        currentCities.refetch()
+    }
+
+    useEffect(() => {
+        if (currentCities.isSuccess && currentCities.data.length > 0) {
+            setSelectedCity(currentCities.data[0].cityName)
+        }
+    }, [currentCities])
+
     const houses = api.house.getHouses.useQuery()
     const [open, setOpen] = useState(false)
     const [openAddCity, setOpenAddCity] = useState(false)
@@ -139,14 +154,23 @@ export default function HousesPageOverview() {
         <div className={"h-full flex flex-col"}>
             <div className={"ml-3 flex items-center flex-row h-16"}>
                 <h2 className="text-lg font-semibold">Houses</h2>
+                {/*// show current city*/}
+                {currentCities.isPending && <LoadingSkeletons/>}
+                {!currentCities.isPending && currentCities.isSuccess && currentCities.data.length > 0 && (
+                    <div className="ml-3 flex items-center gap-2">
+                        <div className="text-lg font-semibold">
+                            {currentCities.data[0].cityName}, {currentCities.data[0].state}
+                        </div>
+                    </div>
+                )}
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                         <Button variant="secondary" className={"ml-3"}>
                             Change City
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[300px]">
-                        {openAddCity && <AddCityForm onClose={() => setOpenAddCity(false)}/>}
+                    <PopoverContent className="w-[400px]">
+                        {openAddCity && <AddCityForm onSuccess={onAddCitySuccess} onClose={() => setOpenAddCity(false)}/>}
                         {!openAddCity && <>
                             <h4 className="font-medium mt-2">My Cities</h4>
                             {/*// create a list of a users cities, and a plus button to add a new city at the bottom*/}
