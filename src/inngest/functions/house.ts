@@ -1,8 +1,8 @@
-import {eq} from "drizzle-orm";
+import {and, eq} from "drizzle-orm";
 import axios, {type AxiosRequestConfig, type AxiosResponse} from "axios";
 import process from "process";
 import {v4 as uuidv4} from "uuid";
-import {generations, houses, userApiLimits} from "@/db/schema";
+import {generations, houses, userApiLimits, usersToCities} from "@/db/schema";
 import {db} from "@/db";
 import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/helpers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
@@ -10,6 +10,7 @@ import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal
 import {publishStatusFromServer} from "@/inngest/functions/helpers/mqtt";
 import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
 import {inngest} from "@/inngest/client";
+import {ListingSearchInCityResponse} from "@/inngest/functions/helpers/house-search-type";
 
 
 export const incrementHouseUsage = inngest.createFunction(
@@ -54,6 +55,7 @@ export const handleEnrichHouse = inngest.createFunction(
                 city: formatted.data.home.location.address.city,
                 description: formatted.data.home.description.text,
                 details: JSON.stringify(formatted.data.home.details),
+                foundAt: new Date(),
                 garage: formatted.data.home.description.garage,
                 lat: formatted.data.home.location.address.coordinate.lat,
                 lon: formatted.data.home.location.address.coordinate.lon,
@@ -77,7 +79,7 @@ export const handleEnrichHouse = inngest.createFunction(
                 updateType: 'complete',
                 updateCategory: 'basic'
             }
-            await publishStatusFromServer(message)
+            await publishStatusFromServer(message, event.data.userId)
 
             return {
                 lat: formatted.data.home.location.address.coordinate.lat,
@@ -125,7 +127,7 @@ export const handleEnrichHouse = inngest.createFunction(
                     updateType: 'complete',
                     updateCategory: 'neighborhood'
                 }
-                await publishStatusFromServer(message)
+                await publishStatusFromServer(message, event.data.userId)
             })
 
         await step.run("Get mortgage and investment info", async () => {
@@ -142,7 +144,7 @@ export const handleEnrichHouse = inngest.createFunction(
                 updateType: 'complete',
                 updateCategory: 'investment'
             }
-            await publishStatusFromServer(message)
+            await publishStatusFromServer(message, event.data.userId)
         })
 
         await step.run("Get recently sold listings", async () => {
@@ -171,7 +173,9 @@ export const handleEnrichHouse = inngest.createFunction(
                     withCredentials: true
                 });
 
-                if (!response) { return new Error('Could not get api response') }
+                if (!response) {
+                    return new Error('Could not get api response')
+                }
             } catch (error) {
                 console.error(error);
             }
@@ -199,7 +203,7 @@ export const handleEnrichHouse = inngest.createFunction(
                 updateType: 'complete',
                 updateCategory: 'recentlySold'
             }
-            await publishStatusFromServer(message)
+            await publishStatusFromServer(message, event.data.userId)
         })
     }
 )
@@ -230,5 +234,136 @@ export const handleAddGeneration = inngest.createFunction(
             text: event.data.text,
             model: event.data.model,
         });
+    }
+)
+
+export const scheduledNewListingsScan = inngest.createFunction(
+    {id: 'handle-scheduled-new-listings-scan'},
+    {cron: '0 */15 * * * *'},
+    async () => {
+        const cities = await db.query.cities.findMany()
+        for (const city of cities) {
+            // create an event for each city
+            const event = {
+                cityId: city.id,
+                cityName: city.name
+            }
+            await inngest.send({name: 'house/scan-city', data: event})
+        }
+    }
+)
+
+export const newListingsInCityScan = inngest.createFunction(
+    {id: 'handle-new-listings-in-city-scan'},
+    {event: 'house/scan-city'},
+    async ({event}) => {
+        const options = {
+            method: 'GET',
+            url: 'https://zillow-com4.p.rapidapi.com/properties/search',
+            params: {
+                location: event.data.cityName,
+                limit: 20,
+                status: 'forSale',
+                sort: 'daysOn',
+                sortType: 'asc',
+                priceType: 'listPrice',
+                listingType: 'agent'
+            },
+            headers: {
+                'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
+                'x-rapidapi-host': 'zillow-com4.p.rapidapi.com'
+            }
+        };
+
+        const response = await axios.request(options);
+
+        if (!response) {
+            return new Error('Could not get api response')
+        }
+
+        // need a new type for recently listed houses search
+
+        const formatted = response.data as ListingSearchInCityResponse
+
+        for (const listing of formatted.data) {
+            const foundListing = await db.query.houses.findFirst(
+                {
+                    where: (houses, {eq, and}) => and(
+                        eq(houses.stAddress, listing.address.streetAddress),
+                        eq(houses.zipCode, listing.address.zipcode)
+                    )
+                }
+            )
+            if (!foundListing) {
+                console.log('Could not find house in database, sending event...')
+
+                const addHouseEvent = {
+                    cityId: event.data.cityId,
+                    cityName: event.data.cityName,
+                    houseId: uuidv4(),
+                    foundAt: new Date(),
+                    baths: listing.bathrooms,
+                    beds: listing.bedrooms,
+                    city: listing.address.city,
+                    lat: listing.location.latitude,
+                    lon: listing.location.longitude,
+                    lotSqft: listing.lotSizeWithUnit?.lotSize,
+                    price: listing.price.value,
+                    sqft: listing.livingArea,
+                    stAddress: listing.address.streetAddress,
+                    state: listing.address.state,
+                    yearBuilt: listing.yearBuilt,
+                    zipCode: listing.address.zipcode,
+                }
+                await inngest.send({name: 'house/add-house-to-users', data: addHouseEvent})
+            } else {
+                console.log('House already exists in database, stopping the loop...')
+                break;
+            }
+        }
+    }
+)
+
+export const handleAddHouseToUsers = inngest.createFunction(
+    {id: 'handle-add-house-to-users'},
+    {event: 'house/add-house-to-users'},
+    async ({event}) => {
+
+        const users = await db.query.usersToCities.findMany({where: eq(usersToCities.cityId, event.data.cityId)})
+
+        for (const user of users) {
+            const house = {
+                id: event.data.houseId,
+                foundAt: event.data.foundAt,
+                baths: event.data.baths,
+                beds: event.data.beds,
+                city: event.data.city,
+                description: null,
+                details: null,
+                garage: null,
+                lat: event.data.lat,
+                lotSqft: event.data.lotSqft,
+                lon: event.data.lon,
+                price: event.data.price,
+                pricePerSqft: null,
+                sqft: event.data.sqft,
+                stAddress: event.data.stAddress,
+                status: null,
+                state: event.data.state,
+                stories: null,
+                styles: null,
+                userId: user.userId,
+                yearBuilt: event.data.yearBuilt,
+                zipCode: event.data.zipCode,
+            }
+            await db.insert(houses).values(house)
+            const message: HouseUpdateContextValue['updates'][0] = {
+                houseId: event.data.houseId,
+                messageCategory: 'new-house-found',
+                updateType: 'complete',
+                updateCategory: 'basic',
+            }
+            await publishStatusFromServer(message, user.userId)
+        }
     }
 )

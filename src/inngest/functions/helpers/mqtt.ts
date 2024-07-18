@@ -13,7 +13,7 @@ export interface StatusMessageData {
 
 const data = new IoTDataPlaneClient();
 
-export async function publishStatusFromServer(message: HouseUpdateContextValue['updates'][0]): Promise<void> {
+export async function publishStatusFromServer(message: HouseUpdateContextValue['updates'][0], userId: string): Promise<void> {
     console.log("Attempting to publish...")
 
     try {
@@ -22,13 +22,11 @@ export async function publishStatusFromServer(message: HouseUpdateContextValue['
                 payload: Buffer.from(
                     JSON.stringify(message)
                 ),
-                topic: `house-updates`,
+                topic: `house-updates-${userId}`,
             })
         );
         console.log('Sent message to client successfully.', res)
     } catch (e) {
         console.log('Error sending update to client.', e)
     }
-
-
 }

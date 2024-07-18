@@ -26,6 +26,7 @@ export const houses = sqlLiteTable(
     "house",
     {
         id: text("id").notNull().primaryKey(),
+        foundAt: integer("foundAt", {mode: 'timestamp'}).notNull(),
         baths: integer("baths").notNull(),
         beds: integer("beds").notNull(),
         city: text("city").notNull(),
@@ -53,6 +54,7 @@ export const houses = sqlLiteTable(
     },
     (house) => ({
         userIdIdx: index("houses_userId_idx").on(house.userId),
+        primaryKey: primaryKey({name: 'stAddressAndZip', columns: [house.stAddress, house.zipCode]}),
     })
 )
 
@@ -98,4 +100,43 @@ export const userApiLimits = sqlLiteTable(
         stripePriceId: text("stripePriceId"),
         stripeCurrentPeriodEnd: integer("stripeCurrentPeriodEnd", {mode: "timestamp"}),
     }
+)
+
+
+export const cities = sqlLiteTable(
+    "city",
+    {
+        id: text("id").notNull().primaryKey(),
+        name: text("name").notNull(),
+    })
+
+export const usersToCities = sqlLiteTable(
+    "usersToCities",
+    {
+        id: integer("id", {mode: "number"}).primaryKey({autoIncrement: true}),
+        createdAt: integer("createdAt", {mode: "timestamp"}).notNull(),
+        updatedAt: integer("updatedAt", {mode: "timestamp"}),
+        userId: text("userId").notNull(),
+        cityId: text("cityId").notNull(),
+    }
+)
+
+export const citiesRelations = relations(cities, ({many}) => ({
+    usersToCities: many(usersToCities),
+}))
+
+export const usersRelations = relations(userApiLimits, ({many}) => ({
+    userToCities: many(usersToCities),
+}))
+
+export const userToCitiesRelations = relations(usersToCities, ({one}) => ({
+        city: one(cities, {
+            fields: [usersToCities.cityId],
+            references: [cities.id]
+        }),
+        user: one(userApiLimits, {
+            fields: [usersToCities.userId],
+            references: [userApiLimits.userId]
+        })
+    })
 )
