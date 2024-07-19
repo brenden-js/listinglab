@@ -30,6 +30,7 @@ type ScanCity = {
     data: {
         cityId: string
         cityName: string
+        state: string
     }
 }
 

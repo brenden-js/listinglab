@@ -50,12 +50,12 @@ export const handleEnrichHouse = inngest.createFunction(
 
             await db.insert(houses).values({
                 id: event.data.createdId,
+                createdAt: new Date(),
                 baths: formatted.data.home.description.baths,
                 beds: formatted.data.home.description.beds,
                 city: formatted.data.home.location.address.city,
                 description: formatted.data.home.description.text,
                 details: JSON.stringify(formatted.data.home.details),
-                foundAt: new Date(),
                 garage: formatted.data.home.description.garage,
                 lat: formatted.data.home.location.address.coordinate.lat,
                 lon: formatted.data.home.location.address.coordinate.lon,
@@ -251,7 +251,8 @@ export const scheduledNewListingsScan = inngest.createFunction(
             // create an event for each city
             const event = {
                 cityId: city.id,
-                cityName: city.name
+                cityName: city.name,
+                state: city.state
             }
             await inngest.send({name: 'house/scan-city', data: event})
         }
@@ -266,8 +267,8 @@ export const newListingsInCityScan = inngest.createFunction(
             method: 'GET',
             url: 'https://zillow-com4.p.rapidapi.com/properties/search',
             params: {
-                location: event.data.cityName,
-                limit: 20,
+                location: `${event.data.cityName}, ${event.data.state}`,
+                limit: 1,
                 status: 'forSale',
                 sort: 'daysOn',
                 sortType: 'asc',
@@ -334,12 +335,26 @@ export const handleAddHouseToUsers = inngest.createFunction(
     {event: 'house/add-house-to-users'},
     async ({event}) => {
 
-        const users = await db.query.usersToCities.findMany({where: eq(usersToCities.cityId, event.data.cityId)})
+        // search for all recards in usersToCities using the composite index on cityName and state
+        const usersSubscribedToCity = await db.query.usersToCities.findMany({
+            where: and(
+                eq(usersToCities.cityName, event.data.cityName),
+                eq(usersToCities.state, event.data.state)
+            )
+        })
 
-        for (const user of users) {
+        if (!usersSubscribedToCity.length) {
+            console.log('No users subscribed to this city, exiting...')
+            // throw an error because there are no users subscribed to this city
+            return new Error('No users subscribed to this city')
+        }
+
+        console.log('usersSubscribedToCity...', usersSubscribedToCity)
+
+        for (const user of usersSubscribedToCity) {
             const house = {
                 id: event.data.houseId,
-                foundAt: event.data.foundAt,
+                createdAt: new Date(),
                 baths: event.data.baths,
                 beds: event.data.beds,
                 city: event.data.city,
@@ -361,14 +376,15 @@ export const handleAddHouseToUsers = inngest.createFunction(
                 yearBuilt: event.data.yearBuilt,
                 zipCode: event.data.zipCode,
             }
-            await db.insert(houses).values(house)
-            const message: HouseUpdateContextValue['updates'][0] = {
-                houseId: event.data.houseId,
-                messageCategory: 'new-house-found',
-                updateType: 'complete',
-                updateCategory: 'basic',
-            }
-            await publishStatusFromServer(message, user.userId)
+            const res = await db.insert(houses).values(house)
+
+            // const message: HouseUpdateContextValue['updates'][0] = {
+            //     houseId: event.data.houseId,
+            //     messageCategory: 'new-house-found',
+            //     updateType: 'complete',
+            //     updateCategory: 'basic',
+            // }
+            // await publishStatusFromServer(message, user.userId)
         }
     }
 )

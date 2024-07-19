@@ -155,7 +155,7 @@ export default function HousesPageOverview() {
             <div className={"ml-3 flex items-center flex-row h-16"}>
                 <h2 className="text-lg font-semibold">Houses</h2>
                 {/*// show current city*/}
-                {currentCities.isPending && <LoadingSkeletons/>}
+                {currentCities.isPending && <div className={"animate-pulse h-5 w-16 rounded-xl"}></div>}
                 {!currentCities.isPending && currentCities.isSuccess && currentCities.data.length > 0 && (
                     <div className="ml-3 flex items-center gap-2">
                         <div className="text-lg font-semibold">

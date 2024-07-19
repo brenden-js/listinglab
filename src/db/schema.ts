@@ -25,8 +25,8 @@ export const prompts = sqlLiteTable(
 export const houses = sqlLiteTable(
     "house",
     {
-        id: text("id").notNull().primaryKey(),
-        foundAt: integer("foundAt", {mode: 'timestamp'}).notNull(),
+        createdAt: integer("createdAt", {mode: 'timestamp'}).notNull(),
+        id: text("id").notNull(),
         baths: integer("baths").notNull(),
         beds: integer("beds").notNull(),
         city: text("city").notNull(),
@@ -108,6 +108,7 @@ export const cities = sqlLiteTable(
     {
         id: text("id").notNull().primaryKey(),
         name: text("name").notNull(),
+        state: text("state").notNull(),
     })
 
 export const usersToCities = sqlLiteTable(
@@ -118,7 +119,13 @@ export const usersToCities = sqlLiteTable(
         cityId: text("cityId").notNull(),
         cityName: text("cityName").notNull(),
         state: text("state").notNull(),
+    },
+    (table) => {
+        return {
+            cityStateIdx: index("city_state_idx").on(table.cityName, table.state),
+        }
     }
+
 )
 
 export const citiesRelations = relations(cities, ({many}) => ({
