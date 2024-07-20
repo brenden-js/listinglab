@@ -27,8 +27,8 @@ export const houses = sqlLiteTable(
     {
         createdAt: integer("createdAt", {mode: 'timestamp'}).notNull(),
         id: text("id").notNull(),
-        baths: integer("baths").notNull(),
-        beds: integer("beds").notNull(),
+        baths: integer("baths"),
+        beds: integer("beds"),
         city: text("city").notNull(),
         description: text("description"),
         details: text("details"),

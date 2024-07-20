@@ -2,7 +2,7 @@
 import {api} from "@/trpc/react";
 import {Separator} from "@/components/ui/separator";
 import {House} from "@/app/dashboard/contexts/prompts";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {useEffect, useState} from "react";
@@ -23,10 +23,13 @@ const HousePreviewCard = ({house}: { house: House }) => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
+                {house.price} found at {house.createdAt.toLocaleDateString()}
+            </CardContent>
+            <CardFooter>
                 <div className="flex justify-between items-center">
                     <Button variant="secondary">Go to house</Button>
                 </div>
-            </CardContent>
+            </CardFooter>
         </Card>
     );
 };
