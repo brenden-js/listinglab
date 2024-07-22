@@ -23,8 +23,8 @@ const HousePreviewCard = ({house}: { house: House }) => {
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
-                {house.price} found at {house.createdAt.toLocaleDateString()}
-            </CardContent>
+                {`Listed at $${house.price?.toLocaleString()} Found at
+                ${house.createdAt.toLocaleDateString()}`} </CardContent>
             <CardFooter>
                 <div className="flex justify-between items-center">
                     <Button variant="secondary">Go to house</Button>
@@ -48,7 +48,7 @@ const LoadingSkeletons = () => (
 
 
 const CityCard = ({city, selected, onClick}: {
-    city: { userId: string, id: number, state: string , cityId: string , cityName: string },
+    city: { userId: string, id: number, state: string, cityId: string, cityName: string },
     selected: boolean,
     onClick: () => void
 }) => {
@@ -173,7 +173,8 @@ export default function HousesPageOverview() {
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[400px]">
-                        {openAddCity && <AddCityForm onSuccess={onAddCitySuccess} onClose={() => setOpenAddCity(false)}/>}
+                        {openAddCity &&
+                            <AddCityForm onSuccess={onAddCitySuccess} onClose={() => setOpenAddCity(false)}/>}
                         {!openAddCity && <>
                             <h4 className="font-medium mt-2">My Cities</h4>
                             {/*// create a list of a users cities, and a plus button to add a new city at the bottom*/}

@@ -10,9 +10,6 @@ export default $config({
         };
     },
     async run() {
-        const realtime = new sst.aws.Realtime("RealtimeLink", {
-            authorizer: "authorizer.handler",
-        });
 
         const clerkPublic = new sst.Secret("ClerkPublicKey")
         const clerkSecret = new sst.Secret("ClerkSecretKey")
@@ -44,6 +41,10 @@ export default $config({
             if ($app.stage === 'snoob') return prodDomain
             return undefined
         }
+
+         const realtime = new sst.aws.Realtime("RealtimeLink", {
+            authorizer: "authorizer.handler",
+        });
 
         const next = new sst.aws.Nextjs("ListingLab", {
             link: [
