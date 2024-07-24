@@ -22,7 +22,7 @@ export function ModelSelector() {
   const { setModelName, setModelId, advOptions }= useContext(CurrentPromptContext)
   const auth = useAuth()
   return (
-    <div className="w-1/4 flex flex-col items-center pr-4 truncate">
+    <div className="w-1/4 flex flex-col items-center truncate">
       <Drawer>
         <DrawerTrigger
           className="w-full"
@@ -32,7 +32,7 @@ export function ModelSelector() {
             {advOptions.modelName}
           </Button>
         </DrawerTrigger>
-        <DrawerContent className={"h-[80vh]"}>
+        <DrawerContent className={"h-[60vh]"}>
           <DrawerHeader className={"max-w-xl mx-auto"}>
             <DrawerTitle className="text-center">Select a model</DrawerTitle>
             <DrawerDescription>Different models have different costs and power.</DrawerDescription>

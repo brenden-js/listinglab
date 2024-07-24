@@ -168,7 +168,7 @@ export default function HousesPageOverview() {
     const debouncedRefetch = useCallback(
         debounce(() => {
             houses.refetch();
-        }, 10000),
+        }, 3000),
         [houses]
     );
 

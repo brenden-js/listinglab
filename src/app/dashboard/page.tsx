@@ -8,6 +8,7 @@ import {PresetIndex} from "@/app/dashboard/components/preset-index";
 import AdvancedPromptOptions from "@/app/dashboard/components/advanced-prompt-options";
 import {HousesSection} from "@/app/dashboard/components/houses-section";
 import {GenerationsSection} from "@/app/dashboard/components/generations-section";
+import DatasetSelection from "@/app/dashboard/components/dataset-selection";
 
 
 export default function PlaygroundPage() {
@@ -29,11 +30,17 @@ export default function PlaygroundPage() {
                             <div className="px-8 min-w-[500px]">
                                 <div className="flex justify-between mt-10">
                                     <p className="flex text-left font-medium">
+                                        Select a dataset to include with prompt.
+                                    </p>
+                                {/*    A radio selection form that allows you to pick from listing data, interior house data, exterior house data, and investment data*/}
+                                </div>
+                                <DatasetSelection/>
+                                <div className="flex justify-between mt-10 mb-4">
+                                    <p className="flex text-left font-medium">
                                         Enter a prompt.
                                     </p>
                                     <PresetIndex/>
                                 </div>
-                                <AdvancedPromptOptions/>
                                 <GenerationsSection/>
                             </div>
                         </ ScrollArea>

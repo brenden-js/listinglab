@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import {CurrentPromptContext} from "@/app/dashboard/contexts/prompts";
 import {PresetSave} from "@/app/dashboard/components/preset-save";
-import { communityPrompts} from "@/lib/data/community-prompts";
+import {communityPrompts} from "@/lib/data/community-prompts";
 import {toast} from "sonner";
 import {cn} from "@/lib/utils";
+import AdvancedPromptOptions from "@/app/dashboard/components/advanced-prompt-options";
+import {ModelSelector} from "@/app/dashboard/components/model-selector";
 
 export const PresetIndex = () => {
     const [open, setOpen] = React.useState(false)
@@ -40,10 +42,12 @@ export const PresetIndex = () => {
                         aria-expanded={open}
                         className="flex-1 justify-between md:max-w-[200px] lg:max-w-[300px]"
                     >
-                        {name ? name : "Select a prompt..."}
+                        {name ? name : "Prompts"}
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
                     </Button>
                 </PopoverTrigger>
+                <ModelSelector/>
+                <AdvancedPromptOptions/>
                 <PopoverContent className="w-[300px]">
                     <h4 className="font-medium mt-2">My prompts</h4>
                     {getPrompts.data === undefined && (
@@ -76,27 +80,27 @@ export const PresetIndex = () => {
                             />
                         </div>
                     ))}
-                        <h4 className="font-medium mt-2">Community prompts</h4>
-                        {communityPrompts.map((example) => (
-                            <div
-                                className={"relative hover:bg-gray-100 cursor-pointer flex items-center rounded-sm px-2 py-1.5 text-sm outline-none"}
-                                key={example.id}
-                                onClick={() => {
-                                    changePrompt(example.prompt, example.id, example.name)
-                                    setOpen(false)
-                                }}
-                            >
-                                {example.name}
-                                <CheckIcon
-                                    className={cn(
-                                        "ml-auto h-4 w-4",
-                                        promptId === example.id
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                    )}
-                                />
-                            </div>
-                        ))}
+                    <h4 className="font-medium mt-2">Community prompts</h4>
+                    {communityPrompts.map((example) => (
+                        <div
+                            className={"relative hover:bg-gray-100 cursor-pointer flex items-center rounded-sm px-2 py-1.5 text-sm outline-none"}
+                            key={example.id}
+                            onClick={() => {
+                                changePrompt(example.prompt, example.id, example.name)
+                                setOpen(false)
+                            }}
+                        >
+                            {example.name}
+                            <CheckIcon
+                                className={cn(
+                                    "ml-auto h-4 w-4",
+                                    promptId === example.id
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                )}
+                            />
+                        </div>
+                    ))}
                 </PopoverContent>
             </Popover>
 

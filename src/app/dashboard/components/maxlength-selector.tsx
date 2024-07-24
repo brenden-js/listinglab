@@ -16,7 +16,7 @@ export function MaxLengthSelector() {
   const {advOptions, setMaxTokens} = useContext(CurrentPromptContext)
 
   return (
-    <div className="w-1/4 flex flex-col items-center px-4 ">
+    <div className="w-full flex flex-col items-center">
       <HoverCard openDelay={200}>
         <HoverCardTrigger asChild>
           <div className="w-full">

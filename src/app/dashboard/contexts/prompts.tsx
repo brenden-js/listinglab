@@ -34,10 +34,18 @@ interface AdvOptions {
 }
 
 export type ModelName =
-    "gpt-4-turbo-preview" | "anthropic.claude-v2:1" | "amazon.titan-text-lite-v1" | "amazon.titan-text-express-v1" | "anthropic.claude-3-sonnet-20240229-v1:0";
+    "gpt-4-turbo-preview"
+    | "anthropic.claude-v2:1"
+    | "amazon.titan-text-lite-v1"
+    | "amazon.titan-text-express-v1"
+    | "anthropic.claude-3-sonnet-20240229-v1:0";
 
 export type ModelId =
-    "gpt-4-turbo-preview" | "anthropic.claude-v2:1" | "amazon.titan-text-lite-v1" | "amazon.titan-text-express-v1" | "anthropic.claude-3-sonnet-20240229-v1:0";
+    "gpt-4-turbo-preview"
+    | "anthropic.claude-v2:1"
+    | "amazon.titan-text-lite-v1"
+    | "amazon.titan-text-express-v1"
+    | "anthropic.claude-3-sonnet-20240229-v1:0";
 
 
 export const CurrentPromptContext = createContext({
@@ -81,7 +89,11 @@ export const CurrentPromptContext = createContext({
     },
     setModelName: (value: ModelName) => {
         return
-    }
+    },
+    setDataset: (value: "interior" | "exterior" | "investment" | undefined) => {
+        return
+    },
+    dataset: undefined as "interior" | "exterior" | "investment" | undefined
 })
 
 
@@ -133,7 +145,7 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
         }
         setState((prevState) => {
             if (prevState.selectedHouses.length >= 1) {
-                toast.error('Maximum number of houses reached.', { id: newHouse.id })
+                toast.error('Maximum number of houses reached.', {id: newHouse.id})
                 return {...prevState} // return here, state update has finished and we can stop executing the function
             }
 
@@ -252,6 +264,12 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
         toast.success('Succesfully updated local expertise')
     }
 
+    const setDataset = (value: "interior" | "exterior" | "investment" | undefined) => {
+        setState((prevState) => {
+            return {...prevState, dataset: value}
+        })
+    }
+
     const initState = {
         prompt: "",
         promptId: "",
@@ -273,7 +291,9 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
         setTemperature,
         setMaxTokens,
         setModelId,
-        setModelName
+        setModelName,
+        setDataset,
+        dataset: undefined as "interior" | "exterior" | "investment" | undefined
     }
     const [state, setState] = useState(initState);
 
