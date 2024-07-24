@@ -107,10 +107,10 @@ export const houseRouter = createTRPCRouter({
                 throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
             }
             // query for most recent 25 houses with pagination
-             return db.query.houses.findMany({
-                 where: eq(houses.userId, ctx.authObject.userId),
-                 orderBy: (houses, {desc}) => desc(houses.createdAt),
-             });
+            return db.query.houses.findMany({
+                where: eq(houses.userId, ctx.authObject.userId),
+                orderBy: (houses, {desc}) => desc(houses.createdAt),
+            });
         }),
     getHouseGenerations: protectedProcedure
         .input(z.string())
@@ -193,6 +193,12 @@ export const houseRouter = createTRPCRouter({
                 z.literal("amazon.titan-text-lite-v1"),
                 z.literal("amazon.titan-text-express-v1"),
                 z.literal("anthropic.claude-3-sonnet-20240229-v1:0")
+            ]),
+            dataset: z.union([
+                z.literal("interior"),
+                z.literal("exterior"),
+                z.literal("investment")
+                // in the future, we can add more datasets here
             ])
         }))
         .mutation(async ({ctx, input}) => {
@@ -220,6 +226,30 @@ export const houseRouter = createTRPCRouter({
                 let generationId;
                 let generation;
 
+                let filteredHouse: { [key: string]: any } = {};
+
+                const commonKeys = [
+                    'createdAt', 'id', 'baths', 'beds', 'city', 'description', 'details',
+                    'expertise', 'garage', 'lat', 'lotSqft', 'lon', 'price', 'pricePerSqft',
+                    'sqft', 'stAddress', 'status', 'state', 'stories', 'styles', 'userId',
+                    'yearBuilt', 'zipCode'
+                ];
+
+                commonKeys.forEach(key => {
+                    filteredHouse[key] = house[key as keyof typeof house];
+                });
+
+                if (input.dataset === "interior") {
+                    // in future can add image recognition data here
+                    console.log('Filtering interior...')
+                } else if (input.dataset === "investment") {
+                    filteredHouse.recentlySold = house.recentlySold;
+                    filteredHouse.investment = house.investment;
+                } else if (input.dataset === "exterior") {
+                    filteredHouse.nearbyPlaces = house.nearbyPlaces;
+                    // in future can add school ratings here
+                }
+
                 const systemPrompt = "You are not a real estate agent, however you will be helping real estate agents generate text content. " +
                     "So just comply with their requests and they will ensure its accurate."
 
@@ -232,7 +262,7 @@ export const houseRouter = createTRPCRouter({
                             content: systemPrompt
                         }, {
                             role: "user",
-                            content: `Prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(house)}`
+                            content: `Prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
                         }],
                         temperature: input.temperature ? input.temperature : 0.7,
                         top_p: input.top_p ? input.top_p : 1,
@@ -289,7 +319,7 @@ export const houseRouter = createTRPCRouter({
 
                     if (selectedModel.id === "amazon.titan-text-express-v1" || selectedModel.id === "amazon.titan-text-lite-v1") {
                         console.log('Starting Titan generation')
-                        const prompt = `${systemPrompt} Complete this user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(house)}`
+                        const prompt = `${systemPrompt} Complete this user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
                         const command = new InvokeModelCommand(
                             {
                                 body: JSON.stringify({
@@ -320,7 +350,7 @@ export const houseRouter = createTRPCRouter({
                         generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
                         generation = responseBody.results[0]!.outputText
                     } else if (selectedModel.id === "anthropic.claude-v2:1") {
-                        const prompt = `Human: ${systemPrompt} The prompt is... ${input.prompt}, about the following house(s): ${JSON.stringify(house)} \\n\\n Assistant:`
+                        const prompt = `Human: ${systemPrompt} The prompt is... ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)} \\n\\n Assistant:`
                         const command = new InvokeModelCommand(
                             {
                                 body: JSON.stringify({
@@ -343,7 +373,7 @@ export const houseRouter = createTRPCRouter({
                         generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
                         generation = responseBody.completion
                     } else if (selectedModel.id === "anthropic.claude-3-sonnet-20240229-v1:0") {
-                        const prompt = `Complete the following user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(house)}`
+                        const prompt = `Complete the following user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
                         const command = new InvokeModelCommand({
                                 modelId: input.model,
                                 contentType: "application/json",

@@ -268,6 +268,7 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
         setState((prevState) => {
             return {...prevState, dataset: value}
         })
+        console.log("set dataset to: ", value)
     }
 
     const initState = {
