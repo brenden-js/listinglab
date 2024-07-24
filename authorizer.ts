@@ -1,17 +1,18 @@
-import { Resource, RealtimeAuthHandler } from "sst";
-import jwt from "jsonwebtoken";
-
+import {Resource, RealtimeAuthHandler} from "sst";
+import {verifyToken} from '@clerk/backend';
 
 export const handler = RealtimeAuthHandler(async (token) => {
-  const prefix = `${Resource.App.name}/${Resource.App.stage}`;
-  console.log('usertoken...',token)
+    const prefix = `${Resource.App.name}/${Resource.App.stage}`;
+    console.log("token....", token);
 
-  // get the user id from the token
-  const claims = jwt.verify(token, Resource.ClerkPublicKey.value)
-  console.log('claims...',claims)
+    const decoded = await verifyToken(token, {secretKey: Resource.ClerkSecretKey.value});
 
-  return {
-    publish: [`house-updates`],
-    subscribe: [`house-updates`],
-  };
+    console.log("decoded....", decoded);
+
+    if (!decoded.sub) {
+        throw new Error("Invalid token");
+    }
+    return {
+        subscribe: [`${decoded.sub}-house-updates`],
+    }
 });

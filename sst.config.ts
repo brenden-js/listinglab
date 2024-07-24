@@ -43,7 +43,7 @@ export default $config({
         }
 
          const realtime = new sst.aws.Realtime("RealtimeLink", {
-            authorizer: "authorizer.handler",
+            authorizer: { handler: "authorizer.handler", link: [clerkSecret] },
         });
 
         const next = new sst.aws.Nextjs("ListingLab", {

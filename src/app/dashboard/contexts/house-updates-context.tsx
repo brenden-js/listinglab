@@ -44,9 +44,10 @@ export const HouseUpdateProvider: React.FC<{
         );
     }
 
-    const {getToken} = useAuth();
+    const {getToken, userId} = useAuth();
 
     useEffect(() => {
+        console.log("Attempting to connect to realtime...");
         const connectWithToken = async () => {
             try {
                 // Get the token from the user
@@ -58,11 +59,14 @@ export const HouseUpdateProvider: React.FC<{
                     return;
                 }
 
+
                 const connection = createConnection(endpoint, authorizer, token);
                 connection.on('connect', async () => {
+
+                    // TODO: this will loop if the user attempts to connect to an unauthorized topic
                     try {
                         console.log('Connected to MQTT from realtime-messages');
-                        await connection.subscribe('house-updates', mqtt.QoS.AtLeastOnce);
+                        await connection.subscribe(`${userId}-house-updates`, mqtt.QoS.AtLeastOnce);
                         setIsConnected(true);
                         setConnection(connection);
                     } catch (e) {

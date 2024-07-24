@@ -22,7 +22,7 @@ export async function publishStatusFromServer(message: HouseUpdateContextValue['
                 payload: Buffer.from(
                     JSON.stringify(message)
                 ),
-                topic: `house-updates-${userId}`,
+                topic: `${userId}-house-updates`,
             })
         );
         console.log('Sent message to client successfully.', res)
