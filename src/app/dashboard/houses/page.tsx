@@ -5,11 +5,13 @@ import {House} from "@/app/dashboard/contexts/prompts";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {cn} from "@/lib/utils";
 import clsx from "clsx";
 import {Input} from "@/components/ui/input";
 import {toast} from "sonner";
+import {useHouseUpdateContext} from "@/app/dashboard/contexts/house-updates-context";
+import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
 
 const HousePreviewCard = ({house}: { house: House }) => {
     if (!house) return null;
@@ -135,7 +137,17 @@ const AddCityForm = ({onClose, onSuccess}: { onClose: () => void, onSuccess: () 
     )
 }
 
+const debounce = (func: Function, delay: number) => {
+    let timeoutId: NodeJS.Timeout;
+    return (...args: any[]) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func(...args), delay);
+    };
+};
+
 export default function HousesPageOverview() {
+    const {updates} = useHouseUpdateContext()
+    //
     const currentCities = api.house.getUserCities.useQuery()
 
     // function that invalidates the currentCities query and when a new city is added, it will update the selectedCity state
@@ -150,6 +162,21 @@ export default function HousesPageOverview() {
     }, [currentCities])
 
     const houses = api.house.getHouses.useQuery()
+    // use effect that invalidates the houses query when a new update is added where the messageCategory
+    // is equal to new-house-found
+
+    const debouncedRefetch = useCallback(
+        debounce(() => {
+            houses.refetch();
+        }, 10000),
+        [houses]
+    );
+
+    useEffect(() => {
+        if (updates.length > 0 && updates[0].messageCategory === 'new-house-found') {
+            debouncedRefetch();
+        }
+    }, [updates, debouncedRefetch]);
     const [open, setOpen] = useState(false)
     const [openAddCity, setOpenAddCity] = useState(false)
     const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined)

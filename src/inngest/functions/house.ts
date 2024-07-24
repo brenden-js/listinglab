@@ -268,7 +268,7 @@ export const newListingsInCityScan = inngest.createFunction(
             url: 'https://zillow-com4.p.rapidapi.com/properties/search',
             params: {
                 location: `${event.data.cityName}, ${event.data.state}`,
-                limit: 1,
+                limit: 5,
                 status: 'forSale',
                 sort: 'daysOn',
                 sortType: 'asc',
@@ -289,7 +289,13 @@ export const newListingsInCityScan = inngest.createFunction(
 
         // need a new type for recently listed houses search
 
-        const formatted = response.data as ListingSearchInCityResponse
+        let formatted = response.data as ListingSearchInCityResponse
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log('Shortening response in development...')
+            const shortened = formatted.data[0]
+            formatted.data = [shortened]
+        }
 
         for (const listing of formatted.data) {
             const foundListing = await db.query.houses.findFirst(
@@ -376,15 +382,15 @@ export const handleAddHouseToUsers = inngest.createFunction(
                 yearBuilt: event.data.yearBuilt,
                 zipCode: event.data.zipCode,
             }
-            const res = await db.insert(houses).values(house)
+            await db.insert(houses).values(house)
 
-            // const message: HouseUpdateContextValue['updates'][0] = {
-            //     houseId: event.data.houseId,
-            //     messageCategory: 'new-house-found',
-            //     updateType: 'complete',
-            //     updateCategory: 'basic',
-            // }
-            // await publishStatusFromServer(message, user.userId)
+            const message: HouseUpdateContextValue['updates'][0] = {
+                houseId: event.data.houseId,
+                messageCategory: 'new-house-found',
+                updateType: event.data.stAddress,
+                updateCategory: event.data.city,
+            }
+            await publishStatusFromServer(message, user.userId)
         }
     }
 )

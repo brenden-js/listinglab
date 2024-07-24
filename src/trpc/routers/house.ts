@@ -106,10 +106,11 @@ export const houseRouter = createTRPCRouter({
             if (!ctx.authObject.userId) {
                 throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
             }
-            return db.query.houses.findMany({
-                where: eq(houses.userId, ctx.authObject.userId),
-                with: {generations: true}
-            });
+            // query for most recent 25 houses with pagination
+             return db.query.houses.findMany({
+                 where: eq(houses.userId, ctx.authObject.userId),
+                 orderBy: (houses, {desc}) => desc(houses.createdAt),
+             });
         }),
     getHouseGenerations: protectedProcedure
         .input(z.string())
@@ -130,7 +131,6 @@ export const houseRouter = createTRPCRouter({
             }
             return db.query.houses.findFirst({
                 where: and(eq(houses.userId, ctx.authObject.userId), eq(houses.id, input)),
-                with: {generations: true}
             });
         }),
     getUserCities: protectedProcedure

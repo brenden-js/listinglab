@@ -85,6 +85,13 @@ export const HouseUpdateProvider: React.FC<{
                                 {messageCategory, updateType, updateCategory, houseId},
                             ]);
                         }
+                        if (messageCategory === 'new-house-found') {
+                            toast.success(`New listing found: ${updateType}, ${updateCategory}`);
+                            setUpdates((prevUpdates) => [
+                                ...prevUpdates,
+                                {messageCategory, updateType, updateCategory, houseId},
+                            ]);
+                        }
                     } catch (error) {
                         console.error('Error parsing message:', error);
                     }

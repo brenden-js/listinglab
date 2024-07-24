@@ -95,8 +95,8 @@ export const HousesDrawer = () => {
           </Button>
         </div>
         {houseMutation.error && (
-          <p className="mx-auto mb-4 text-red-300">
-            Could not find house, please try again.
+          <p className="mx-auto mb-4 text-red-600">
+            {houseMutation.error.message}
           </p>
         )}
         {/* We check to see if the house has been removed after initial search and find of the house */}

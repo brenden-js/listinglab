@@ -50,28 +50,28 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
                     <p className={"text-sm"}>Listing</p>
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.lat ?
-                            <CheckCircledIcon className="h-5 w-5"/> : getUpdateIcon('basic')}</div>
+                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('basic')}</div>
                     </div>
                 </div>
                 <div className={"flex justify-between"}>
                     <p className={"text-sm"}>Neighborhood</p>
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.nearbyPlaces ?
-                            <CheckCircledIcon className="h-5 w-5"/> : getUpdateIcon('neighborhood')}</div>
+                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('neighborhood')}</div>
                     </div>
                 </div>
                 <div className={"flex justify-between"}>
                     <p className={"text-sm"}>Investment Data</p>
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.investment ?
-                            <CheckCircledIcon className="h-5 w-5"/> : getUpdateIcon('investment')}</div>
+                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('investment')}</div>
                     </div>
                 </div>
                 <div className={"flex justify-between"}>
                     <p className={"text-sm"}>Recently sold</p>
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.recentlySold ?
-                            <CheckCircledIcon className="h-5 w-5"/> : getUpdateIcon('recentlySold')}</div>
+                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('recentlySold')}</div>
                     </div>
                 </div>
             </div>
