@@ -5,7 +5,6 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import {PresetIndex} from "@/app/dashboard/components/preset-index";
-import AdvancedPromptOptions from "@/app/dashboard/components/advanced-prompt-options";
 import {HousesSection} from "@/app/dashboard/components/houses-section";
 import {GenerationsSection} from "@/app/dashboard/components/generations-section";
 import DatasetSelection from "@/app/dashboard/components/dataset-selection";

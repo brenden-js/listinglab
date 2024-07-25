@@ -84,7 +84,8 @@ export const houseRouter = createTRPCRouter({
                 lat: null,
                 nearbyPlaces: null,
                 investment: null,
-                recentlySold: null
+                recentlySold: null,
+                claimed: 0
             }
         }),
     updateExpertise: protectedProcedure

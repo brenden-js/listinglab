@@ -86,7 +86,7 @@ export const HouseUpdateProvider: React.FC<{
                             ]);
                         }
                         if (messageCategory === 'new-house-found') {
-                            toast.success(`New listing found: ${updateType}, ${updateCategory}`);
+                            toast.success(`New listing found: ${updateType}, ${updateCategory}`, {id: houseId});
                             setUpdates((prevUpdates) => [
                                 ...prevUpdates,
                                 {messageCategory, updateType, updateCategory, houseId},
