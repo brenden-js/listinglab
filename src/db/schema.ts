@@ -50,7 +50,8 @@ export const houses = sqlLiteTable(
         zipCode: text("zipCode").notNull(),
         nearbyPlaces: text("nearbyPlaces"),
         investment: text("investment"),
-        recentlySold: text("recentlySold")
+        recentlySold: text("recentlySold"),
+        claimed: integer("claimed")
     },
     (house) => ({
         userIdIdx: index("houses_userId_idx").on(house.userId),

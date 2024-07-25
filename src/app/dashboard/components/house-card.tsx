@@ -1,49 +1,68 @@
 "use client"
-import {useContext} from "react";
+import {useContext, useEffect} from "react";
 import {Card, CardContent, CardDescription, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {AddExpertiseDrawer} from "@/app/dashboard/components/expertise-drawer";
 import {RecentGenerations} from "@/app/dashboard/components/recent-generations";
 import {CurrentPromptContext, House, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
 import {LiveDataFeed} from "@/app/dashboard/components/live-data-feed";
+import {api} from "@/trpc/react";
+import {toast} from "sonner";
+import {clsx} from "clsx";
 
 
 export const HouseCard = ({house}: { house: House | UnhydratedHouse }) => {
-  const {removeHouse} = useContext(CurrentPromptContext)
+    const {removeHouse, claimSelectedHouse} = useContext(CurrentPromptContext)
 
-  if (!house) {
-    return <></>
-  }
+    const claimHouse = api.house.claimHouse.useMutation()
 
-  return (
-    <div key={house.id} className="flex flex-col">
-      <div className={"w-full"}>
-        <Card className="w-[400px]">
-          <CardContent className="flex flex-col">
-            <div className="flex justify-between my-6">
-              <div>
-                <CardTitle>{house.stAddress}</CardTitle>
-                <CardDescription>{house.city} {house.zipCode}</CardDescription>
-              </div>
-              <Button
-                variant="secondary"
-                onClick={() => removeHouse(house)}
-              >
-                Remove house
-              </Button>
+    useEffect(() => {
+        if (claimHouse.isSuccess) {
+            toast.success('House claimed successfully.')
+
+        }
+    }, [claimHouse.isSuccess])
+
+    const onClaim = async (houseId: string) =>{
+        console.log('Claiming house...')
+        claimHouse.mutate({houseId})
+        claimSelectedHouse(houseId)
+    }
+
+    if (!house) {
+        return <></>
+    }
+
+    return (
+        <div key={house.id} className="flex flex-col">
+            <div className={"w-full"}>
+                <Card className="w-[400px]">
+                    <CardContent className="flex flex-col">
+                        <div className="flex justify-between my-6">
+                            <div>
+                                <CardTitle>{house.stAddress}</CardTitle>
+                                <CardDescription>{house.city} {house.zipCode}</CardDescription>
+                            </div>
+                            <Button
+                                variant="secondary"
+                                onClick={() => removeHouse(house)}
+                            >
+                                Remove house
+                            </Button>
+                        </div>
+                        {house.claimed ?
+                            <Button disabled={claimHouse.isPending} className={clsx(claimHouse.isPending && "animate-pulse")} onClick={() => onClaim(house.id)}>Get data for this house</Button> :
+                            <LiveDataFeed house={house}/>
+                        }
+                    </CardContent>
+                </Card>
+                <div className="my-4">
+                    <AddExpertiseDrawer
+                        houseId={house.id}
+                    />
+                </div>
+                <RecentGenerations houseId={house.id}/>
             </div>
-            <div>
-              <LiveDataFeed house={house}/>
-            </div>
-          </CardContent>
-        </Card>
-        <div className="my-4">
-          <AddExpertiseDrawer
-            houseId={house.id}
-          />
         </div>
-        <RecentGenerations houseId={house.id} />
-      </div>
-    </div>
-  )
+    )
 }

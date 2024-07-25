@@ -66,7 +66,6 @@ const CityCard = ({city, selected, onClick}: {
                 <div className="flex-col items-start">
                     <h4 className={"font-semibold leading-none tracking-tight"}>{city.cityName}</h4>
                     <span className={"text-sm text-muted-foreground"}>{city.state}</span>
-                    <span className={"text-sm text-muted-foreground"}>{city.id}</span>
                 </div>
                 <div className={clsx("block h-5 w-5 rounded-full border-2 ",
                     selected ? 'bg-indigo-500' : ''

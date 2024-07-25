@@ -33,6 +33,21 @@ export const handleEnrichHouse = inngest.createFunction(
     async ({event, step}) => {
         const foundListing = await step.run("Get house details", async () => {
 
+            if (!event.data.lookupId) {
+                // No lookup id, this means the house was found via the listing scan, and we have the basic listing data already
+                const house = await db.query.houses.findFirst({where: eq(houses.id, event.data.houseId)})
+                if (!house) {
+                    throw new Error('Could not find house in database')
+                }
+                return {
+                    lat: house.lat,
+                    lon: house.lon,
+                    price: house.price,
+                    stAddress: house.stAddress,
+                    zipCode: house.zipCode
+                }
+            }
+
             const options: AxiosRequestConfig = {
                 method: 'GET',
                 url: 'https://realty-in-us.p.rapidapi.com/properties/v3/detail',
@@ -49,7 +64,7 @@ export const handleEnrichHouse = inngest.createFunction(
             console.log('Formatted.................', formatted)
 
             await db.insert(houses).values({
-                id: event.data.createdId,
+                id: event.data.houseId,
                 createdAt: new Date(),
                 baths: formatted.data.home.description.baths,
                 beds: formatted.data.home.description.beds,
@@ -74,7 +89,7 @@ export const handleEnrichHouse = inngest.createFunction(
             })
             console.log("Succesfully added house.")
             const message: HouseUpdateContextValue['updates'][0] = {
-                houseId: event.data.createdId,
+                houseId: event.data.houseId,
                 messageCategory: 'house-update',
                 updateType: 'complete',
                 updateCategory: 'basic'
@@ -119,10 +134,10 @@ export const handleEnrichHouse = inngest.createFunction(
                 const places = response.data as GoogleNearbyPlacesAPIResponse
                 await db.update(houses)
                     .set({nearbyPlaces: JSON.stringify(places.places)})
-                    .where(eq(houses.id, event.data.createdId))
+                    .where(eq(houses.id, event.data.houseId))
 
                 const message: HouseUpdateContextValue['updates'][0] = {
-                    houseId: event.data.createdId,
+                    houseId: event.data.houseId,
                     messageCategory: 'house-update',
                     updateType: 'complete',
                     updateCategory: 'neighborhood'
@@ -131,15 +146,16 @@ export const handleEnrichHouse = inngest.createFunction(
             })
 
         await step.run("Get mortgage and investment info", async () => {
-            if (!foundListing.price) {
+            if (foundListing.price === null) {
                 console.log('No price was found, cannot get mortgage info')
+                throw new Error('No price was found, cannot get mortgage info')
             }
 
             const data = getMortgageAndEquity(foundListing.price)
 
             await db.update(houses).set({investment: JSON.stringify(data)})
             const message: HouseUpdateContextValue['updates'][0] = {
-                houseId: event.data.createdId,
+                houseId: event.data.houseId,
                 messageCategory: 'house-update',
                 updateType: 'complete',
                 updateCategory: 'investment'
@@ -196,9 +212,9 @@ export const handleEnrichHouse = inngest.createFunction(
 
             console.log("minimzedArray...................", minimizedArray)
 
-            await db.update(houses).set({recentlySold: minimizedArray.toString()}).where(eq(houses.id, event.data.createdId))
+            await db.update(houses).set({recentlySold: minimizedArray.toString()}).where(eq(houses.id, event.data.houseId))
             const message: HouseUpdateContextValue['updates'][0] = {
-                houseId: event.data.createdId,
+                houseId: event.data.houseId,
                 messageCategory: 'house-update',
                 updateType: 'complete',
                 updateCategory: 'recentlySold'

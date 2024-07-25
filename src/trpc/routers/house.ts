@@ -65,7 +65,7 @@ export const houseRouter = createTRPCRouter({
                 name: "house/enrich",
                 data: {
                     lookupId: house.mpr_id,
-                    createdId: newId,
+                    houseId: newId,
                     userId: ctx.authObject.userId,
                 }
             })
@@ -133,6 +133,27 @@ export const houseRouter = createTRPCRouter({
                 where: and(eq(houses.userId, ctx.authObject.userId), eq(houses.id, input)),
             });
         }),
+    claimHouse: protectedProcedure
+        .input(z.object({houseId: z.string()}))
+        .mutation(async ({ctx, input}) => {
+            if (!ctx.authObject.userId) {
+                throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
+            }
+            const house = await db.query.houses.findFirst({where: eq(houses.id, input.houseId)})
+            if (!house) {
+                throw new TRPCError({code: "NOT_FOUND", message: "Could not find that house."})
+            }
+            await db.update(houses).set({claimed: 1}).where(eq(houses.id, input.houseId))
+            await inngest.send({
+                name: "house/enrich",
+                data: {
+                    lookupId: undefined,
+                    houseId: house.id,
+                    userId: ctx.authObject.userId,
+                }
+            })
+            return {status: "House claimed successfully", claimed: 1}
+        }),
     getUserCities: protectedProcedure
         .query(async ({ctx}) => {
             if (!ctx.authObject.userId) {
@@ -153,9 +174,17 @@ export const houseRouter = createTRPCRouter({
 
             // if the user has no city, create a new one
             if (!userCity.length) {
+
+                const cityId = v4()
+                await db.insert(cities).values({
+                    id: cityId,
+                    name: input.cityName,
+                    state: "CA",
+                }
+                )
                 await db.insert(usersToCities).values({
                     userId: ctx.authObject.userId,
-                    cityId: v4(),
+                    cityId,
                     state: "CA",
                     cityName: input.cityName
                 })

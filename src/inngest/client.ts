@@ -10,8 +10,8 @@ export type SubscriptionPurchasedEvent = {
 
 type HouseEnrich = {
     data: {
-        lookupId: string
-        createdId: string
+        lookupId: string | undefined // if this is undefined, it means the house was found via the listing scan, and we have the basic listing data already
+        houseId: string
         userId: string
     }
 }

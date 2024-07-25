@@ -20,6 +20,7 @@ export type UnhydratedHouse = {
     nearbyPlaces: null
     investment: null
     recentlySold: null
+    claimed: number | null
 }
 
 export type House =
@@ -59,6 +60,9 @@ export const CurrentPromptContext = createContext({
         return
     },
     changePrompt: (newPrompt: string, promptId: string, name: string) => {
+        return
+    },
+    claimSelectedHouse: (houseToUpdateId: string) => {
         return
     },
     selectedHouses: [] as (House | UnhydratedHouse)[],
@@ -157,6 +161,22 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
         setState((prevState) => {
             return {...prevState, selectedHouses: prevState.selectedHouses.filter(h => h !== house)}
         })
+    }
+
+    const claimSelectedHouse = (houseToUpdateId: string) => {
+        setState((prevState) => {
+                const updatedHouses = prevState.selectedHouses.map((house) => {
+                    if (house?.id === houseToUpdateId) {
+                        return {...house, claimed: 1};
+                    }
+                    return house
+                })
+                return {
+                    ...prevState,
+                    selectedHouses: updatedHouses
+                }
+            }
+        )
     }
 
     const setAdvOptions = (newOptions: Partial<AdvOptions>) => {
@@ -294,7 +314,8 @@ export const PromptsProvider = ({children}: { children: React.ReactNode }) => {
         setModelId,
         setModelName,
         setDataset,
-        dataset: undefined as "interior" | "exterior" | "investment" | undefined
+        dataset: undefined as "interior" | "exterior" | "investment" | undefined,
+        claimSelectedHouse
     }
     const [state, setState] = useState(initState);
 

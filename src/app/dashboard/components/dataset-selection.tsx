@@ -8,10 +8,10 @@ const DataButton = ({value, setDataset, currentSelectedValue, label}: { value: s
     return (
         <button
             className={clsx("p-2 rounded-md mb-4 cursor-pointer hover:border-gray-400 duration-100 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2",
-                value === currentSelectedValue ? 'border-indigo-500 ring-1 ring-indigo-500 hover:border-indigo-600 border-2 border-transparent' : 'border-2 border-gray-300'
+                value === currentSelectedValue ? 'bg-gray-50 border-indigo-500 ring-1 ring-indigo-500 hover:border-indigo-600 border-2 border-transparent' : 'border-2 border-gray-300'
             )} value={value}
             onClick={() => setDataset(value)}>
-            {label}
+            <span className="text-sm text-gray-800"> {label}</span>
         </button>
     )
 }
