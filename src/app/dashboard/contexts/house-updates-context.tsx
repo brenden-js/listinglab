@@ -1,36 +1,29 @@
 "use client"
-import React, {createContext, useContext, useEffect, useState} from 'react';
-import {iot, mqtt} from 'aws-iot-device-sdk-v2';
-import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
-import {useAuth} from "@clerk/nextjs";
-import {toast} from "sonner";
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { iot, mqtt } from 'aws-iot-device-sdk-v2';
+import { HouseUpdateContextValue } from "@/lib/contexts/house-updates";
+import { useSession } from "@clerk/nextjs";
+import { toast } from "sonner";
 
-// Define the shape of the context value
-
-
-// Create the context
 const HouseUpdateContext = createContext<HouseUpdateContextValue>({
     updates: [],
     isConnected: false,
 });
 
-// Create a custom hook to consume the context
 export const useHouseUpdateContext = () => useContext(HouseUpdateContext);
 
-// Define the provider component
 export const HouseUpdateProvider: React.FC<{
     children: React.ReactNode;
     endpoint: string
     authorizer: string
     topic: string
 }> = ({children, authorizer, endpoint, topic}) => {
-
     const [updates, setUpdates] = useState<HouseUpdateContextValue['updates']>([]);
-    const [isConnected, setIsConnected] = useState(false)
+    const [isConnected, setIsConnected] = useState(false);
     const [connection, setConnection] = useState<mqtt.MqttClientConnection | null>(null);
+    const { session} = useSession();
 
-    // Helper function to create an MQTT connection
-    function createConnection(endpoint: string, authorizer: string, token: string) {
+    const createConnection = useCallback((token: string) => {
         const client = new mqtt.MqttClient();
         const id = window.crypto.randomUUID();
 
@@ -42,79 +35,86 @@ export const HouseUpdateProvider: React.FC<{
                 .with_custom_authorizer("", authorizer, "", token)
                 .build()
         );
-    }
+    }, [endpoint, authorizer]);
 
-    const {getToken, userId} = useAuth();
+    const connectWithFreshToken = useCallback(async () => {
+        if (!session?.user.id) {
+            console.error('No session or userId available');
+            return;
+        }
+
+        try {
+            const freshToken = await session.getToken();
+            if (!freshToken) {
+                console.error('Failed to get fresh token');
+                return;
+            }
+
+            if (connection) {
+                await connection.disconnect();
+            }
+
+            const newConnection = createConnection(freshToken);
+
+            newConnection.on('connect', async () => {
+                try {
+                    await newConnection.subscribe(`${session.user.id}-house-updates`, mqtt.QoS.AtLeastOnce);
+                    setIsConnected(true);
+                    setConnection(newConnection);
+                    console.log('Connected to MQTT');
+                } catch (e) {
+                    console.error('Error subscribing to topic:', e);
+                }
+            });
+
+            newConnection.on('disconnect', () => {
+                console.log('Disconnected, attempting to reconnect...');
+                setIsConnected(false);
+                connectWithFreshToken();
+            });
+
+            newConnection.on('error', (error) => {
+                console.error('Connection error:', error);
+                if (error.toString().includes('expired')) {
+                    console.log('Token expired, reconnecting with fresh token...');
+                    connectWithFreshToken();
+                }
+            });
+
+            newConnection.on('message', (_fullTopic, payload) => {
+                const message = new TextDecoder('utf8').decode(new Uint8Array(payload));
+                try {
+                    const { messageCategory, updateType, updateCategory, houseId } = JSON.parse(message);
+                    if (messageCategory === 'house-update' || messageCategory === 'new-house-found') {
+                        setUpdates((prevUpdates) => [
+                            ...prevUpdates,
+                            { messageCategory, updateType, updateCategory, houseId },
+                        ]);
+                        if (messageCategory === 'new-house-found') {
+                            toast.success(`New listing found: ${updateType}, ${updateCategory}`, { id: houseId });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error parsing message:', error);
+                }
+            });
+
+            newConnection.connect();
+        } catch (error) {
+            console.error('Error connecting:', error);
+        }
+    }, [session, createConnection]);
 
     useEffect(() => {
-        console.log("Attempting to connect to realtime...");
-        const connectWithToken = async () => {
-            try {
-                // Get the token from the user
-                const token = await getToken();
+        connectWithFreshToken();
 
-                if (!token) {
-                    console.error('Failed to get user token');
-                    toast.error('Failed to connect to server.');
-                    return;
-                }
-
-
-                const connection = createConnection(endpoint, authorizer, token);
-                connection.on('connect', async () => {
-
-                    // TODO: this will loop if the user attempts to connect to an unauthorized topic
-                    try {
-                        console.log('Connected to MQTT from realtime-messages');
-                        await connection.subscribe(`${userId}-house-updates`, mqtt.QoS.AtLeastOnce);
-                        setIsConnected(true);
-                        setConnection(connection);
-                    } catch (e) {
-                        console.error('Error connecting to MQTT:', e);
-                    }
-                });
-
-                connection.on('message', (_fullTopic, payload) => {
-                    console.log('Message received... attempting to decode', payload)
-                    const message = new TextDecoder('utf8').decode(new Uint8Array(payload));
-                    try {
-                        const {messageCategory, updateType, updateCategory, houseId} = JSON.parse(message);
-                        if (messageCategory === 'house-update') {
-                            setUpdates((prevUpdates) => [
-                                ...prevUpdates,
-                                {messageCategory, updateType, updateCategory, houseId},
-                            ]);
-                        }
-                        if (messageCategory === 'new-house-found') {
-                            toast.success(`New listing found: ${updateType}, ${updateCategory}`, {id: houseId});
-                            setUpdates((prevUpdates) => [
-                                ...prevUpdates,
-                                {messageCategory, updateType, updateCategory, houseId},
-                            ]);
-                        }
-                    } catch (error) {
-                        console.error('Error parsing message:', error);
-                    }
-                });
-
-                connection.on('error', console.error);
-                connection.connect();
-
-                // Disconnect from the MQTT broker when the component unmounts
-                return () => {
-                    connection.disconnect();
-                    setIsConnected(false);
-                    setConnection(null);
-                };
-            } catch (error) {
-                console.error('Error getting token or connecting:', error);
+        return () => {
+            if (connection) {
+                connection.disconnect();
             }
         };
+    }, [connectWithFreshToken]);
 
-        connectWithToken();
-    }, [endpoint, authorizer, getToken]);
-
-    // Provide the updates and connection state to the context
     const contextValue: HouseUpdateContextValue = {
         updates,
         isConnected,
