@@ -1,19 +1,22 @@
 "use client"
 import {api} from "@/trpc/react";
 import {Separator} from "@/components/ui/separator";
-import {House} from "@/app/dashboard/contexts/prompts";
+import {CurrentPromptContext, House} from "@/app/dashboard/contexts/prompts";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useContext, useEffect, useState} from "react";
 import {cn} from "@/lib/utils";
 import clsx from "clsx";
 import {Input} from "@/components/ui/input";
 import {toast} from "sonner";
 import {useHouseUpdateContext} from "@/app/dashboard/contexts/house-updates-context";
 import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
+import Link from "next/link";
 
 const HousePreviewCard = ({house}: { house: House }) => {
+    const {addHouse} = useContext(CurrentPromptContext)
+
     if (!house) return null;
 
     return (
@@ -29,7 +32,9 @@ const HousePreviewCard = ({house}: { house: House }) => {
                 ${house.createdAt.toLocaleDateString()}`} </CardContent>
             <CardFooter>
                 <div className="flex justify-between items-center">
-                    <Button variant="secondary">Go to house</Button>
+                    <Link href={`/dashboard/`} passHref onClick={() => addHouse(house)}>
+                        <Button variant="secondary">Generate</Button>
+                    </Link>
                 </div>
             </CardFooter>
         </Card>
