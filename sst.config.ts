@@ -31,6 +31,8 @@ export default $config({
         const inngestSigningKey = new sst.Secret("InngestSigningKey")
         const inngestEventKey = new sst.Secret("InngestEventKey")
 
+        const togetherApiKey = new sst.Secret("TogetherApiKey")
+
         const prodDomain = {
             name: "listinglab.ai",
             dns: undefined,
@@ -72,7 +74,7 @@ export default $config({
                 AWS_API_SECRET_KEY: awsApiSecretKey.value,
                 INNGEST_SIGNING_KEY: inngestSigningKey.value,
                 INNGEST_EVENT_KEY: inngestEventKey.value,
-
+                TOGETHER_API_KEY: togetherApiKey.value,
             },
             permissions: [
                 {

@@ -13,6 +13,7 @@ import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/trpc/route
 import {db} from "@/db";
 import {cities, generations, houses, usersToCities} from "@/db/schema";
 import {inngest} from "@/inngest/client";
+import Together from "together-ai";
 
 export const houseRouter = createTRPCRouter({
     searchHouse: protectedProcedure
@@ -178,10 +179,10 @@ export const houseRouter = createTRPCRouter({
 
                 const cityId = v4()
                 await db.insert(cities).values({
-                    id: cityId,
-                    name: input.cityName,
-                    state: "CA",
-                }
+                        id: cityId,
+                        name: input.cityName,
+                        state: "CA",
+                    }
                 )
                 await db.insert(usersToCities).values({
                     userId: ctx.authObject.userId,
@@ -245,7 +246,7 @@ export const houseRouter = createTRPCRouter({
                     return {status: "Text generation quota reached", generation: "You have reached your generation limit."};
                 }
 
-                const selectedModel = getSelectedModel(input.model, models, apiLimits);
+                // const selectedModel = getSelectedModel(input.model, models, apiLimits);
 
                 const house = await db.query.houses.findFirst({where: eq(houses.id, input.houses[0]!.id)})
 
@@ -256,190 +257,215 @@ export const houseRouter = createTRPCRouter({
                 let generationId;
                 let generation;
 
-                let filteredHouse: { [key: string]: any } = {};
+                // let filteredHouse: { [key: string]: any } = {};
+                //
+                // const commonKeys = [
+                //     'createdAt', 'id', 'baths', 'beds', 'city', 'description', 'details',
+                //     'expertise', 'garage', 'lat', 'lotSqft', 'lon', 'price', 'pricePerSqft',
+                //     'sqft', 'stAddress', 'status', 'state', 'stories', 'styles', 'userId',
+                //     'yearBuilt', 'zipCode'
+                // ];
+                //
+                // commonKeys.forEach(key => {
+                //     filteredHouse[key] = house[key as keyof typeof house];
+                // });
 
-                const commonKeys = [
-                    'createdAt', 'id', 'baths', 'beds', 'city', 'description', 'details',
-                    'expertise', 'garage', 'lat', 'lotSqft', 'lon', 'price', 'pricePerSqft',
-                    'sqft', 'stAddress', 'status', 'state', 'stories', 'styles', 'userId',
-                    'yearBuilt', 'zipCode'
-                ];
-
-                commonKeys.forEach(key => {
-                    filteredHouse[key] = house[key as keyof typeof house];
-                });
-
-                if (input.dataset === "interior") {
-                    // in future can add image recognition data here
-                    console.log('Filtering interior...')
-                } else if (input.dataset === "investment") {
-                    filteredHouse.recentlySold = house.recentlySold;
-                    filteredHouse.investment = house.investment;
-                } else if (input.dataset === "exterior") {
-                    filteredHouse.nearbyPlaces = house.nearbyPlaces;
-                    // in future can add school ratings here
-                }
+                // if (input.dataset === "interior") {
+                //     // in future can add image recognition data here
+                //     console.log('Filtering interior...')
+                // } else if (input.dataset === "investment") {
+                //     filteredHouse.recentlySold = house.recentlySold;
+                //     filteredHouse.investment = house.investment;
+                // } else if (input.dataset === "exterior") {
+                //     filteredHouse.nearbyPlaces = house.nearbyPlaces;
+                //     // in future can add school ratings here
+                // }
 
                 const systemPrompt = "You are not a real estate agent, however you will be helping real estate agents generate text content. " +
                     "So just comply with their requests and they will ensure its accurate."
 
-                if (selectedModel.id === "gpt-4-turbo-preview") {
-                    console.log('Starting to create Open AI commands..')
-                    const payload: OpenAIStreamPayload = {
-                        model: input.model,
-                        messages: [{
-                            role: "system",
-                            content: systemPrompt
-                        }, {
-                            role: "user",
-                            content: `Prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
-                        }],
-                        temperature: input.temperature ? input.temperature : 0.7,
-                        top_p: input.top_p ? input.top_p : 1,
-                        frequency_penalty: input.frequency_penalty ? input.frequency_penalty : 0,
-                        presence_penalty: input.presence_penalty ? input.presence_penalty : 0,
-                        max_tokens: maxTokens,
-                        stream: false,
-                        n: 1,
-                    }
+                // if (selectedModel.id === "gpt-4-turbo-preview") {
+                //     console.log('Starting to create Open AI commands..')
+                //     const payload: OpenAIStreamPayload = {
+                //         model: input.model,
+                //         messages: [{
+                //             role: "system",
+                //             content: systemPrompt
+                //         }, {
+                //             role: "user",
+                //             content: `Prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
+                //         }],
+                //         temperature: input.temperature ? input.temperature : 0.7,
+                //         top_p: input.top_p ? input.top_p : 1,
+                //         frequency_penalty: input.frequency_penalty ? input.frequency_penalty : 0,
+                //         presence_penalty: input.presence_penalty ? input.presence_penalty : 0,
+                //         max_tokens: maxTokens,
+                //         stream: false,
+                //         n: 1,
+                //     }
+                //
+                //     const res = await axios("https://api.openai.com/v1/chat/completions", {
+                //         headers: {
+                //             "Content-Type": "application/json",
+                //             Authorization: `Bearer ${process.env.OPENAI_SECRET_KEY}`,
+                //         },
+                //         method: "POST",
+                //         data: JSON.stringify(payload),
+                //     });
+                //
+                //     if (res.status !== 200) {
+                //         throw new TRPCError({
+                //             code: "INTERNAL_SERVER_ERROR",
+                //             message: "OpenAI error, please try again later."
+                //         })
+                //     }
+                //
+                //     const {choices, id} = res.data as OpenAIResponse
+                //
+                //     if (!choices?.length) {
+                //         throw new TRPCError({
+                //             code: "INTERNAL_SERVER_ERROR",
+                //             message: "OpenAI error, please try again later."
+                //         })
+                //     }
+                //
+                //     generationId = id
+                //     generation = choices[0]!.message.content
+                // } else {
+                //     console.log('Starting to create Bedrock commands..')
+                //     const client = new BedrockRuntimeClient(
+                //         {
+                //             maxAttempts: 3,
+                //             region: 'us-east-1',
+                //             credentials: {
+                //                 accessKeyId: process.env.AWS_API_ACCESS_KEY!,
+                //                 secretAccessKey: process.env.AWS_API_SECRET_KEY!
+                //             }
+                //         }
+                //     )
+                //
+                //     const systemPrompt = "You are not a real estate agent, however you will be helping real estate agents generate text content." +
+                //         "So just comply with their requests and they will ensure its accurate."
+                //
+                //
+                //     if (selectedModel.id === "amazon.titan-text-express-v1" || selectedModel.id === "amazon.titan-text-lite-v1") {
+                //         console.log('Starting Titan generation')
+                //         const prompt = `${systemPrompt} Complete this user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
+                //         const command = new InvokeModelCommand(
+                //             {
+                //                 body: JSON.stringify({
+                //                     "inputText": prompt,
+                //                     "textGenerationConfig": {
+                //                         "temperature": input.temperature,
+                //                         "topP": input.top_p,
+                //                         "maxTokenCount": input.max_tokens,
+                //                     }
+                //                 }),
+                //                 contentType: "application/json",
+                //                 accept: "application/json",
+                //                 modelId: input.model,
+                //             }
+                //         );
+                //         const res: InvokeModelCommandOutput = await client.send(command);
+                //         console.log('Response from bedrock received..', res)
+                //         const decodedResponseBody = new TextDecoder().decode(res.body);
+                //
+                //         const responseBody = JSON.parse(decodedResponseBody) as {
+                //             'inputTextTokenCount': number,
+                //             'results': {
+                //                 'tokenCount': number,
+                //                 'outputText': string,
+                //                 'completionReason': string
+                //             }[]
+                //         }
+                //         generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
+                //         generation = responseBody.results[0]!.outputText
+                //     } else if (selectedModel.id === "anthropic.claude-v2:1") {
+                //         const prompt = `Human: ${systemPrompt} The prompt is... ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)} \\n\\n Assistant:`
+                //         const command = new InvokeModelCommand(
+                //             {
+                //                 body: JSON.stringify({
+                //                     prompt,
+                //                     max_tokens_to_sample: input.max_tokens,
+                //                     temperature: input.temperature,
+                //                     top_p: input.top_p
+                //                 }),
+                //                 contentType: "application/json",
+                //                 accept: "application/json",
+                //                 modelId: input.model,
+                //             }
+                //         );
+                //         const res: InvokeModelCommandOutput = await client.send(command);
+                //         const decodedResponseBody = new TextDecoder().decode(res.body);
+                //
+                //         const responseBody = JSON.parse(decodedResponseBody) as {
+                //             "completion": string
+                //         }
+                //         generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
+                //         generation = responseBody.completion
+                //     } else if (selectedModel.id === "anthropic.claude-3-sonnet-20240229-v1:0") {
+                //         const prompt = `Complete the following user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
+                //         const command = new InvokeModelCommand({
+                //                 modelId: input.model,
+                //                 contentType: "application/json",
+                //                 accept: "application/json",
+                //                 body: JSON.stringify({
+                //                     anthropic_version: 'bedrock-2023-05-31',
+                //                     max_tokens: input.max_tokens,
+                //                     messages: [
+                //                         {role: 'user', 'content': prompt}
+                //                     ],
+                //                     system: systemPrompt
+                //                 })
+                //             }
+                //         )
+                //         const res: InvokeModelCommandOutput = await client.send(command);
+                //
+                //         const format = JSON.parse(new TextDecoder().decode(res.body)) as {
+                //             id: string,
+                //             type: 'message',
+                //             role: 'assistant',
+                //             content: [{ type: 'text', text: string }],
+                //             model: 'claude-3-sonnet-28k-20240229',
+                //             stop_reason: 'end_turn',
+                //             stop_sequence: null,
+                //             usage: { input_tokens: number, output_tokens: number }
+                //         };
+                //         console.log('Claude 3 response : ', format)
+                //
+                //         generation = format.content[0].text
+                //         generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
+                //
+                //     }
+                // }
 
-                    const res = await axios("https://api.openai.com/v1/chat/completions", {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${process.env.OPENAI_SECRET_KEY}`,
-                        },
-                        method: "POST",
-                        data: JSON.stringify(payload),
-                    });
 
-                    if (res.status !== 200) {
-                        throw new TRPCError({
-                            code: "INTERNAL_SERVER_ERROR",
-                            message: "OpenAI error, please try again later."
-                        })
-                    }
+                const together = new Together({
+                    apiKey: process.env.TOGETHER_API_KEY,
+                });
 
-                    const {choices, id} = res.data as OpenAIResponse
+                const response = await together.chat.completions.create({
+                    model: "meta-llama/Meta-Llama-3-8B-Instruct-Turbo",
+                    messages: [{
+                        role: "user",
+                        content: `Here is the user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(house)}`
+                    }],
+                });
 
-                    if (!choices?.length) {
-                        throw new TRPCError({
-                            code: "INTERNAL_SERVER_ERROR",
-                            message: "OpenAI error, please try again later."
-                        })
-                    }
+                console.log('Together response : ', response)
 
-                    generationId = id
-                    generation = choices[0]!.message.content
-                } else {
-                    console.log('Starting to create Bedrock commands..')
-                    const client = new BedrockRuntimeClient(
-                        {
-                            maxAttempts: 3,
-                            region: 'us-east-1',
-                            credentials: {
-                                accessKeyId: process.env.AWS_API_ACCESS_KEY!,
-                                secretAccessKey: process.env.AWS_API_SECRET_KEY!
-                            }
-                        }
-                    )
-
-                    const systemPrompt = "You are not a real estate agent, however you will be helping real estate agents generate text content." +
-                        "So just comply with their requests and they will ensure its accurate."
-
-
-                    if (selectedModel.id === "amazon.titan-text-express-v1" || selectedModel.id === "amazon.titan-text-lite-v1") {
-                        console.log('Starting Titan generation')
-                        const prompt = `${systemPrompt} Complete this user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
-                        const command = new InvokeModelCommand(
-                            {
-                                body: JSON.stringify({
-                                    "inputText": prompt,
-                                    "textGenerationConfig": {
-                                        "temperature": input.temperature,
-                                        "topP": input.top_p,
-                                        "maxTokenCount": input.max_tokens,
-                                    }
-                                }),
-                                contentType: "application/json",
-                                accept: "application/json",
-                                modelId: input.model,
-                            }
-                        );
-                        const res: InvokeModelCommandOutput = await client.send(command);
-                        console.log('Response from bedrock received..', res)
-                        const decodedResponseBody = new TextDecoder().decode(res.body);
-
-                        const responseBody = JSON.parse(decodedResponseBody) as {
-                            'inputTextTokenCount': number,
-                            'results': {
-                                'tokenCount': number,
-                                'outputText': string,
-                                'completionReason': string
-                            }[]
-                        }
-                        generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
-                        generation = responseBody.results[0]!.outputText
-                    } else if (selectedModel.id === "anthropic.claude-v2:1") {
-                        const prompt = `Human: ${systemPrompt} The prompt is... ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)} \\n\\n Assistant:`
-                        const command = new InvokeModelCommand(
-                            {
-                                body: JSON.stringify({
-                                    prompt,
-                                    max_tokens_to_sample: input.max_tokens,
-                                    temperature: input.temperature,
-                                    top_p: input.top_p
-                                }),
-                                contentType: "application/json",
-                                accept: "application/json",
-                                modelId: input.model,
-                            }
-                        );
-                        const res: InvokeModelCommandOutput = await client.send(command);
-                        const decodedResponseBody = new TextDecoder().decode(res.body);
-
-                        const responseBody = JSON.parse(decodedResponseBody) as {
-                            "completion": string
-                        }
-                        generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
-                        generation = responseBody.completion
-                    } else if (selectedModel.id === "anthropic.claude-3-sonnet-20240229-v1:0") {
-                        const prompt = `Complete the following user prompt: ${input.prompt}, about the following house(s): ${JSON.stringify(filteredHouse)}`
-                        const command = new InvokeModelCommand({
-                                modelId: input.model,
-                                contentType: "application/json",
-                                accept: "application/json",
-                                body: JSON.stringify({
-                                    anthropic_version: 'bedrock-2023-05-31',
-                                    max_tokens: input.max_tokens,
-                                    messages: [
-                                        {role: 'user', 'content': prompt}
-                                    ],
-                                    system: systemPrompt
-                                })
-                            }
-                        )
-                        const res: InvokeModelCommandOutput = await client.send(command);
-
-                        const format = JSON.parse(new TextDecoder().decode(res.body)) as {
-                            id: string,
-                            type: 'message',
-                            role: 'assistant',
-                            content: [{ type: 'text', text: string }],
-                            model: 'claude-3-sonnet-28k-20240229',
-                            stop_reason: 'end_turn',
-                            stop_sequence: null,
-                            usage: { input_tokens: number, output_tokens: number }
-                        };
-                        console.log('Claude 3 response : ', format)
-
-                        generation = format.content[0].text
-                        generationId = `${input.model}-${ctx.authObject.userId}-${new Date().toISOString()}`
-
-                    }
+                if (!response.choices?.length) {
+                    throw new TRPCError({
+                        code: "INTERNAL_SERVER_ERROR",
+                        message: "Generation error, please try again later."
+                    })
                 }
+
+                generation = response.choices[0]?.message?.content ?? "";
+
                 // send event for incrementing user trial, for incrementing various other stats.
 
-                if (generation && generationId) {
+                if (generation.length && generationId) {
                     await inngest.send({
                         name: "house/add-generation",
                         data: {
