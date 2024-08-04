@@ -28,14 +28,14 @@ export const GenerationsSection = () => {
 
         try {
             const response = await genMutation.mutateAsync({
-                model: advOptions.modelId as ModelId,
                 prompt: prompt,
                 houses: selectedHouses.map((house) => {
                     return {id: house!.id}
                 }),
                 max_tokens: advOptions.max_tokens,
                 temperature: advOptions.temperature,
-                top_p: advOptions.top_p
+                top_p: advOptions.top_p,
+                dataset: "interior"
             })
             if (response.status === "Out of Credits") {
                 toast.error('Out of credits, upgrade your subscription.')

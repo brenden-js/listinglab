@@ -1,43 +1,202 @@
 "use client"
 import {api} from "@/trpc/react";
 import {Separator} from "@/components/ui/separator";
-import {CurrentPromptContext, House} from "@/app/dashboard/contexts/prompts";
+import {CurrentPromptContext, House, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {useCallback, useContext, useEffect, useState} from "react";
-import {cn} from "@/lib/utils";
 import clsx from "clsx";
 import {Input} from "@/components/ui/input";
 import {toast} from "sonner";
 import {useHouseUpdateContext} from "@/app/dashboard/contexts/house-updates-context";
-import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
-import Link from "next/link";
+import {Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle} from "@/components/ui/dialog";
+import {Textarea} from "@/components/ui/textarea";
+import {useQueryClient} from "@tanstack/react-query";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+
+
+const ExpertiseFeed = ({house}: { house: House | UnhydratedHouse }) => {
+    const {updateExpertise} = useContext(CurrentPromptContext)
+
+    const [expertise, setExpertise] = useState('')
+
+    if (!house) {
+        return <></>
+    }
+    const onSubmit = async () => {
+        await updateExpertise(expertise, house.id)
+    }
+
+    return (
+        <>
+            <Tabs defaultValue="interior" className="w-full group">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="interior">House Data</TabsTrigger>
+                    <TabsTrigger value="exterior">Neighborhood Data</TabsTrigger>
+                    <TabsTrigger value="investment">Mortgage & Investment Data</TabsTrigger>
+                </TabsList>
+                <TabsContent value="interior">
+                    <Card
+                        className="transition-opacity duration-300 opacity-70 group-hover:opacity-100 hover:opacity-100">
+                        <CardHeader>
+                            <CardTitle>House and listing details</CardTitle>
+                            <CardDescription>
+                                Create content using listing data and house data. Includes
+                                details about the house like square footage, property features, and more.
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="exterior">
+                    <Card
+                        className="transition-opacity duration-300 opacity-70 group-hover:opacity-100 hover:opacity-100">
+                        <CardHeader>
+                            <CardTitle>Neighborhood and business data</CardTitle>
+                            <CardDescription>
+                                Create content using places nearby the house. Searches for the nearest 20 places.
+                                Includes restaurants, grocery stores, parks, and other
+                                notable places.
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="investment">
+                    <Card
+                        className="transition-opacity duration-300 opacity-70 group-hover:opacity-100 hover:opacity-100">
+                        <CardHeader>
+                            <CardTitle>Mortgage and investment data</CardTitle>
+                            <CardDescription>
+                                Create content that analyzes the numbers on the house. Includes recently sold listings,
+                                estimated FHA and traditional mortgage estimates, down payment, and more.
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </>
+    )
+}
+
+const HouseDialog = ({house, open, onOpenChange}: {
+    house: House,
+    open: boolean,
+    onOpenChange: (open: boolean) => void
+}) => {
+    const {claimSelectedHouse} = useContext(CurrentPromptContext)
+
+    const claimHouse = api.house.claimHouse.useMutation()
+    const queryClient = useQueryClient();
+
+    const onClaimMutation = async (houseId: string) => {
+        console.log('Claiming house...')
+        claimHouse.mutate({houseId})
+        claimSelectedHouse(houseId)
+    }
+
+
+    if (!house) return null;
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogOverlay asChild>
+            </DialogOverlay>
+            <DialogContent className="w-[90vw] h-[90vh] max-w-[90vw]">
+                <DialogHeader>
+                    <DialogTitle>{house.stAddress}</DialogTitle>
+                </DialogHeader>
+                <div className="flex">
+                    <div className="w-[38.2%] border-r border-gray-200 pr-5">
+                        <div className="space-y-4">
+                            <h2 className="text-2xl font-bold">{house.price ? `$${house.price.toLocaleString()}` : 'Price not available'}</h2>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div>Beds: {house.beds || 'N/A'}</div>
+                                <div>Baths: {house.baths || 'N/A'}</div>
+                                <div>Sqft: {house.sqft?.toLocaleString() || 'N/A'}</div>
+                                <div>Year Built: {house.yearBuilt || 'N/A'}</div>
+                            </div>
+                            <div className="text-sm">
+                                <p>
+                                    <strong>Address:</strong> {house.stAddress}, {house.city}, {house.state} {house.zipCode}
+                                </p>
+                                <p><strong>Lot
+                                    Size:</strong> {house.lotSqft ? `${house.lotSqft.toLocaleString()} sqft` : 'N/A'}
+                                </p>
+                                <p><strong>Price per
+                                    Sqft:</strong> {house.pricePerSqft ? `$${house.pricePerSqft.toFixed(2)}` : 'N/A'}
+                                </p>
+                            </div>
+                            {house.claimed ? (
+                                <ExpertiseFeed house={house}/>
+                            ) : (
+                                <Button>
+                                    Gather data
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="w-[61.8%]">
+                        <div className="flex-grow overflow-y-auto p-4 space-y-4">
+                            {/* Message history */}
+                            <div className="bg-gray-100 p-3 rounded-lg">
+                                <p className="font-semibold">AI</p>
+                                <p>Welcome! How can I assist you with information about this property?</p>
+                            </div>
+                            <div className="bg-blue-100 p-3 rounded-lg ml-auto max-w-[80%]">
+                                <p className="font-semibold">You</p>
+                                <p>Can you tell me more about the neighborhood?</p>
+                            </div>
+                            <div className="bg-gray-100 p-3 rounded-lg">
+                                <p className="font-semibold">AI</p>
+                                <p>Certainly! This property is located in a vibrant area with many amenities nearby.
+                                    There are several parks within walking distance, and the neighborhood is known for
+                                    its excellent schools. Would you like more specific information about any particular
+                                    aspect of the neighborhood?</p>
+                            </div>
+                        </div>
+                        <div className="p-4 border-t">
+                            <form className="flex space-x-2">
+                                <Textarea
+                                    placeholder="Type your message here..."
+                                    className="flex-grow p-2 border rounded-lg"
+                                />
+                                <Button
+                                    type="submit"
+                                >
+                                    Send
+                                </Button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 const HousePreviewCard = ({house}: { house: House }) => {
-    const {addHouse} = useContext(CurrentPromptContext)
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     if (!house) return null;
 
     return (
-        <Card className="h-full">
-            <CardHeader>
-                <CardTitle>{house.stAddress}</CardTitle>
-                <CardDescription>
-                    {house.city} {house.zipCode}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                {`Listed at $${house.price?.toLocaleString()} Found at
-                ${house.createdAt.toLocaleDateString()}`} </CardContent>
-            <CardFooter>
-                <div className="flex justify-between items-center">
-                    <Link href={`/dashboard/`} passHref onClick={() => addHouse(house)}>
-                        <Button variant="secondary">Generate</Button>
-                    </Link>
-                </div>
-            </CardFooter>
-        </Card>
+        <>
+            <Card
+                className="h-full transition-all duration-300 hover:shadow-sm cursor-pointer"
+                onClick={() => setIsDialogOpen(true)}
+            >
+                <CardHeader>
+                    <CardTitle>{house.stAddress}</CardTitle>
+                    <CardDescription>
+                        {house.city} {house.zipCode}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    {`Listed at $${house.price?.toLocaleString()} Found at
+                    ${house.createdAt.toLocaleDateString()}`}
+                </CardContent>
+            </Card>
+            <HouseDialog house={house} open={isDialogOpen} onOpenChange={setIsDialogOpen}/>
+        </>
     );
 };
 

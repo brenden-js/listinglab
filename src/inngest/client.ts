@@ -20,7 +20,7 @@ type AddGenerationToHouse = {
     data: {
         houseId: string
         text: string
-        model: string
+        model?: string
         prompt: string
         userId: string
     }

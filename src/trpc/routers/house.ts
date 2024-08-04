@@ -218,13 +218,13 @@ export const houseRouter = createTRPCRouter({
             frequency_penalty: z.number().optional(),
             presence_penalty: z.number().optional(),
             max_tokens: z.number(),
-            model: z.union([
-                z.literal("gpt-4-turbo-preview"),
-                z.literal("anthropic.claude-v2:1"),
-                z.literal("amazon.titan-text-lite-v1"),
-                z.literal("amazon.titan-text-express-v1"),
-                z.literal("anthropic.claude-3-sonnet-20240229-v1:0")
-            ]),
+            // model: z.union([
+            //     z.literal("gpt-4-turbo-preview"),
+            //     z.literal("anthropic.claude-v2:1"),
+            //     z.literal("amazon.titan-text-lite-v1"),
+            //     z.literal("amazon.titan-text-express-v1"),
+            //     z.literal("anthropic.claude-3-sonnet-20240229-v1:0")
+            // ]),
             dataset: z.union([
                 z.literal("interior"),
                 z.literal("exterior"),
@@ -472,7 +472,7 @@ export const houseRouter = createTRPCRouter({
                             id: generationId,
                             houseId: input.houses[0]!.id,
                             text: generation,
-                            model: input.model,
+                            // model: input.model,
                             prompt: input.prompt,
                             userId: ctx.authObject.userId
                         }

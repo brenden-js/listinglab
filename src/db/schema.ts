@@ -71,7 +71,7 @@ export const generations = sqlLiteTable(
         houseId: text("houseId").notNull(),
         prompt: text("prompt").notNull(),
         text: text("text").notNull(),
-        model: text("model", {length: 255}).notNull(),
+        model: text("model", {length: 255}),
     }
 )
 
