@@ -10,9 +10,8 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
     const {updates} = useHouseUpdateContext()
     const [updateStatus, setUpdateStatus] = useState({
         basic: 'loading',
-        neighborhood: 'loading',
-        investment: 'loading',
-        recentlySold: 'loading'
+        Financial: 'loading',
+        Location: 'loading',
     });
 
     useEffect(() => {
@@ -32,7 +31,7 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
         return <div>No house found</div>
     }
 
-    const getUpdateIcon = (category: 'basic' | 'investment' | 'neighborhood' | 'recentlySold') => {
+    const getUpdateIcon = (category: 'basic' | 'Financial' | 'Location') => {
         if (updateStatus[category] === 'loading') {
             return <ReloadIcon className="animate-spin h-4 w-4"/>;
         } else if (updateStatus[category] === 'complete') {
@@ -47,31 +46,24 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
             <div className={"flex text-sm text-muted-foreground"}>Data aggregated</div>
             <div className={"w-full"}>
                 <div className={"flex justify-between"}>
-                    <p className={"text-sm"}>Listing</p>
+                    <p className={"text-sm"}>Basic</p>
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.lat ?
                             <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('basic')}</div>
                     </div>
                 </div>
                 <div className={"flex justify-between"}>
-                    <p className={"text-sm"}>Neighborhood</p>
+                    <p className={"text-sm"}>Location</p>
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.nearbyPlaces ?
-                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('neighborhood')}</div>
+                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('Location')}</div>
                     </div>
                 </div>
                 <div className={"flex justify-between"}>
-                    <p className={"text-sm"}>Investment Data</p>
+                    <p className={"text-sm"}>Financial</p>
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.investment ?
-                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('investment')}</div>
-                    </div>
-                </div>
-                <div className={"flex justify-between"}>
-                    <p className={"text-sm"}>Recently sold</p>
-                    <div className={"text-sm"}>
-                        <div className="text-sm">{house.recentlySold ?
-                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('recentlySold')}</div>
+                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('Financial')}</div>
                     </div>
                 </div>
             </div>
