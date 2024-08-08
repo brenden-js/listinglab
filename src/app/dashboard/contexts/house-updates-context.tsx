@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { iot, mqtt } from 'aws-iot-device-sdk-v2';
 import { HouseUpdateContextValue } from "@/lib/contexts/house-updates";
@@ -21,7 +22,7 @@ export const HouseUpdateProvider: React.FC<{
     const [updates, setUpdates] = useState<HouseUpdateContextValue['updates']>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [connection, setConnection] = useState<mqtt.MqttClientConnection | null>(null);
-    const { session} = useSession();
+    const { session } = useSession();
 
     const createConnection = useCallback((token: string) => {
         const client = new mqtt.MqttClient();
@@ -44,44 +45,40 @@ export const HouseUpdateProvider: React.FC<{
         }
 
         try {
-            const freshToken = await session.getToken();
+            let freshToken = await session.getToken();
             if (!freshToken) {
                 console.error('Failed to get fresh token');
                 return;
             }
 
-            if (connection) {
-                await connection.disconnect();
-            }
+            const connection = createConnection(freshToken);
 
-            const newConnection = createConnection(freshToken);
-
-            newConnection.on('connect', async () => {
+            connection.on('connect', async () => {
                 try {
-                    await newConnection.subscribe(`${session.user.id}-house-updates`, mqtt.QoS.AtLeastOnce);
+                    await connection.subscribe(`${session.user.id}-house-updates`, mqtt.QoS.AtLeastOnce);
                     setIsConnected(true);
-                    setConnection(newConnection);
+                    setConnection(connection);
                     console.log('Connected to MQTT');
                 } catch (e) {
                     console.error('Error subscribing to topic:', e);
                 }
             });
 
-            newConnection.on('disconnect', () => {
+            connection.on('disconnect', () => {
                 console.log('Disconnected, attempting to reconnect...');
                 setIsConnected(false);
-                connectWithFreshToken();
+                reconnect();
             });
 
-            newConnection.on('error', (error) => {
+            connection.on('error', (error) => {
                 console.error('Connection error:', error);
                 if (error.toString().includes('expired')) {
                     console.log('Token expired, reconnecting with fresh token...');
-                    connectWithFreshToken();
+                    reconnect();
                 }
             });
 
-            newConnection.on('message', (_fullTopic, payload) => {
+            connection.on('message', (_fullTopic, payload) => {
                 const message = new TextDecoder('utf8').decode(new Uint8Array(payload));
                 try {
                     const { messageCategory, updateType, updateCategory, houseId } = JSON.parse(message);
@@ -99,11 +96,18 @@ export const HouseUpdateProvider: React.FC<{
                 }
             });
 
-            newConnection.connect();
+            connection.connect();
         } catch (error) {
             console.error('Error connecting:', error);
         }
     }, [session, createConnection]);
+
+    const reconnect = useCallback(async () => {
+        if (connection) {
+            await connection.disconnect();
+        }
+        await connectWithFreshToken();
+    }, [connection, connectWithFreshToken]);
 
     useEffect(() => {
         connectWithFreshToken();
