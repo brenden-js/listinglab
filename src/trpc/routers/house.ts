@@ -582,10 +582,9 @@ export const houseRouter = createTRPCRouter({
                             Ask the agent clarifying questions to better understand what details would be most relevant and compelling for potential buyers. The goal is to create content that paints a vivid picture of what it would be like to live in this neighborhood, beyond just the physical location. This content should complement the agent's expertise and market knowledge.`
                         })
                     }
-
-                    chatData.push({sender: "You", message: `${input.message}`})
                 }
 
+                chatData.push({sender: "You", message: `${input.message.message}`})
 
                 const together = new Together({
                     apiKey: process.env.TOGETHER_API_KEY,
@@ -627,13 +626,13 @@ export const houseRouter = createTRPCRouter({
 
                 await db.update(houses).set({
                     [input.topic.toLowerCase() + "Expertise"]: JSON.stringify(filteredChatData),
-                }).where(eq(houses.userId, ctx.authObject.userId))
+                }).where(eq(houses.id, input.houseId))
 
                 console.log('Updated house...', house.id)
 
                 return {
                     status: "Chat updated successfully",
-                    chatData,
+                    filteredChatData,
                     chatTopic: input.topic,
                 };
             }),

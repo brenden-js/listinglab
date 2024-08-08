@@ -17,7 +17,6 @@ import {HouseDialogProvider, useHouseDialog} from "@/app/dashboard/contexts/hous
 import {LiveDataFeed} from "@/app/dashboard/components/live-data-feed";
 import {motion, AnimatePresence} from 'framer-motion';
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {useQueryClient} from "@tanstack/react-query";
 
 interface ChatInterfaceProps {
     showDataView: boolean;
@@ -34,20 +33,31 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
     const {currentChat} = useHouseDialog();
     const [newMessage, setNewMessage] = useState("");
 
-    const queryClient = useQueryClient();
+    const utils = api.useUtils()
+
 
     const updateChat = api.house.updateChat.useMutation({
         onSuccess: (data, variables) => {
-            // Find the house in the local cache
-            queryClient.setQueryData(['houses', variables.houseId], (prevHouse: any) => {
-                if (prevHouse) {
-                    return {
-                        ...prevHouse,
-                        [variables.topic.toLowerCase() + 'Expertise']: JSON.stringify(data.chatData),
-                    };
-                }
-                return prevHouse;
-            });
+            // Get the current houses data from the cache
+            const currentHouses = utils.house.getHouses.getData();
+
+            console.log('currentHouses', currentHouses)
+
+            if (currentHouses) {
+                // Find the house in the local cache and update the appropriate expertise field
+                const updatedHouses = currentHouses.map((house) => {
+                    if (house?.id === variables.houseId) {
+                        return {
+                            ...house,
+                            [variables.topic.toLowerCase() + 'Expertise']: JSON.stringify(data.filteredChatData),
+                        };
+                    }
+                    return house;
+                });
+
+                // Update the cache with the modified houses data
+                utils.house.getHouses.setData(undefined, () => updatedHouses);
+            }
         },
     });
 
@@ -68,7 +78,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
             console.log('response', response)
 
             if (response.status === 'Chat updated successfully') {
-                toast.success('Message sent successfully')
+                toast.success('Chat generated successfully')
                 setNewMessage("");
             }
         } catch (error) {
@@ -78,15 +88,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
 
     // Dummy data for different chats
     const chatData = {
-        Property: house.propertyExpertise ? JSON.parse(house?.propertyExpertise) : [{
+        Property: house.propertyExpertise ? JSON.parse(house.propertyExpertise) : [{
             "sender": "Deena",
             "message": "Here you can add the property condition, upgrades, and renovations. This will be included in the main chat"
         },],
-        Location: house.locationExpertise ? JSON.parse(house?.locationExpertise) : [{
+        Location: house.locationExpertise ? JSON.parse(house.locationExpertise) : [{
             "sender": "Deena",
             "message": "Here you can add things like the neighborhood vibe, local restaurants, and shops. This will be included in the main chat"
         },],
-        Financial: house.financialExpertise ? JSON.parse(house?.financialExpertise) : [{
+        Financial: house.financialExpertise ? JSON.parse(house.financialExpertise) : [{
             "sender": "Deena",
             "message": "Here you can add things like the renovation potential and other relevant investment information. This will be included in the main chat"
         },],
@@ -125,8 +135,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
 
     return (
         <>
+        <ScrollArea className="flex-grow pr-4">
             <div className="flex-1 overflow-hidden">
-                <ScrollArea className="flex-grow pr-4">
                     <div className="p-4 space-y-4">
                         <AnimatePresence mode="wait">
                             {showDataView ? (
@@ -163,17 +173,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                             )}
                         </AnimatePresence>
                     </div>
-                </ScrollArea>
             </div>
+            </ScrollArea>
             <div className="p-4 border-t">
                 <div className="flex space-x-2">
                     <Textarea
                         placeholder="Type your message here..."
                         className="flex-grow p-2 border rounded-lg"
+                        disabled={updateChat.isPending}
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                     />
-                    <Button onClick={handleSendMessage} disabled={newMessage.trim() === ""}>Send</Button>
+                    <Button onClick={handleSendMessage} disabled={newMessage.trim() === "" || updateChat.isPending}>Send</Button>
                 </div>
             </div>
         </>
@@ -396,7 +407,7 @@ export default function HousesPageOverview() {
         }
     }, [currentCities])
 
-    const houses = api.house.getHouses.useQuery()
+    const houses = api.house.getHouses.useQuery( )
     // TODO use effect that invalidates the houses query when a new update is added where the messageCategory
     // is equal to new-house-found
 
