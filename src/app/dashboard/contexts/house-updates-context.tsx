@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, {createContext, useContext, useEffect, useState, useCallback, useRef} from 'react';
 import { iot, mqtt } from 'aws-iot-device-sdk-v2';
 import { useSession } from "@clerk/nextjs";
 import { toast } from "sonner";
@@ -26,8 +26,10 @@ export const HouseUpdateProvider: React.FC<{
 }> = ({children, authorizer, endpoint, topic}) => {
     const [updates, setUpdates] = useState<HouseUpdateContextValue['updates']>([]);
     const [isConnected, setIsConnected] = useState(false);
-    const [connection, setConnection] = useState<mqtt.MqttClientConnection | null>(null);
+    const connectionRef = useRef<mqtt.MqttClientConnection | null>(null);
     const {session, isLoaded} = useSession();
+    const tokenExpirationRef = useRef<number | null>(null);
+    const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const createConnection = useCallback((token: string) => {
         const client = new mqtt.MqttClient();
@@ -43,93 +45,123 @@ export const HouseUpdateProvider: React.FC<{
         );
     }, [endpoint, authorizer]);
 
-    useEffect(() => {
+    const scheduleTokenRefresh = useCallback((expirationTime: number) => {
+        const currentTime = Math.floor(Date.now() / 1000);
+        const timeUntilExpiration = expirationTime - currentTime;
+        const refreshTime = Math.max(timeUntilExpiration - 60, 0); // Refresh 1 minute before expiration or immediately if less than 1 minute left
+
+        setTimeout(() => {
+            console.log('Token nearing expiration, reconnecting with fresh token...');
+            reconnect();
+        }, refreshTime * 1000);
+    }, []);
+
+    const connectWithRetry = useCallback(async (retryCount = 0, maxRetries = 5) => {
         if (!session?.user.id || !isLoaded) {
             return;
         }
 
-        let isMounted = true;
+        try {
+            const freshToken = await session.getToken();
+            if (!freshToken) {
+                throw new Error('Failed to get fresh token');
+            }
 
-        const setupConnection = () => {
-            session.getToken()
-                .then(freshToken => {
-                    if (!freshToken) {
-                        throw new Error('Failed to get fresh token');
+            // Decode the token to get expiration time
+            const tokenParts = freshToken.split('.');
+            if (tokenParts.length === 3) {
+                const payload = JSON.parse(atob(tokenParts[1]));
+                if (payload.exp) {
+                    tokenExpirationRef.current = payload.exp;
+                    scheduleTokenRefresh(payload.exp);
+                }
+            }
+
+            const newConnection = createConnection(freshToken);
+
+            newConnection.on('connect', () => {
+                newConnection.subscribe(`${session.user.id}-house-updates`, mqtt.QoS.AtLeastOnce)
+                    .then(() => {
+                        setIsConnected(true);
+                        connectionRef.current = newConnection;
+                        console.log('Connected to MQTT');
+                    })
+                    .catch(e => {
+                        console.error('Error subscribing to topic:', e);
+                        throw e;
+                    });
+            });
+
+            newConnection.on('connection_failure', (error) => {
+                console.error('Connection failure:', error);
+                setIsConnected(false);
+                reconnect();
+            });
+
+            newConnection.on('disconnect', () => {
+                console.log('Disconnected from MQTT...');
+                toast.error('Connection lost. Attempting to reconnect...');
+                setIsConnected(false);
+                reconnect();
+            });
+
+            newConnection.on('error', (error) => {
+                console.error('Connection error:', error);
+                setIsConnected(false);
+                newConnection.disconnect();
+                reconnect();
+            });
+
+            newConnection.on('message', (_fullTopic, payload) => {
+                const message = new TextDecoder('utf8').decode(new Uint8Array(payload));
+                try {
+                    const messageObject = JSON.parse(message) as LiveDataFeedUpdate | ListingScanUpdate;
+                    setUpdates((prevUpdates) => [...prevUpdates, messageObject]);
+                    if (messageObject.updateType === 'ListingScanUpdate') {
+                        toast.success(`New listing found: ${messageObject.stAddress}`, {id: messageObject.houseId});
                     }
-                    return createConnection(freshToken);
-                })
-                .then(newConnection => {
-                    if (!isMounted) return;
+                } catch (error) {
+                    console.error('Error parsing message:', error);
+                }
+            });
 
-                    newConnection.on('connect', () => {
-                        if (!isMounted) return;
-                        newConnection.subscribe(`${session.user.id}-house-updates`, mqtt.QoS.AtLeastOnce)
-                            .then(() => {
-                                if (!isMounted) return;
-                                setIsConnected(true);
-                                setConnection(newConnection);
-                                console.log('Connected to MQTT');
-                            })
-                            .catch(e => {
-                                console.error('Error subscribing to topic:', e);
-                            });
-                    });
+            await newConnection.connect();
+        } catch (error) {
+            console.error('Error setting up connection:', error);
+            if (retryCount < maxRetries) {
+                const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+                console.log(`Retrying connection in ${delay/1000} seconds...`);
+                reconnectTimeoutRef.current = setTimeout(() => connectWithRetry(retryCount + 1, maxRetries), delay);
+            } else {
+                console.error('Max retries reached. Unable to establish connection.');
+                toast.error('Unable to establish connection. Please refresh the page.');
+            }
+        }
+    }, [session, isLoaded, createConnection, scheduleTokenRefresh]);
 
-                    newConnection.on('disconnect', () => {
-                        if (!isMounted) return;
-                        console.log('Disconnected from MQTT...');
-                        toast.error('Looks like you are AFK, refresh page to get live updates again...');
-                        setIsConnected(false);
-                    });
+    const reconnect = useCallback(() => {
+        if (connectionRef.current) {
+            connectionRef.current.disconnect();
+        }
+        if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+        }
+        connectWithRetry();
+    }, [connectWithRetry]);
 
-                    newConnection.on('error', (error) => {
-                        if (!isMounted) return;
-                        console.error('Connection error, disconnecting:', error);
-                        setIsConnected(false);
-                        newConnection.disconnect();
-                    });
-
-                    newConnection.on('message', (_fullTopic, payload) => {
-                        if (!isMounted) return;
-                        const message = new TextDecoder('utf8').decode(new Uint8Array(payload));
-                        try {
-                            const messageObject = JSON.parse(message) as LiveDataFeedUpdate | ListingScanUpdate;
-
-                            if (messageObject.updateType === 'LiveDataFeedUpdate') {
-                                setUpdates((prevUpdates) => [
-                                    ...prevUpdates,
-                                    messageObject,
-                                ]);
-                            } else if (messageObject.updateType === 'ListingScanUpdate') {
-                                const {houseId, updateType, stAddress} = messageObject;
-                                setUpdates((prevUpdates) => [
-                                    ...prevUpdates,
-                                    messageObject,
-                                ]);
-                                toast.success(`New listing found: ${stAddress}`, {id: houseId});
-                            }
-
-                        } catch (error) {
-                            console.error('Error parsing message:', error);
-                        }
-                    });
-
-                    return newConnection.connect();
-                })
-                .catch(error => {
-                    console.error('Error setting up connection:', error);
-                });
-        };
-
-        setupConnection();
+    useEffect(() => {
+        connectWithRetry();
 
         return () => {
-            isMounted = false;
-            if (connection) {
-                connection.disconnect();
+            console.log('Component unmounted, disconnecting connection...');
+            if (connectionRef.current) {
+                connectionRef.current.disconnect();
+            }
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
             }
         };
-    }, [session, isLoaded, createConnection]);
+    }, [connectWithRetry]);
 
     const contextValue: HouseUpdateContextValue = {
         updates,

@@ -18,6 +18,8 @@ import {LiveDataFeed} from "@/app/dashboard/components/live-data-feed";
 import {motion, AnimatePresence} from 'framer-motion';
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {PaperPlaneIcon} from "@radix-ui/react-icons";
+import {FinancialView, LocationView, PropertyView} from "@/app/dashboard/houses/components/chat-data-views";
+import Image from "next/image";
 
 interface ChatInterfaceProps {
     showDataView: boolean;
@@ -205,7 +207,32 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                                     exit={{opacity: 0, y: -20}}
                                     transition={{duration: 0.1}}
                                 >
-                                    {dataViews[currentChat]}
+                                    {currentChat === 'Property' && (
+                                        <PropertyView house={house}/>
+                                    )}
+                                    {currentChat === 'Financial' && house.investment !== null && (
+                                        <FinancialView investment={house.investment}/>
+                                    )}
+                                    {currentChat === 'Location' && house.nearbyPlaces !== null && (
+                                        <LocationView nearbyPlaces={house.nearbyPlaces}/>
+                                    )}
+                                    {currentChat === 'Main' && (
+                                        <div className={" flex items-center justify-center"}>
+                                            <div className="px-4">
+                                                <h3 className="text-xl font-bold mb-4">Main Chat</h3>
+                                                <p><strong>Your responses from the property, location, and financial
+                                                    chats will be included in this
+                                                    chat.</strong></p>
+                                            </div>
+                                            <Image
+                                                src="/images/main-chat-illustration.png"
+                                                alt="Main Chat Illustration"
+                                                width={400}
+                                                height={400}
+                                                className="mx-auto"
+                                            />
+                                        </div>
+                                    )}
                                 </motion.div>
                             ) : (
                                 <motion.div
@@ -278,12 +305,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
             </ScrollArea>
             <div className="p-4 border-t">
                 <Button
-                        variant="outline"
-                        onClick={() => setShowDataView(!showDataView)}
-                        className={"mb-4 w-[175px]"}
-                    >
-                        {showDataView ? 'Back to Chat' : `View ${currentChat} Data`}
-                    </Button>
+                    variant="outline"
+                    onClick={() => setShowDataView(!showDataView)}
+                    className={"mb-4 w-[175px]"}
+                >
+                    {showDataView ? 'Back to Chat' : `View ${currentChat} Data`}
+                </Button>
                 <div className="flex space-x-2">
                     <Textarea
                         placeholder="Type your message here..."
@@ -363,8 +390,9 @@ const HouseDialog: React.FC<{
                                         Sqft:</strong> {house.pricePerSqft ? `$${house.pricePerSqft}` : 'N/A'}
                                     </p>
                                 </div>
-                                {house.claimed && (<LiveDataFeed house={house}/>)}
-                                {!house.claimed && (<Button onClick={handleEnableSearch}>Get Data</Button>)}
+                                {house.claimed ? (<LiveDataFeed house={house}/>) : (
+                                    <Button onClick={handleEnableSearch}>Get Data</Button>
+                                )}
                             </div>
                         </ScrollArea>
                     </div>

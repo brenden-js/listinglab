@@ -28,6 +28,7 @@ export default function Layout({children}: { children: React.ReactNode }) {
                                                 <Image src={'/logo.png'} alt={'listing lab logo'} height={42}
                                                        width={42}/>
                                             </Link>
+
                                         </div>
                                         <SideNavigation />
                                     </div>

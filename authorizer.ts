@@ -1,7 +1,9 @@
-import {Resource, RealtimeAuthHandler} from "sst";
+import { Resource} from "sst";
+
+import {realtime} from "sst/aws/realtime"
 import {verifyToken} from '@clerk/backend';
 
-export const handler = RealtimeAuthHandler(async (token) => {
+export const handler = realtime.authorizer(async (token) => {
     const prefix = `${Resource.App.name}/${Resource.App.stage}`;
     console.log("token....", token);
 
