@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type ChatType = 'Property' | 'Location' | 'Financial';
+type ChatType = 'Property' | 'Location' | 'Financial' | 'Main';
 
 interface HouseDialogContextType {
   currentChat: ChatType;
@@ -10,7 +10,7 @@ interface HouseDialogContextType {
 const HouseDialogContext = createContext<HouseDialogContextType | undefined>(undefined);
 
 export function HouseDialogProvider({ children }: { children: ReactNode }) {
-  const [currentChat, setCurrentChat] = useState<ChatType>('Property');
+  const [currentChat, setCurrentChat] = useState<ChatType>('Main');
 
   return (
     <HouseDialogContext.Provider value={{ currentChat, setCurrentChat }}>

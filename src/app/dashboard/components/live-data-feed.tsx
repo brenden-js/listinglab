@@ -9,9 +9,9 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
 
     const {updates} = useHouseUpdateContext()
     const [updateStatus, setUpdateStatus] = useState({
-        basic: 'loading',
-        Financial: 'loading',
-        Location: 'loading',
+        Property: 'in-progress',
+        Financial: 'in-progress',
+        Location: 'in-progress',
     });
 
     useEffect(() => {
@@ -20,10 +20,12 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
 
         // Update the status based on the latest update
         houseUpdates.forEach(update => {
-            setUpdateStatus(prevStatus => ({
-                ...prevStatus,
-                [update.updateCategory]: update.updateType,
-            }));
+            if (update.updateType === 'LiveDataFeedUpdate') {
+                setUpdateStatus(prevStatus => ({
+                    ...prevStatus,
+                    [update.dataCategory]: update.jobStatus,
+                }));
+            }
         });
     }, [updates, house]);
 
@@ -31,8 +33,8 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
         return <div>No house found</div>
     }
 
-    const getUpdateIcon = (category: 'basic' | 'Financial' | 'Location') => {
-        if (updateStatus[category] === 'loading') {
+    const getUpdateIcon = (category: 'Property' | 'Financial' | 'Location') => {
+        if (updateStatus[category] === 'in-progress') {
             return <ReloadIcon className="animate-spin h-4 w-4"/>;
         } else if (updateStatus[category] === 'complete') {
             return <CheckCircledIcon className="h-4 w-4"/>;
@@ -46,10 +48,10 @@ export const LiveDataFeed = ({house}: { house: House | UnhydratedHouse }) => {
             <div className={"flex text-sm text-muted-foreground"}>Data aggregated</div>
             <div className={"w-full"}>
                 <div className={"flex justify-between"}>
-                    <p className={"text-sm"}>Basic</p>
+                    <p className={"text-sm"}>Property</p>
                     <div className={"text-sm"}>
                         <div className="text-sm">{house.lat ?
-                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('basic')}</div>
+                            <CheckCircledIcon className="h-4 w-4"/> : getUpdateIcon('Property')}</div>
                     </div>
                 </div>
                 <div className={"flex justify-between"}>

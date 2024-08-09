@@ -55,6 +55,7 @@ export const houses = sqlLiteTable(
         propertyExpertise: text("propertyExpertise"),
         locationExpertise: text("locationExpertise"),
         financialExpertise: text("financialExpertise"),
+        mainExpertise: text("mainExpertise"),
     },
     (house) => ({
         userIdIdx: index("houses_userId_idx").on(house.userId),

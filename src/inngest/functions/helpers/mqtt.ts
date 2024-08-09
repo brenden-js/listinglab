@@ -1,19 +1,28 @@
 import {Resource} from 'sst';
 import {IoTDataPlaneClient, PublishCommand} from "@aws-sdk/client-iot-data-plane";
-import {HouseUpdateContextValue} from "@/lib/contexts/house-updates";
+import {Listing} from "@/trpc/routers/helpers/types";
 
 const endpoint = Resource.RealtimeLink.endpoint;
 const authorizer = Resource.RealtimeLink.authorizer;
 const topic = `${Resource.App.name}/${Resource.App.stage}`;
 
-export interface StatusMessageData {
-    type: 'basic' | 'neighborhood' | 'investment';
-    status: 'loading' | 'complete' | 'not_found';
-}
 
 const data = new IoTDataPlaneClient();
 
-export async function publishStatusFromServer(message: HouseUpdateContextValue['updates'][0], userId: string): Promise<void> {
+export interface LiveDataFeedUpdate {
+    houseId: string;
+    dataCategory: "Property" | "Location" | "Financial";
+    updateType: 'LiveDataFeedUpdate';
+    jobStatus: 'complete' | 'in-progress';
+}
+
+export interface ListingScanUpdate {
+    houseId: string;
+    updateType: 'ListingScanUpdate';
+    stAddress: string;
+}
+
+export async function publishStatusFromServer(message: LiveDataFeedUpdate | ListingScanUpdate, userId: string): Promise<void> {
     console.log("Attempting to publish...")
 
     try {

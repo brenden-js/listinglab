@@ -17,6 +17,7 @@ import {HouseDialogProvider, useHouseDialog} from "@/app/dashboard/contexts/hous
 import {LiveDataFeed} from "@/app/dashboard/components/live-data-feed";
 import {motion, AnimatePresence} from 'framer-motion';
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {PaperPlaneIcon} from "@radix-ui/react-icons";
 
 interface ChatInterfaceProps {
     showDataView: boolean;
@@ -92,8 +93,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
     };
 
     const typingIndicatorVariants = {
-        hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0 },
+        hidden: {opacity: 0, y: 10},
+        visible: {opacity: 1, y: 0},
     };
 
     const chatData = {
@@ -108,6 +109,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
         Financial: house?.financialExpertise ? JSON.parse(house.financialExpertise) : [{
             "sender": "Deena",
             "message": "Here you can add things like the renovation potential and other relevant investment information. This will be included in the main chat"
+        },],
+        Main: house?.mainExpertise ? JSON.parse(house.mainExpertise) : [{
+            "sender": "Deena",
+            "message": "Use this chat to generate content about the house, any aggregated data and your property, location, and financial chats are available here."
         },],
     };
 
@@ -177,6 +182,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                 <p><strong>Estimated Utilities (Monthly):</strong> $300</p>
             </div>
         ),
+        Main: (
+            <div>
+                <h3 className="text-xl font-bold mb-4">Main Chat</h3>
+                <p><strong>Your responses from the property, location, and financial chats will be included in this
+                    chat.</strong></p>
+            </div>
+        ),
     };
 
     return (
@@ -193,9 +205,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                                     exit={{opacity: 0, y: -20}}
                                     transition={{duration: 0.1}}
                                 >
-                                    <Button variant="outline" onClick={() => setShowDataView(false)} className="mb-4">
-                                        Back to Chat
-                                    </Button>
                                     {dataViews[currentChat]}
                                 </motion.div>
                             ) : (
@@ -205,9 +214,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                                     animate={{opacity: 1, y: 0}}
                                     transition={{duration: 0.05}}
                                 >
-                                    <Button variant="outline" onClick={() => setShowDataView(true)} className="mb-4">
-                                        View {currentChat} Data
-                                    </Button>
                                     <AnimatePresence initial={false}>
                                         {chatData[currentChat].map((message: ChatMessage, index: number) => (
                                             <motion.div
@@ -215,7 +221,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                                                 variants={messageVariants}
                                                 initial="hidden"
                                                 animate="visible"
-                                                transition={{ duration: 0.1, delay: index * 0.02 }}
+                                                transition={{duration: 0.1, delay: index * 0.02}}
                                                 className={`p-3 my-2 rounded-lg ${message.sender === 'You' ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100'}`}
                                             >
                                                 <p className="font-semibold">{message.sender}</p>
@@ -231,23 +237,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                                                 initial="hidden"
                                                 animate="visible"
                                                 exit="hidden"
-                                                transition={{ duration: 0.3 }}
+                                                transition={{duration: 0.3}}
                                                 className="p-3 my-2 rounded-lg bg-gray-100 inline-block"
                                             >
                                                 <span className="flex space-x-1">
                                                     <motion.span
-                                                        animate={{ opacity: [0, 1, 0] }}
-                                                        transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.25 }}
+                                                        animate={{opacity: [0, 1, 0]}}
+                                                        transition={{duration: 1, repeat: Infinity, repeatDelay: 0.25}}
                                                         className="w-2 h-2 bg-gray-500 rounded-full"
                                                     />
                                                     <motion.span
-                                                        animate={{ opacity: [0, 1, 0] }}
-                                                        transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.25, delay: 0.2 }}
+                                                        animate={{opacity: [0, 1, 0]}}
+                                                        transition={{
+                                                            duration: 1,
+                                                            repeat: Infinity,
+                                                            repeatDelay: 0.25,
+                                                            delay: 0.2
+                                                        }}
                                                         className="w-2 h-2 bg-gray-500 rounded-full"
                                                     />
                                                     <motion.span
-                                                        animate={{ opacity: [0, 1, 0] }}
-                                                        transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.25, delay: 0.4 }}
+                                                        animate={{opacity: [0, 1, 0]}}
+                                                        transition={{
+                                                            duration: 1,
+                                                            repeat: Infinity,
+                                                            repeatDelay: 0.25,
+                                                            delay: 0.4
+                                                        }}
                                                         className="w-2 h-2 bg-gray-500 rounded-full"
                                                     />
                                                 </span>
@@ -261,6 +277,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                 </div>
             </ScrollArea>
             <div className="p-4 border-t">
+                <Button
+                        variant="outline"
+                        onClick={() => setShowDataView(!showDataView)}
+                        className={"mb-4 w-[175px]"}
+                    >
+                        {showDataView ? 'Back to Chat' : `View ${currentChat} Data`}
+                    </Button>
                 <div className="flex space-x-2">
                     <Textarea
                         placeholder="Type your message here..."
@@ -269,7 +292,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                     />
-                    <Button onClick={handleSendMessage} disabled={newMessage.trim() === "" || updateChat.isPending}>
+                    <Button className="w-[150px]" onClick={handleSendMessage}
+                            disabled={newMessage.trim() === "" || updateChat.isPending}>
+                        <PaperPlaneIcon className="mr-2"/>
                         Send
                     </Button>
                 </div>
@@ -287,10 +312,27 @@ const HouseDialog: React.FC<{
     const [showDataView, setShowDataView] = useState(false);
 
     if (!house) return null;
+    const claimHouse = api.house.claimHouse.useMutation()
+
+    const utils = api.useUtils()
+
 
     const handleEnableSearch = () => {
-        // Implement the logic to enable searching for additional data
-        // This could trigger a backend process and update the LiveDataFeed
+        console.log('Claiming house...')
+        claimHouse.mutate({houseId: house.id})
+        // use update the house as claimed using useUtils from api
+        utils.house.getHouses.setData(undefined, (old) => {
+            return old?.map(h => {
+                if (h?.id === house?.id) {
+                    const claimedHouse = {
+                        ...h,
+                        claimed: 1
+                    }
+                    return claimedHouse
+                }
+                return h
+            })
+        })
     };
 
     return (
@@ -300,7 +342,7 @@ const HouseDialog: React.FC<{
                     <DialogTitle>{house.stAddress}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-1 overflow-hidden">
-                    <div className="w-[38.2%] border-r border-gray-200 pr-5 overflow-y-auto">
+                    <div className="w-[38.2%] pt-4 border-r border-gray-200 pr-5 overflow-y-auto">
                         <ScrollArea className="h-full">
                             <div className="space-y-4 p-4">
                                 <h2 className="text-2xl font-bold">{house.price ? `$${house.price.toLocaleString()}` : 'Price not available'}</h2>
@@ -318,7 +360,7 @@ const HouseDialog: React.FC<{
                                         Size:</strong> {house.lotSqft ? `${house.lotSqft.toLocaleString()} sqft` : 'N/A'}
                                     </p>
                                     <p><strong>Price per
-                                        Sqft:</strong> {house.pricePerSqft ? `$${house.pricePerSqft.toFixed(2)}` : 'N/A'}
+                                        Sqft:</strong> {house.pricePerSqft ? `$${house.pricePerSqft}` : 'N/A'}
                                     </p>
                                 </div>
                                 {house.claimed && (<LiveDataFeed house={house}/>)}
@@ -326,14 +368,19 @@ const HouseDialog: React.FC<{
                             </div>
                         </ScrollArea>
                     </div>
-                    <div className="w-[61.8%] flex flex-col">
-                        <Tabs value={currentChat} onValueChange={setCurrentChat as any} className="pl-4 w-full">
-                            <TabsList className={"mb-2 transparent bg-transparent"}>
-                                <TabsTrigger value="Property">Property Chat</TabsTrigger>
-                                <TabsTrigger value="Location">Location Chat</TabsTrigger>
-                                <TabsTrigger value="Financial">Financial Chat</TabsTrigger>
-                            </TabsList>
-                        </Tabs>
+                    <div className="w-[61.8%] pt-4 flex flex-col">
+                        <div className="px-4 pb-4 flex items-center justify-between">
+                            <Button variant="secondary" className="w-[150px]" onClick={() => setCurrentChat('Main')}>
+                                Main Chat
+                            </Button>
+                            <Tabs value={currentChat} onValueChange={setCurrentChat as any} className="pl-4">
+                                <TabsList className={""}>
+                                    <TabsTrigger value="Property">Property Chat</TabsTrigger>
+                                    <TabsTrigger value="Location">Location Chat</TabsTrigger>
+                                    <TabsTrigger value="Financial">Financial Chat</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+                        </div>
                         <ChatInterface showDataView={showDataView} setShowDataView={setShowDataView} house={house}/>
                     </div>
                 </div>
@@ -370,7 +417,7 @@ const HousePreviewCard = ({house}: { house: House }) => {
 };
 
 const LoadingSkeletons = () => (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-4 gap-4">
         {Array.from({length: 6}).map((_, index) => (
             <div
                 key={index}
@@ -494,21 +541,15 @@ export default function HousesPageOverview() {
     }, [currentCities])
 
     const houses = api.house.getHouses.useQuery()
-    // TODO use effect that invalidates the houses query when a new update is added where the messageCategory
-    // is equal to new-house-found
 
-    const debouncedRefetch = useCallback(
-        debounce(() => {
-            houses.refetch();
-        }, 3000),
-        [houses]
-    );
 
     useEffect(() => {
-        if (updates.length > 0 && updates[0].messageCategory === 'new-house-found') {
-            debouncedRefetch();
+        const latestUpdate = updates[updates.length - 1]
+        if (latestUpdate && latestUpdate.updateType === "ListingScanUpdate") {
+            houses.refetch()
         }
-    }, [updates, debouncedRefetch]);
+    }, [updates]);
+
     const [open, setOpen] = useState(false)
     const [openAddCity, setOpenAddCity] = useState(false)
     const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined)

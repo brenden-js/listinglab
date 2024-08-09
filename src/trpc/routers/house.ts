@@ -488,7 +488,7 @@ export const houseRouter = createTRPCRouter({
         updateChat: protectedProcedure
             .input(
                 z.object({
-                    topic: z.enum(["Property", "Location", "Financial"]),
+                    topic: z.enum(["Property", "Location", "Financial", "Main"]),
                     message: z.object({
                         sender: z.string(),
                         message: z.string(),
@@ -532,13 +532,15 @@ export const houseRouter = createTRPCRouter({
                     case "Financial":
                         chatData = JSON.parse(house.financialExpertise || "[]");
                         break;
+                    case "Main":
+                        chatData = JSON.parse(house.mainExpertise || "[]");
+                        break;
                 }
 
                 // add the house data to the chatData array as a message from the user
 
 
                 // customize the system prompt for Financial, Property, and Location chats
-                console.log('No chat data found, adding default messages...')
                 if (input.topic === "Financial") {
                     chatData.push({
                         sender: "system",
@@ -581,6 +583,14 @@ export const houseRouter = createTRPCRouter({
                             - Quality of local schools, parks, and other community resources
                             Ask the agent clarifying questions to better understand what details would be most relevant and compelling for potential buyers. The goal is to create content that paints a vivid picture of what it would be like to live in this neighborhood, beyond just the physical location. This content should complement the agent's expertise and market knowledge.`
                     })
+                } else if (input.topic === 'Main') {
+                    chatData.push({
+                        sender: "system",
+                        message: `Your name in this chat is Deena. You are not a real estate agent, however you will be helping real estate agents generate text content about the main chat for a house. 
+                            Here is the house this chat is about: ${JSON.stringify(house)}
+                            This is a chat where you will help generate content for a real estate agent. 
+                            This content should complement the agent's expertise and market knowledge.`
+                        })
                 }
 
 
