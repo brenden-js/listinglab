@@ -5,7 +5,7 @@ import {House} from "@/app/dashboard/contexts/prompts";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useContext, useEffect, useRef, useState} from "react";
 import clsx from "clsx";
 import {Input} from "@/components/ui/input";
 import {toast} from "sonner";
@@ -32,19 +32,46 @@ export interface ChatMessage {
 const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataView, house}) => {
     const {currentChat} = useHouseDialog();
     const [newMessage, setNewMessage] = useState("");
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
 
     const utils = api.useUtils()
 
-
     const updateChat = api.house.updateChat.useMutation({
+        onMutate: async (newMessage) => {
+            await utils.house.getHouses.cancel()
+            const previousHouses = utils.house.getHouses.getData()
+            if (previousHouses) {
+                utils.house.getHouses.setData(undefined, (old) => {
+                    return old?.map(h => {
+                        if (h?.id === house?.id) {
+                            const expertiseField = `${newMessage.topic.toLowerCase()}Expertise`
+                            const currentExpertise = h[expertiseField as keyof House] ? JSON.parse(h[expertiseField as keyof House]) : []
+                            return {
+                                ...h,
+                                [expertiseField]: JSON.stringify([
+                                    ...currentExpertise,
+                                    {
+                                        sender: "You",
+                                        message: newMessage.message.message,
+                                    }
+                                ]),
+                            }
+                        }
+                        return h
+                    })
+                })
+            }
+            return {previousHouses}
+        },
+        onError: (err, newMessage, context) => {
+            if (context?.previousHouses) {
+                utils.house.getHouses.setData(undefined, context.previousHouses)
+            }
+            toast.error("Failed to send message")
+        },
         onSuccess: (data, variables) => {
-            // Get the current houses data from the cache
             const currentHouses = utils.house.getHouses.getData();
-
-            console.log('currentHouses', currentHouses)
-
             if (currentHouses) {
-                // Find the house in the local cache and update the appropriate expertise field
                 const updatedHouses = currentHouses.map((house) => {
                     if (house?.id === variables.houseId) {
                         return {
@@ -54,12 +81,48 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                     }
                     return house;
                 });
-
-                // Update the cache with the modified houses data
                 utils.house.getHouses.setData(undefined, () => updatedHouses);
             }
         },
     });
+
+    const messageVariants = {
+        hidden: {opacity: 0, y: 20},
+        visible: {opacity: 1, y: 0},
+    };
+
+    const typingIndicatorVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0 },
+    };
+
+    const chatData = {
+        Property: house?.propertyExpertise ? JSON.parse(house.propertyExpertise) : [{
+            "sender": "Deena",
+            "message": "Here you can add the property condition, upgrades, and renovations. This will be included in the main chat"
+        },],
+        Location: house?.locationExpertise ? JSON.parse(house.locationExpertise) : [{
+            "sender": "Deena",
+            "message": "Here you can add things like the neighborhood vibe, local restaurants, and shops. This will be included in the main chat"
+        },],
+        Financial: house?.financialExpertise ? JSON.parse(house.financialExpertise) : [{
+            "sender": "Deena",
+            "message": "Here you can add things like the renovation potential and other relevant investment information. This will be included in the main chat"
+        },],
+    };
+
+    const scrollToBottom = () => {
+        if (scrollAreaRef.current) {
+            const scrollableElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+            if (scrollableElement) {
+                scrollableElement.scrollTop = scrollableElement.scrollHeight;
+            }
+        }
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [chatData[currentChat], updateChat.isPending]);
 
     if (!house) return null;
 
@@ -86,23 +149,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
         }
     };
 
-    // Dummy data for different chats
-    const chatData = {
-        Property: house.propertyExpertise ? JSON.parse(house.propertyExpertise) : [{
-            "sender": "Deena",
-            "message": "Here you can add the property condition, upgrades, and renovations. This will be included in the main chat"
-        },],
-        Location: house.locationExpertise ? JSON.parse(house.locationExpertise) : [{
-            "sender": "Deena",
-            "message": "Here you can add things like the neighborhood vibe, local restaurants, and shops. This will be included in the main chat"
-        },],
-        Financial: house.financialExpertise ? JSON.parse(house.financialExpertise) : [{
-            "sender": "Deena",
-            "message": "Here you can add things like the renovation potential and other relevant investment information. This will be included in the main chat"
-        },],
-    };
-
-    // Dummy data for different data views
     const dataViews = {
         Property: (
             <div>
@@ -135,8 +181,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
 
     return (
         <>
-        <ScrollArea className="flex-grow pr-4">
-            <div className="flex-1 overflow-hidden">
+            <ScrollArea ref={scrollAreaRef} className="flex-grow pr-4">
+                <div className="flex-1 overflow-hidden">
                     <div className="p-4 space-y-4">
                         <AnimatePresence mode="wait">
                             {showDataView ? (
@@ -147,9 +193,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                                     exit={{opacity: 0, y: -20}}
                                     transition={{duration: 0.1}}
                                 >
-                                    <Button variant="outline" onClick={() => setShowDataView(false)} className="mb-4">Back
-                                        to
-                                        Chat</Button>
+                                    <Button variant="outline" onClick={() => setShowDataView(false)} className="mb-4">
+                                        Back to Chat
+                                    </Button>
                                     {dataViews[currentChat]}
                                 </motion.div>
                             ) : (
@@ -157,23 +203,62 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                                     key="chat"
                                     initial={{opacity: 0, y: 20}}
                                     animate={{opacity: 1, y: 0}}
-                                    exit={{opacity: 0, y: -20}}
-                                    transition={{duration: 0.1}}
+                                    transition={{duration: 0.05}}
                                 >
-                                    <Button variant="outline" onClick={() => setShowDataView(true)}
-                                            className="mb-4">View {currentChat} Data</Button>
-                                    {chatData[currentChat].map((message: ChatMessage, index: number) => (
-                                        <div key={index}
-                                             className={`p-3 my-2 rounded-lg ${message.sender === 'You' ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100'}`}>
-                                            <p className="font-semibold">{message.sender}</p>
-                                            <p>{message.message}</p>
-                                        </div>
-                                    ))}
+                                    <Button variant="outline" onClick={() => setShowDataView(true)} className="mb-4">
+                                        View {currentChat} Data
+                                    </Button>
+                                    <AnimatePresence initial={false}>
+                                        {chatData[currentChat].map((message: ChatMessage, index: number) => (
+                                            <motion.div
+                                                key={index}
+                                                variants={messageVariants}
+                                                initial="hidden"
+                                                animate="visible"
+                                                transition={{ duration: 0.1, delay: index * 0.02 }}
+                                                className={`p-3 my-2 rounded-lg ${message.sender === 'You' ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100'}`}
+                                            >
+                                                <p className="font-semibold">{message.sender}</p>
+                                                <p>{message.message}</p>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                    <AnimatePresence>
+                                        {updateChat.isPending && (
+                                            <motion.div
+                                                key="typing"
+                                                variants={typingIndicatorVariants}
+                                                initial="hidden"
+                                                animate="visible"
+                                                exit="hidden"
+                                                transition={{ duration: 0.3 }}
+                                                className="p-3 my-2 rounded-lg bg-gray-100 inline-block"
+                                            >
+                                                <span className="flex space-x-1">
+                                                    <motion.span
+                                                        animate={{ opacity: [0, 1, 0] }}
+                                                        transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.25 }}
+                                                        className="w-2 h-2 bg-gray-500 rounded-full"
+                                                    />
+                                                    <motion.span
+                                                        animate={{ opacity: [0, 1, 0] }}
+                                                        transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.25, delay: 0.2 }}
+                                                        className="w-2 h-2 bg-gray-500 rounded-full"
+                                                    />
+                                                    <motion.span
+                                                        animate={{ opacity: [0, 1, 0] }}
+                                                        transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.25, delay: 0.4 }}
+                                                        className="w-2 h-2 bg-gray-500 rounded-full"
+                                                    />
+                                                </span>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
-            </div>
+                </div>
             </ScrollArea>
             <div className="p-4 border-t">
                 <div className="flex space-x-2">
@@ -184,7 +269,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                     />
-                    <Button onClick={handleSendMessage} disabled={newMessage.trim() === "" || updateChat.isPending}>Send</Button>
+                    <Button onClick={handleSendMessage} disabled={newMessage.trim() === "" || updateChat.isPending}>
+                        Send
+                    </Button>
                 </div>
             </div>
         </>
@@ -241,13 +328,12 @@ const HouseDialog: React.FC<{
                     </div>
                     <div className="w-[61.8%] flex flex-col">
                         <Tabs value={currentChat} onValueChange={setCurrentChat as any} className="pl-4 w-full">
-                            <TabsList>
+                            <TabsList className={"mb-2 transparent bg-transparent"}>
                                 <TabsTrigger value="Property">Property Chat</TabsTrigger>
                                 <TabsTrigger value="Location">Location Chat</TabsTrigger>
                                 <TabsTrigger value="Financial">Financial Chat</TabsTrigger>
                             </TabsList>
                         </Tabs>
-
                         <ChatInterface showDataView={showDataView} setShowDataView={setShowDataView} house={house}/>
                     </div>
                 </div>
@@ -407,7 +493,7 @@ export default function HousesPageOverview() {
         }
     }, [currentCities])
 
-    const houses = api.house.getHouses.useQuery( )
+    const houses = api.house.getHouses.useQuery()
     // TODO use effect that invalidates the houses query when a new update is added where the messageCategory
     // is equal to new-house-found
 

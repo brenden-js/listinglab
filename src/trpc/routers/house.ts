@@ -536,13 +536,13 @@ export const houseRouter = createTRPCRouter({
 
                 // add the house data to the chatData array as a message from the user
 
-                if (!chatData.length) {
-                    // customize the system prompt for Financial, Property, and Location chats
-                    console.log('No chat data found, adding default messages...')
-                    if (input.topic === "Financial") {
-                        chatData.push({
-                            sender: "system",
-                            message: `Your name in this chat is Deena. You are not a financial advisor, however you will be helping real estate agents generate text content about the financial information for a house. 
+
+                // customize the system prompt for Financial, Property, and Location chats
+                console.log('No chat data found, adding default messages...')
+                if (input.topic === "Financial") {
+                    chatData.push({
+                        sender: "system",
+                        message: `Your name in this chat is Deena. You are not a financial advisor, however you will be helping real estate agents generate text content about the financial information for a house. 
                             Here is the house this chat is about: ${JSON.stringify(house)}
                             This is an exploratory chat, where you will help the user get all their expertise out so they can use it to create content. 
                             Ask the agent to expand on what they know about the house's financial situation, such as:
@@ -551,11 +551,11 @@ export const houseRouter = createTRPCRouter({
                             - Cost of living and affordability in the neighborhood
                             - Any relevant tax incentives or government programs for homebuyers
                             Ask the agent clarifying questions to better understand the financial context they need to provide to potential buyers. The goal is to create content that educates and informs the user, without getting into the specific numbers. This content should complement the agent's expertise and financial disclosures.`
-                        })
-                    } else if (input.topic === "Property") {
-                        chatData.push({
-                            sender: "system",
-                            message: `Your name in this chat is Deena. You are not a real estate expert, however you will be helping real estate agents generate text content about the property details for a house. 
+                    })
+                } else if (input.topic === "Property") {
+                    chatData.push({
+                        sender: "system",
+                        message: `Your name in this chat is Deena. You are not a real estate expert, however you will be helping real estate agents generate text content about the property details for a house. 
                             Here is the house this chat is about: ${JSON.stringify(house)}
                             This is an exploratory chat, where you will help the user get all their expertise out so they can use it to create content. 
                             Ask the agent to expand on what they know about the house's property, such as:
@@ -565,11 +565,11 @@ export const houseRouter = createTRPCRouter({
                             - Estimated square footage, bedrooms, bathrooms
                             - Age of the home and any recent renovations
                             Ask the agent clarifying questions to better understand what details would be most useful for potential buyers. The goal is to create content that sparks the user's interest and provides a vivid picture of the property, without overwhelming them with an exhaustive list of facts. This content should complement the agent's expertise and property listings.`
-                        })
-                    } else if (input.topic === "Location") {
-                        chatData.push({
-                            sender: "system",
-                            message: `Your name in this chat is Deena. You are not a real estate agent, however you will be helping real estate agents generate text content about the location and neighborhood for a house. 
+                    })
+                } else if (input.topic === "Location") {
+                    chatData.push({
+                        sender: "system",
+                        message: `Your name in this chat is Deena. You are not a real estate agent, however you will be helping real estate agents generate text content about the location and neighborhood for a house. 
                             Here is the house this chat is about: ${JSON.stringify(house)}
                             This is an exploratory chat, where you will help the user get all their expertise out so they can use it to create content. 
                             Ask the agent to expand on what they know about the neighborhood, such as:
@@ -580,9 +580,9 @@ export const houseRouter = createTRPCRouter({
                             - Access to transportation, commute times, and walkability
                             - Quality of local schools, parks, and other community resources
                             Ask the agent clarifying questions to better understand what details would be most relevant and compelling for potential buyers. The goal is to create content that paints a vivid picture of what it would be like to live in this neighborhood, beyond just the physical location. This content should complement the agent's expertise and market knowledge.`
-                        })
-                    }
+                    })
                 }
+
 
                 chatData.push({sender: "You", message: `${input.message.message}`})
 
