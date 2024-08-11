@@ -9,7 +9,6 @@ import {useCallback, useContext, useEffect, useRef, useState} from "react";
 import clsx from "clsx";
 import {Input} from "@/components/ui/input";
 import {toast} from "sonner";
-import {useHouseUpdateContext} from "@/app/dashboard/contexts/house-updates-context";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Textarea} from "@/components/ui/textarea";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
@@ -390,9 +389,8 @@ const HouseDialog: React.FC<{
                                         Sqft:</strong> {house.pricePerSqft ? `$${house.pricePerSqft}` : 'N/A'}
                                     </p>
                                 </div>
-                                {house.claimed ? (<LiveDataFeed house={house}/>) : (
-                                    <Button onClick={handleEnableSearch}>Get Data</Button>
-                                )}
+                                <LiveDataFeed houseId={house.id} claimed={!!house.claimed}/>
+                                <Button disabled={!!house.claimed || claimHouse.isPending} onClick={handleEnableSearch}>Get Data</Button>
                             </div>
                         </ScrollArea>
                     </div>
@@ -553,7 +551,6 @@ const debounce = (func: Function, delay: number) => {
 };
 
 export default function HousesPageOverview() {
-    const {updates} = useHouseUpdateContext()
     //
     const currentCities = api.house.getUserCities.useQuery()
 
@@ -569,14 +566,6 @@ export default function HousesPageOverview() {
     }, [currentCities])
 
     const houses = api.house.getHouses.useQuery()
-
-
-    useEffect(() => {
-        const latestUpdate = updates[updates.length - 1]
-        if (latestUpdate && latestUpdate.updateType === "ListingScanUpdate") {
-            houses.refetch()
-        }
-    }, [updates]);
 
     const [open, setOpen] = useState(false)
     const [openAddCity, setOpenAddCity] = useState(false)

@@ -603,7 +603,7 @@ export const houseRouter = createTRPCRouter({
                 console.log('Sending to together api...')
 
                 const response = await together.chat.completions.create({
-                    model: "meta-llama/Meta-Llama-3-8B-Instruct-Turbo",
+                    model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
                     messages: [
                         ...chatData.map((message: ChatMessage) => ({
                             role: message.sender,
@@ -615,6 +615,8 @@ export const houseRouter = createTRPCRouter({
                         },
                     ],
                 });
+
+
 
                 const aiResponse = response.choices?.[0]?.message?.content;
 
