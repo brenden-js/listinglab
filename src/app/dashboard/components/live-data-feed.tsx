@@ -6,36 +6,23 @@ export const LiveDataFeed = ({houseId, claimed}: { houseId: string, claimed: boo
 
     const utils = api.useUtils()
 
-    const {data: house} = api.house.getHouseDetails.useQuery(houseId, {
+    const {data: house, } = api.house.getHouseDetails.useQuery(houseId, {
         refetchInterval: (query) =>
-            (query.state.data?.nearbyPlaces && query.state.data?.investment && query.state.data?.recentlySold )
+            (query.state.data?.nearbyPlaces && query.state.data?.investment && query.state.data?.recentlySold)
             || !claimed
                 ? false : 3000,
     });
 
-    const handleSuccess = useCallback(() => {
-        const currentHouses = utils.house.getHouses.getData();
-        if (currentHouses) {
-            const updatedHouses = currentHouses.map((house) => {
-                if (house?.id === houseId) {
-                    return {
-                        ...house,
-                        recentlySold: house.recentlySold,
-                        investment: house.investment,
-                        nearbyPlaces: house.nearbyPlaces,
-                    };
-                }
-                return house;
-            });
-            utils.house.getHouses.setData(undefined, () => updatedHouses);
-        }
-    }, [utils, houseId]);
 
     useEffect(() => {
-        if (house) {
-            handleSuccess()
+        if (house?.investment || house?.nearbyPlaces || house?.recentlySold) {
+            const currentHouses = utils.house.getHouses.getData();
+            console.log('current houses...', currentHouses)
+            if (currentHouses) {
+                utils.house.getHouses.refetch()
+            }
         }
-    }, [house, handleSuccess])
+    }, [house, houseId, utils.house.getHouses])
 
     if (!house) {
         return <div>Loading...</div>;
@@ -43,7 +30,6 @@ export const LiveDataFeed = ({houseId, claimed}: { houseId: string, claimed: boo
 
     const getUpdateIcon = (field: keyof typeof house) => {
         if (house[field] !== null) {
-            console.log('house[field]', house.stAddress, house[field])
             return <CheckCircledIcon className="h-4 w-4"/>;
         } else if (!claimed) {
             return <CrossCircledIcon className="h-4 w-4"/>
