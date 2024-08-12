@@ -55,7 +55,7 @@ export const ResetChatSlider = ({houseId, topic}: { houseId: string, topic: "Pro
 
   if (answered && !deleteChat.isSuccess) {
     return (
-      <div className="flex items-center justify-center h-9 w-full max-w-[300px] rounded-md bg-secondary text-black font-semibold text-sm">
+      <div className="flex items-center justify-center h-9 w-full max-w-[300px] rounded-md bg-secondary text-black text-gray-600 font-semibold text-sm">
         Resetting chat...
       </div>
     );

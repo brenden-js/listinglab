@@ -5,7 +5,7 @@ import {House} from "@/app/dashboard/contexts/prompts";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {useCallback, useContext, useEffect, useRef, useState} from "react";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import clsx from "clsx";
 import {Input} from "@/components/ui/input";
 import {toast} from "sonner";
@@ -101,7 +101,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
         visible: {opacity: 1, y: 0},
     };
 
-     const chatData = {
+    const chatData = {
         Property: house?.propertyExpertise ? JSON.parse(house.propertyExpertise) : defaultChatData.Property,
         Location: house?.locationExpertise ? JSON.parse(house.locationExpertise) : defaultChatData.Location,
         Financial: house?.financialExpertise ? JSON.parse(house.financialExpertise) : defaultChatData.Financial,
@@ -122,10 +122,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
         scrollToBottom();
     }, [chatData[currentChat], updateChat.isPending]);
 
-    if (!house) return null;
 
     const handleSendMessage = async () => {
         if (newMessage.trim() === "") return;
+
+        if (!house) return;
 
         try {
             const response = await updateChat.mutateAsync({
@@ -145,6 +146,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
             toast.error("Failed to send message");
         }
     };
+
+    const onEnterPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.keyCode == 13 && e.shiftKey == false) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    }
+
+    if (!house) return null;
 
     return (
         <>
@@ -267,20 +277,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                     </Button>
                     <ResetChatSlider houseId={house.id} topic={currentChat}/>
                 </div>
-                <div className="flex space-x-2">
+                <form className="flex space-x-2" onSubmit={handleSendMessage}>
                     <Textarea
                         placeholder="Type your message here..."
                         className="flex-grow p-2 border rounded-lg"
                         disabled={updateChat.isPending}
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={onEnterPress}
                     />
-                    <Button className="w-[150px]" onClick={handleSendMessage}
+                    <Button type="submit" className="w-[150px]"
                             disabled={newMessage.trim() === "" || updateChat.isPending}>
                         <PaperPlaneIcon className="mr-2"/>
                         Send
                     </Button>
-                </div>
+                </form>
             </div>
         </>
     );
