@@ -19,6 +19,8 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import {PaperPlaneIcon} from "@radix-ui/react-icons";
 import {FinancialView, LocationView, PropertyView} from "@/app/dashboard/houses/components/chat-data-views";
 import Image from "next/image";
+import {ResetChatSlider} from "@/app/dashboard/houses/components/reset-chat-slider";
+import {defaultChatData} from "@/app/dashboard/houses/components/default-chats";
 
 interface ChatInterfaceProps {
     showDataView: boolean;
@@ -88,6 +90,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
         },
     });
 
+
     const messageVariants = {
         hidden: {opacity: 0, y: 20},
         visible: {opacity: 1, y: 0},
@@ -98,23 +101,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
         visible: {opacity: 1, y: 0},
     };
 
-    const chatData = {
-        Property: house?.propertyExpertise ? JSON.parse(house.propertyExpertise) : [{
-            "sender": "Deena",
-            "message": "Here you can add the property condition, upgrades, and renovations. This will be included in the main chat"
-        },],
-        Location: house?.locationExpertise ? JSON.parse(house.locationExpertise) : [{
-            "sender": "Deena",
-            "message": "Here you can add things like the neighborhood vibe, local restaurants, and shops. This will be included in the main chat"
-        },],
-        Financial: house?.financialExpertise ? JSON.parse(house.financialExpertise) : [{
-            "sender": "Deena",
-            "message": "Here you can add things like the renovation potential and other relevant investment information. This will be included in the main chat"
-        },],
-        Main: house?.mainExpertise ? JSON.parse(house.mainExpertise) : [{
-            "sender": "Deena",
-            "message": "Use this chat to generate content about the house, any aggregated data and your property, location, and financial chats are available here."
-        },],
+     const chatData = {
+        Property: house?.propertyExpertise ? JSON.parse(house.propertyExpertise) : defaultChatData.Property,
+        Location: house?.locationExpertise ? JSON.parse(house.locationExpertise) : defaultChatData.Location,
+        Financial: house?.financialExpertise ? JSON.parse(house.financialExpertise) : defaultChatData.Financial,
+        Main: house?.mainExpertise ? JSON.parse(house.mainExpertise) : defaultChatData.Main,
+
     };
 
     const scrollToBottom = () => {
@@ -147,49 +139,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
             console.log('response', response)
 
             if (response.status === 'Chat updated successfully') {
-                toast.success('Chat generated successfully')
                 setNewMessage("");
             }
         } catch (error) {
             toast.error("Failed to send message");
         }
-    };
-
-    const dataViews = {
-        Property: (
-            <div>
-                <h3 className="text-xl font-bold mb-4">Property Details</h3>
-                <p><strong>Square Footage:</strong> 2,500 sq ft</p>
-                <p><strong>Lot Size:</strong> 0.25 acres</p>
-                <p><strong>Year Built:</strong> 1995</p>
-                <p><strong>Renovations:</strong> Kitchen (2018), Bathrooms (2020)</p>
-            </div>
-        ),
-        Location: (
-            <div>
-                <h3 className="text-xl font-bold mb-4">Neighborhood Information</h3>
-                <p><strong>School District:</strong> Oakwood Public Schools</p>
-                <p><strong>Nearest Park:</strong> Sunset Park (0.5 miles)</p>
-                <p><strong>Public Transportation:</strong> Bus stop (0.2 miles)</p>
-                <p><strong>Shopping Centers:</strong> Downtown Mall (1.5 miles)</p>
-            </div>
-        ),
-        Financial: (
-            <div>
-                <h3 className="text-xl font-bold mb-4">Financial Analysis</h3>
-                <p><strong>Estimated Monthly Mortgage:</strong> $2,500</p>
-                <p><strong>Property Tax (Annual):</strong> $5,000</p>
-                <p><strong>Homeowners Insurance (Annual):</strong> $1,200</p>
-                <p><strong>Estimated Utilities (Monthly):</strong> $300</p>
-            </div>
-        ),
-        Main: (
-            <div>
-                <h3 className="text-xl font-bold mb-4">Main Chat</h3>
-                <p><strong>Your responses from the property, location, and financial chats will be included in this
-                    chat.</strong></p>
-            </div>
-        ),
     };
 
     return (
@@ -303,13 +257,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataV
                 </div>
             </ScrollArea>
             <div className="p-4 border-t">
-                <Button
-                    variant="outline"
-                    onClick={() => setShowDataView(!showDataView)}
-                    className={"mb-4 w-[175px]"}
-                >
-                    {showDataView ? 'Back to Chat' : `View ${currentChat} Data`}
-                </Button>
+                <div className={"flex flex-row space-x-3"}>
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowDataView(!showDataView)}
+                        className={"mb-4 w-[175px]"}
+                    >
+                        {showDataView ? 'Back to Chat' : `View ${currentChat} Data`}
+                    </Button>
+                    <ResetChatSlider houseId={house.id} topic={currentChat}/>
+                </div>
                 <div className="flex space-x-2">
                     <Textarea
                         placeholder="Type your message here..."
@@ -390,7 +347,8 @@ const HouseDialog: React.FC<{
                                     </p>
                                 </div>
                                 <LiveDataFeed houseId={house.id} claimed={!!house.claimed}/>
-                                <Button disabled={!!house.claimed || claimHouse.isPending} onClick={handleEnableSearch}>Get Data</Button>
+                                <Button disabled={!!house.claimed || claimHouse.isPending} onClick={handleEnableSearch}>Get
+                                    Data</Button>
                             </div>
                         </ScrollArea>
                     </div>
