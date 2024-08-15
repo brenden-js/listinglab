@@ -6,7 +6,6 @@ import {SideNavigation} from "@/app/dashboard/components/side-navigation";
 import MobileSidebar from "@/app/dashboard/components/sidebar";
 import {TRPCReactProvider} from "@/trpc/react";
 import {PromptsProvider} from "@/app/dashboard/contexts/prompts";
-import {Resource} from "sst";
 
 
 export default function Layout({children}: { children: React.ReactNode }) {
