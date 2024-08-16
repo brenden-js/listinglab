@@ -10,6 +10,7 @@ import {HouseDialogProvider,} from "@/app/dashboard/contexts/house-dialog-contex
 import {HouseDialog} from "@/app/dashboard/houses/components/house-dialog";
 import {AddCityForm, CityCard} from "@/app/dashboard/houses/components/city-popover";
 import {ChatBubbleIcon} from "@radix-ui/react-icons";
+import {AddCityDialog} from "@/app/dashboard/houses/components/city-dialog";
 
 export interface ChatMessage {
     sender: string;
@@ -78,7 +79,7 @@ const MessageIndicator = ({ messages }: { messages: number }) => {
   return (
     <div className="relative">
       <div
-        className="absolute text-gray-500 top-6 right-6 bg-gray-100 p-1 rounded-md flex justify-center items-center"
+        className="absolute text-gray-500 top-6 right-6 p-1 rounded-md flex justify-center items-center"
       >
         <ChatBubbleIcon className="pr-0.5 h-5 w-5 text-lg text-gray-400" />
         <span className="text-sm font-semibold text-gray-500">{messages}</span>
@@ -98,10 +99,6 @@ const HouseDetails = ({ house }: { house: House }) => {
       <div>
         <span className="text-md">{house.beds} Beds | {house.baths} Baths</span>
         <span className="text-md block">{house.sqft.toLocaleString()} Sqft</span>
-      </div>
-      <div>
-        <span className="text-md">{house.yearBuilt} Year Built</span>
-        <span className="text-md block">{house.status}</span>
       </div>
     </div>
   );
@@ -140,6 +137,9 @@ export default function HousesPageOverview() {
     const [openAddCity, setOpenAddCity] = useState(false)
     const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined)
 
+
+    const [openCityDialog, setOpenCityDialog] = useState(false)
+
     return (
         <HouseDialogProvider>
             <div className={"h-full flex flex-col"}>
@@ -154,6 +154,10 @@ export default function HousesPageOverview() {
                             </div>
                         </div>
                     )}
+                    <Button variant="secondary" className={"ml-3"} onClick={() => setOpenCityDialog(true)}>
+                        Change City 1
+                    </Button>
+                    <AddCityDialog open={openCityDialog} onOpenChange={setOpenCityDialog} />
                     <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="secondary" className={"ml-3"}>
@@ -196,7 +200,7 @@ export default function HousesPageOverview() {
                     </Popover>
                 </div>
                 <Separator/>
-                <div className="px-4 py-6 sm:px-6 md:px-8 lg:px-10">
+                <div className="p-3">
                     {houses.isPending && <LoadingSkeletons/>}
                     {!houses.isPending && houses.isSuccess && houses.data.length > 0 && (
                         <div className="flex flex-wrap -mx-2">
