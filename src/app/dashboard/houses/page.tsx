@@ -8,7 +8,6 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import React, {useEffect, useState} from "react";
 import {HouseDialogProvider,} from "@/app/dashboard/contexts/house-dialog-context";
 import {HouseDialog} from "@/app/dashboard/houses/components/house-dialog";
-import {AddCityForm, CityCard} from "@/app/dashboard/houses/components/city-popover";
 import {ChatBubbleIcon} from "@radix-ui/react-icons";
 import {AddCityDialog} from "@/app/dashboard/houses/components/city-dialog";
 
@@ -133,8 +132,6 @@ export default function HousesPageOverview() {
 
     const houses = api.house.getHouses.useQuery()
 
-    const [open, setOpen] = useState(false)
-    const [openAddCity, setOpenAddCity] = useState(false)
     const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined)
 
 
@@ -158,46 +155,6 @@ export default function HousesPageOverview() {
                         Change City 1
                     </Button>
                     <AddCityDialog open={openCityDialog} onOpenChange={setOpenCityDialog} />
-                    <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                            <Button variant="secondary" className={"ml-3"}>
-                                Change City
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[400px]">
-                            {openAddCity &&
-                                <AddCityForm onSuccess={onAddCitySuccess} onClose={() => setOpenAddCity(false)}/>}
-                            {!openAddCity && <>
-                                <h4 className="font-medium mt-2">My Cities</h4>
-                                {/*// create a list of a users cities, and a plus button to add a new city at the bottom*/}
-                                {/* add a search box to look for a new city, which will then display the found city and ask for a confirmation*/}
-                                <div className="flex flex-col gap-2">
-                                    {currentCities.isPending && <LoadingSkeletons/>}
-                                    {!currentCities.isPending && currentCities.isSuccess && currentCities.data.length > 0 && (
-                                        <div className="flex flex-wrap -mx-2">
-                                            {currentCities.data.map((city) => (
-                                                <div className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
-                                                     key={city.id}>
-                                                    <CityCard city={city} selected={selectedCity === city.cityName}
-                                                              onClick={() => setSelectedCity(city.cityName)}/>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {!currentCities.isPending && currentCities.isSuccess && currentCities.data.length === 0 && (
-                                        <div>No cities found.</div>
-                                    )}
-                                </div>
-                                <div className="flex justify-end">
-                                    <Button variant="secondary" className={"ml-3"}
-                                            onClick={() => setOpenAddCity(true)}
-                                    >
-                                        Add City
-                                    </Button>
-                                </div>
-                            </>}
-                        </PopoverContent>
-                    </Popover>
                 </div>
                 <Separator/>
                 <div className="p-3">
