@@ -43,12 +43,12 @@ export const HouseDialog: React.FC<{
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[90vw] h-[90vh] max-w-[90vw] flex flex-col">
+            <DialogContent className="w-[95vw] h-[95vh] max-w-[95vw] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>{house.stAddress}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-1 overflow-hidden">
-                    <div className="w-[38.2%] pt-4 border-r border-gray-200 pr-5 overflow-y-auto">
+                    <div className="w-[25%] pt-4 border-r border-gray-200 pr-5 overflow-y-auto">
                         <ScrollArea className="h-full">
                             <div className="space-y-4 p-4">
                                 <h2 className="text-2xl font-bold">{house.price ? `$${house.price.toLocaleString()}` : 'Price not available'}</h2>
@@ -75,7 +75,7 @@ export const HouseDialog: React.FC<{
                             </div>
                         </ScrollArea>
                     </div>
-                    <div className="w-[61.8%] pt-4 flex flex-col">
+                    <div className="w-[75%] pt-4 flex flex-col">
                         <div className="px-4 pb-4 flex items-center justify-between">
                             <Button variant="secondary" className="w-[150px]" onClick={() => setCurrentChat('Main')}>
                                 Main Chat

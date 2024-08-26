@@ -15,6 +15,7 @@ import {cities, generations, houses, usersToCities} from "@/db/schema";
 import {inngest} from "@/inngest/client";
 import Together from "together-ai";
 import {ChatMessage} from "@/app/dashboard/houses/page";
+import {GoogleGenerativeAI} from "@google/generative-ai";
 
 export const houseRouter = createTRPCRouter({
         searchHouse: protectedProcedure
@@ -604,35 +605,56 @@ export const houseRouter = createTRPCRouter({
                             Here is the house this chat is about: ${JSON.stringify(house)}
                             This is a chat where you will help generate content for a real estate agent. 
                             This content should complement the agent's expertise and market knowledge.`
-                        })
+                    })
                 }
 
 
                 chatData.push({sender: "You", message: `${input.message.message}`})
 
-                const together = new Together({
-                    apiKey: process.env.TOGETHER_API_KEY,
-                });
+                // const together = new Together({
+                //     apiKey: process.env.TOGETHER_API_KEY,
+                // });
+                //
+                // console.log('Sending to together api...')
+                //
+                // const response = await together.chat.completions.create({
+                //     model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+                //     messages: [
+                //         ...chatData.map((message: ChatMessage) => ({
+                //             role: message.sender,
+                //             content: message.message,
+                //         })),
+                //         {
+                //             role: "user",
+                //             content: input.message.message,
+                //         },
+                //     ],
+                // });
+                //
+                // const aiResponse = response.choices?.[0]?.message?.content;
 
-                console.log('Sending to together api...')
+                console.log("starting google")
 
-                const response = await together.chat.completions.create({
-                    model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-                    messages: [
-                        ...chatData.map((message: ChatMessage) => ({
-                            role: message.sender,
-                            content: message.message,
-                        })),
+                const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY!);
+
+                console.log('starting model')
+                const model = genAI.getGenerativeModel({model: "gemini-1.5-pro-exp-0801"});
+                console.log('starting generation')
+
+                const aiResponse = await model.generateContent(JSON.stringify(
+                    chatData.map((message: ChatMessage) => ({
+                        role: message.sender,
+                        content: message.message,
+                    })).concat([
                         {
                             role: "user",
                             content: input.message.message,
                         },
-                    ],
-                });
+                    ])
+                ));
 
+                console.log('Ai response.....', aiResponse.response.text);
 
-
-                const aiResponse = response.choices?.[0]?.message?.content;
 
                 if (!aiResponse) {
                     throw new TRPCError({
@@ -643,12 +665,13 @@ export const houseRouter = createTRPCRouter({
 
                 chatData.push({
                     sender: "Deena",
-                    message: aiResponse,
+                    message: aiResponse.response,
                 });
 
                 console.log('Updated chat data...', chatData)
 
                 const filteredChatData = chatData.filter((message: ChatMessage) => message.sender !== "system")
+
 
                 await db.update(houses).set({
                     [input.topic.toLowerCase() + "Expertise"]: JSON.stringify(filteredChatData),

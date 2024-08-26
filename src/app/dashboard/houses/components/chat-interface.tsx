@@ -13,12 +13,59 @@ import {ResetChatSlider} from "@/app/dashboard/houses/components/reset-chat-slid
 import {Textarea} from "@/components/ui/textarea";
 import {PaperPlaneIcon} from "@radix-ui/react-icons";
 import {ChatMessage} from "@/app/dashboard/houses/page";
+import ReactMarkdown from 'react-markdown';
+import {twMerge} from "tailwind-merge";
 
 interface ChatInterfaceProps {
     showDataView: boolean;
     setShowDataView: (show: boolean) => void;
     house: House;
 }
+const baseTextStyles = "text-gray-800 leading-relaxed";
+const headingStyles = "font-semibold tracking-tight";
+
+type ComponentProps = {
+  className?: string;
+  children?: React.ReactNode;
+} & React.HTMLAttributes<HTMLElement>;
+
+type CodeProps = ComponentProps & {
+  inline?: boolean;
+};
+
+const markdownComponents = {
+  h1: ({ className, ...props }: ComponentProps) => (
+    <h1 className={twMerge(`${baseTextStyles} ${headingStyles} text-3xl mt-8 mb-4`, className)} {...props} />
+  ),
+  h2: ({ className, ...props }: ComponentProps) => (
+    <h2 className={twMerge(`${baseTextStyles} ${headingStyles} text-2xl mt-6 mb-3`, className)} {...props} />
+  ),
+  h3: ({ className, ...props }: ComponentProps) => (
+    <h3 className={twMerge(`${baseTextStyles} ${headingStyles} text-xl mt-4 mb-2`, className)} {...props} />
+  ),
+  p: ({ className, ...props }: ComponentProps) => (
+    <p className={twMerge(`${baseTextStyles} mb-4`, className)} {...props} />
+  ),
+  ul: ({ className, ...props }: ComponentProps) => (
+    <ul className={twMerge("list-disc pl-5 mb-4", className)} {...props} />
+  ),
+  ol: ({ className, ...props }: ComponentProps) => (
+    <ol className={twMerge("list-decimal pl-5 mb-4", className)} {...props} />
+  ),
+  li: ({ className, ...props }: ComponentProps) => (
+    <li className={twMerge(`${baseTextStyles} mb-2`, className)} {...props} />
+  ),
+  code: ({ className, inline, ...props }: CodeProps) => (
+    inline ? (
+      <code className={twMerge("bg-gray-100 text-red-600 rounded px-1 py-0.5 text-sm", className)} {...props} />
+    ) : (
+      <code className={twMerge("block bg-gray-100 rounded p-3 overflow-x-auto text-sm my-4", className)} {...props} />
+    )
+  ),
+  blockquote: ({ className, ...props }: ComponentProps) => (
+    <blockquote className={twMerge("border-l-4 border-gray-300 pl-4 italic my-4", className)} {...props} />
+  ),
+};
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataView, house}) => {
     const {currentChat} = useHouseDialog();
     const [newMessage, setNewMessage] = useState("");
@@ -198,10 +245,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                                                 initial="hidden"
                                                 animate="visible"
                                                 transition={{duration: 0.1, delay: index * 0.02}}
-                                                className={`p-3 my-2 rounded-lg ${message.sender === 'You' ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100'}`}
+                                                className={`p-3 max-w-[65%] my-2 rounded-lg ${message.sender === 'You' ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100'}`}
                                             >
                                                 <p className="font-semibold">{message.sender}</p>
-                                                <p>{message.message}</p>
+                                                <ReactMarkdown components={markdownComponents}>{message.message}</ReactMarkdown>
                                             </motion.div>
                                         ))}
                                     </AnimatePresence>
