@@ -104,51 +104,40 @@ export const userApiLimits = sqlLiteTable(
         stripeSubscriptionId: text("stripeSubscriptionId", {length: 255}).unique(),
         stripePriceId: text("stripePriceId"),
         stripeCurrentPeriodEnd: integer("stripeCurrentPeriodEnd", {mode: "timestamp"}),
+        zipCodesLimit: integer("zipCodesLimit").notNull(),
     }
 )
 
 
-export const cities = sqlLiteTable(
-    "city",
-    {
-        id: text("id").notNull().primaryKey(),
-        name: text("name").notNull(),
-        state: text("state").notNull(),
-    })
+export const zipCodes = sqlLiteTable(
+  "zipCodes",
+  {
+    id: text("id").notNull().primaryKey(), // Use zip code as primary key
+    city: text("city").notNull(),
+    state: text("state").notNull(),
+  }
+);
 
-export const usersToCities = sqlLiteTable(
-    "usersToCities",
-    {
-        id: integer("id", {mode: "number"}).primaryKey({autoIncrement: true}),
-        userId: text("userId").notNull(),
-        cityId: text("cityId").notNull(),
-        cityName: text("cityName").notNull(),
-        state: text("state").notNull(),
-    },
-    (table) => {
-        return {
-            cityStateIdx: index("city_state_idx").on(table.cityName, table.state),
-        }
-    }
+// Users to Zip Codes Table
+export const usersToZipCodes = sqlLiteTable(
+  "usersToZipCodes",
+  {
+    id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    userId: text("userId").notNull(),
+    zipCodeId: text("zipCodeId").notNull(), // Use zip code ID as foreign key
+  },
+  (table) => {
+    return {
+      userZipCodeIdx: index("user_zip_code_idx").on(table.userId, table.zipCodeId), // Index for efficient lookups
+    };
+  }
+);
 
-)
+// Relations
+export const zipCodeRelations = relations(zipCodes, ({ many }) => ({
+  usersToZipCodes: many(usersToZipCodes),
+}));
 
-export const citiesRelations = relations(cities, ({many}) => ({
-    usersToCities: many(usersToCities),
-}))
-
-export const usersRelations = relations(userApiLimits, ({many}) => ({
-    userToCities: many(usersToCities),
-}))
-
-export const userToCitiesRelations = relations(usersToCities, ({one}) => ({
-        city: one(cities, {
-            fields: [usersToCities.cityId],
-            references: [cities.id]
-        }),
-        user: one(userApiLimits, {
-            fields: [usersToCities.userId],
-            references: [userApiLimits.userId]
-        })
-    })
-)
+export const userRelations = relations(userApiLimits, ({ many }) => ({
+  userToZipCodes: many(usersToZipCodes),
+}));

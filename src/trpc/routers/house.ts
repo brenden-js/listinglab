@@ -3,15 +3,12 @@ import {z} from "zod";
 import axios, {type AxiosRequestConfig, type AxiosResponse} from 'axios';
 import process from "process";
 import {TRPCError} from "@trpc/server";
-import {type OpenAIResponse} from "@/lib/types";
 import {and, eq} from "drizzle-orm";
-import {BedrockRuntimeClient, InvokeModelCommand, type InvokeModelCommandOutput} from "@aws-sdk/client-bedrock-runtime";
-import {AutocompleteResponse, OpenAIStreamPayload, SearchAddressResult} from "@/trpc/routers/helpers/types";
+import {AutocompleteResponse, } from "@/trpc/routers/helpers/types";
 import {v4} from "uuid";
-import {models} from "@/lib/data/models";
 import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/trpc/routers/helpers/api-restrictions";
 import {db} from "@/db";
-import {cities, generations, houses, usersToCities} from "@/db/schema";
+import {generations, houses, userApiLimits,  usersToZipCodes, zipCodes} from "@/db/schema";
 import {inngest} from "@/inngest/client";
 import Together from "together-ai";
 import {ChatMessage} from "@/app/dashboard/houses/page";
@@ -172,49 +169,86 @@ export const houseRouter = createTRPCRouter({
                 })
                 return {status: "House claimed successfully", claimed: 1}
             }),
-        getUserCities: protectedProcedure
+        getUserZipCodes: protectedProcedure
             .query(async ({ctx}) => {
                 if (!ctx.authObject.userId) {
-                    throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
+                    throw new TRPCError({
+                        code: "UNAUTHORIZED",
+                        message: "You are not authorized to perform this action."
+                    });
                 }
-                return db.query.usersToCities.findMany({
-                    where: eq(usersToCities.userId, ctx.authObject.userId)
+                const userZipCodes = await db.query.usersToZipCodes.findMany({
+                    where: eq(usersToZipCodes.userId, ctx.authObject.userId),
+                    with: {
+                        zipCode: true // Include the related zip code data
+                    }
                 });
+
+                // Extract zip code information
+                const zipCodes = userZipCodes.map(userZipCode => userZipCode.zipCode);
+
+                return zipCodes;
             }),
-        setUserCity: protectedProcedure
-            .input(z.object({cityName: z.string()}))
+        setUserZipCode: protectedProcedure
+            .input(z.object({zipCode: z.string()}))
             .mutation(async ({ctx, input}) => {
                 if (!ctx.authObject.userId) {
-                    throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
-                }
-                // get the user's current city
-                const userCity = await db.query.usersToCities.findMany({where: eq(usersToCities.userId, ctx.authObject.userId)})
-
-                // if the user has no city, create a new one
-                if (!userCity.length) {
-
-                    const cityId = v4()
-                    await db.insert(cities).values({
-                            id: cityId,
-                            name: input.cityName,
-                            state: "CA",
-                        }
-                    )
-                    await db.insert(usersToCities).values({
-                        userId: ctx.authObject.userId,
-                        cityId,
-                        state: "CA",
-                        cityName: input.cityName
-                    })
-                    return {status: "City set successfully"}
+                    throw new TRPCError({
+                        code: "UNAUTHORIZED",
+                        message: "You are not authorized to perform this action."
+                    });
                 }
 
-                // if the user has a city, update it
-                await db.update(usersToCities).set({
-                    cityName: input.cityName
-                }).where(eq(usersToCities.userId, ctx.authObject.userId))
+                // Get the user's API limits
+                const userLimits = await db.query.userApiLimits.findFirst({
+                    where: eq(userApiLimits.userId, ctx.authObject.userId)
+                });
 
-                return {status: "City updated successfully"}
+                if (!userLimits) {
+                    throw new TRPCError({
+                        code: "INTERNAL_SERVER_ERROR",
+                        message: "User API limits not found."
+                    });
+                }
+
+                // Get the user's current zip codes
+                const userZipCodes = await db.query.usersToZipCodes.findMany({
+                    where: eq(usersToZipCodes.userId, ctx.authObject.userId)
+                });
+
+                // Check if the user has reached their zip code limit
+                if (userZipCodes.length >= userLimits.zipCodesLimit) { // Assuming you added zipCodesLimit to userApiLimits
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: "You have reached your zip code limit."
+                    });
+                }
+
+                // Check if the zip code already exists
+                const existingZipCode = await db.query.zipCodes.findFirst({
+                    where: eq(zipCodes.id, input.zipCode)
+                });
+
+                let zipCodeId;
+                if (!existingZipCode) {
+                    // Create a new zip code entry if it doesn't exist
+                    zipCodeId = input.zipCode; // Use zip code as ID
+                    await db.insert(zipCodes).values({
+                        id: zipCodeId,
+                        city: 'Unknown', // You might need to fetch city and state based on zip code
+                        state: 'Unknown'
+                    });
+                } else {
+                    zipCodeId = existingZipCode.id;
+                }
+
+                // Add the zip code to the user's list
+                await db.insert(usersToZipCodes).values({
+                    userId: ctx.authObject.userId,
+                    zipCodeId: zipCodeId
+                });
+
+                return {status: "Zip code added successfully"};
             }),
         searchCity: protectedProcedure
             .input(z.object({cityName: z.string()}))
@@ -653,7 +687,7 @@ export const houseRouter = createTRPCRouter({
                     ])
                 ));
 
-                console.log('Ai response.....', aiResponse.response.text);
+                console.log('Ai response.....', aiResponse.response.text());
 
 
                 if (!aiResponse) {
@@ -665,7 +699,7 @@ export const houseRouter = createTRPCRouter({
 
                 chatData.push({
                     sender: "Deena",
-                    message: aiResponse.response,
+                    message: aiResponse.response.text(),
                 });
 
                 console.log('Updated chat data...', chatData)
