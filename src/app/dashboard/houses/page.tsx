@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 import {HouseDialogProvider} from "@/app/dashboard/contexts/house-dialog-context";
-import {AddZipCodeDialog} from "@/app/dashboard/houses/components/zip-dialog"; // Updated import
+import {AddZipCodeDialog} from "@/app/dashboard/houses/components/zip-dialog";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {House} from "@/app/dashboard/contexts/prompts"; // Updated import
+import { Badge } from "@/components/ui/badge";
 
 export default function HousesPageOverview() {
   const currentZipCodes = api.house.getUserZipCodes.useQuery(); // Updated query
@@ -79,3 +82,51 @@ export default function HousesPageOverview() {
     </HouseDialogProvider>
   );
 }
+
+interface HousePreviewCardProps {
+  house: House;
+}
+
+const HousePreviewCard: React.FC<HousePreviewCardProps> = ({ house }) => {
+  if (!house) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>{house.stAddress}</CardTitle>
+          <Badge variant="secondary">{house.price?.toLocaleString("en-US", { style: "currency", currency: "USD" })}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {/*<div className="relative h-48 w-full">*/}
+        {/*  <Image*/}
+        {/*    src={house.imageUrl}*/}
+        {/*    alt={house.address}*/}
+        {/*    fill*/}
+        {/*    objectFit="cover"*/}
+        {/*  />*/}
+        {/*</div>*/}
+        <div className="mt-2">
+          <div className="text-sm text-gray-600">
+            {house.city}, {house.state} {house.zipCode}
+          </div>
+          <div className="text-sm text-gray-600">
+            {house.beds} beds | {house.baths} baths | {house.sqft} sqft
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const LoadingSkeletons = () => {
+  return (
+    <div className="flex flex-wrap -mx-2">
+      {[...Array(4)].map((_, index) => (
+        <div className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4" key={index}>
+          <div className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>
+        </div>
+      ))}
+    </div>
+  );
+};

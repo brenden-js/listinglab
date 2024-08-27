@@ -11,7 +11,6 @@ import {db} from "@/db";
 import {generations, houses, userApiLimits,  usersToZipCodes, zipCodes} from "@/db/schema";
 import {inngest} from "@/inngest/client";
 import Together from "together-ai";
-import {ChatMessage} from "@/app/dashboard/houses/page";
 import {GoogleGenerativeAI} from "@google/generative-ai";
 
 export const houseRouter = createTRPCRouter({
@@ -180,12 +179,13 @@ export const houseRouter = createTRPCRouter({
                 const userZipCodes = await db.query.usersToZipCodes.findMany({
                     where: eq(usersToZipCodes.userId, ctx.authObject.userId),
                     with: {
-                        zipCode: true // Include the related zip code data
+                        zipCodes: true // Include the related zip code data
                     }
                 });
+                const l = userZipCodes[0]
 
                 // Extract zip code information
-                const zipCodes = userZipCodes.map(userZipCode => userZipCode.zipCode);
+                const zipCodes = userZipCodes.map(userZipCode => userZipCode.zipCodes);
 
                 return zipCodes;
             }),
@@ -676,7 +676,7 @@ export const houseRouter = createTRPCRouter({
                 console.log('starting generation')
 
                 const aiResponse = await model.generateContent(JSON.stringify(
-                    chatData.map((message: ChatMessage) => ({
+                    chatData.map((message: { sender: string, message: string }) => ({
                         role: message.sender,
                         content: message.message,
                     })).concat([
@@ -704,7 +704,7 @@ export const houseRouter = createTRPCRouter({
 
                 console.log('Updated chat data...', chatData)
 
-                const filteredChatData = chatData.filter((message: ChatMessage) => message.sender !== "system")
+                const filteredChatData = chatData.filter((message: { sender: string, message: string }) => message.sender !== "system")
 
 
                 await db.update(houses).set({

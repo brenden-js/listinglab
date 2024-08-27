@@ -104,7 +104,7 @@ export const userApiLimits = sqlLiteTable(
         stripeSubscriptionId: text("stripeSubscriptionId", {length: 255}).unique(),
         stripePriceId: text("stripePriceId"),
         stripeCurrentPeriodEnd: integer("stripeCurrentPeriodEnd", {mode: "timestamp"}),
-        zipCodesLimit: integer("zipCodesLimit").notNull(),
+        zipCodesLimit: integer("zipCodesLimit"),
     }
 )
 
@@ -112,32 +112,36 @@ export const userApiLimits = sqlLiteTable(
 export const zipCodes = sqlLiteTable(
   "zipCodes",
   {
-    id: text("id").notNull().primaryKey(), // Use zip code as primary key
+    id: text("id").notNull().primaryKey(),
     city: text("city").notNull(),
     state: text("state").notNull(),
   }
 );
 
-// Users to Zip Codes Table
 export const usersToZipCodes = sqlLiteTable(
   "usersToZipCodes",
   {
     id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
     userId: text("userId").notNull(),
-    zipCodeId: text("zipCodeId").notNull(), // Use zip code ID as foreign key
+    zipCodeId: text("zipCodeId").notNull(),
   },
   (table) => {
     return {
-      userZipCodeIdx: index("user_zip_code_idx").on(table.userId, table.zipCodeId), // Index for efficient lookups
+      userZipCodeIdx: index("user_zip_code_idx").on(table.userId, table.zipCodeId),
     };
   }
 );
 
-// Relations
 export const zipCodeRelations = relations(zipCodes, ({ many }) => ({
-  usersToZipCodes: many(usersToZipCodes),
+  usersToZipCodes: many(usersToZipCodes, {
+    fields: [zipCodes.id], // Fields from the zipCodes table
+    references: [usersToZipCodes.zipCodeId], // Corresponding fields in usersToZipCodes
+  }),
 }));
 
-export const userRelations = relations(userApiLimits, ({ many }) => ({
-  userToZipCodes: many(usersToZipCodes),
+export const userApiLimitRelations = relations(userApiLimits, ({ many }) => ({
+  userToZipCodes: many(usersToZipCodes, {
+    fields: [userApiLimits.userId], // Fields from the userApiLimits table
+    references: [usersToZipCodes.userId], // Corresponding fields in usersToZipCodes
+  }),
 }));
