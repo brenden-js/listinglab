@@ -105,43 +105,44 @@ export const userApiLimits = sqlLiteTable(
         stripePriceId: text("stripePriceId"),
         stripeCurrentPeriodEnd: integer("stripeCurrentPeriodEnd", {mode: "timestamp"}),
         zipCodesLimit: integer("zipCodesLimit"),
+        zipCodesUsage: integer("zipCodesUsage"),
     }
-)
-
+);
 
 export const zipCodes = sqlLiteTable(
-  "zipCodes",
-  {
-    id: text("id").notNull().primaryKey(),
-    city: text("city").notNull(),
-    state: text("state").notNull(),
-  }
+    "zipCodes",
+    {
+        id: text("id").notNull().primaryKey(),
+        city: text("city").notNull(),
+        state: text("state").notNull(),
+    }
 );
 
-export const usersToZipCodes = sqlLiteTable(
-  "usersToZipCodes",
-  {
-    id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    userId: text("userId").notNull(),
-    zipCodeId: text("zipCodeId").notNull(),
-  },
-  (table) => {
-    return {
-      userZipCodeIdx: index("user_zip_code_idx").on(table.userId, table.zipCodeId),
-    };
-  }
+export const zipCodeSubscriptions = sqlLiteTable(
+    "zipCodeSubscriptions",
+    {
+        id: integer("id", {mode: "number"}).primaryKey({autoIncrement: true}),
+        userId: text("userId")
+            .notNull()
+            .references(() => userApiLimits.userId, {onDelete: 'cascade'}), // When a user is deleted, cascade the delete to their zip code subscriptions
+        zipCodeId: text("zipCodeId")
+            .notNull()
+            .references(() => zipCodes.id, {onDelete: 'cascade'}), // When a zip code is deleted, cascade the delete to related subscriptions
+    },
 );
 
-export const zipCodeRelations = relations(zipCodes, ({ many }) => ({
-  usersToZipCodes: many(usersToZipCodes, {
-    fields: [zipCodes.id], // Fields from the zipCodes table
-    references: [usersToZipCodes.zipCodeId], // Corresponding fields in usersToZipCodes
-  }),
+// Define relationships for easier querying
+export const userApiLimitsRelations = relations(userApiLimits, ({many}) => ({
+    zipCodeSubscriptions: many(zipCodeSubscriptions),
 }));
 
-export const userApiLimitRelations = relations(userApiLimits, ({ many }) => ({
-  userToZipCodes: many(usersToZipCodes, {
-    fields: [userApiLimits.userId], // Fields from the userApiLimits table
-    references: [usersToZipCodes.userId], // Corresponding fields in usersToZipCodes
-  }),
+export const zipCodeSubscriptionsRelations = relations(zipCodeSubscriptions, ({one}) => ({
+    user: one(userApiLimits, {
+        fields: [zipCodeSubscriptions.userId],
+        references: [userApiLimits.userId],
+    }),
+    zipCode: one(zipCodes, {
+        fields: [zipCodeSubscriptions.zipCodeId],
+        references: [zipCodes.id],
+    }),
 }));

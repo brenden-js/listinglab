@@ -32,7 +32,9 @@ export const handleSubscriptionPurchased = inngest.createFunction(
             periodEnd: new Date(end),
             housesQuota: 25,
             textQuota: 125,
-            maxTokens: 4000
+            maxTokens: 4000,
+            zipCodesLimit: 3,
+            zipCodesUsage: 0
         }).where(eq(userApiLimits.userId, event.data.metadata.userId))
 
         return {userId: event.data.metadata.userId, periodEnd: end, subId: subscription.id}

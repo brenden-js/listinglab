@@ -4,11 +4,11 @@ import axios, {type AxiosRequestConfig, type AxiosResponse} from 'axios';
 import process from "process";
 import {TRPCError} from "@trpc/server";
 import {and, eq} from "drizzle-orm";
-import {AutocompleteResponse, } from "@/trpc/routers/helpers/types";
+import {AutocompleteResponse, ZipSearchResults,} from "@/trpc/routers/helpers/types";
 import {v4} from "uuid";
-import {getMaxTokens, getOrCreateApiLimits, getSelectedModel} from "@/trpc/routers/helpers/api-restrictions";
+import {getMaxTokens, getOrCreateApiLimits} from "@/trpc/routers/helpers/api-restrictions";
 import {db} from "@/db";
-import {generations, houses, userApiLimits,  usersToZipCodes, zipCodes} from "@/db/schema";
+import {generations, houses, userApiLimits, zipCodes, zipCodeSubscriptions} from "@/db/schema";
 import {inngest} from "@/inngest/client";
 import Together from "together-ai";
 import {GoogleGenerativeAI} from "@google/generative-ai";
@@ -168,6 +168,51 @@ export const houseRouter = createTRPCRouter({
                 })
                 return {status: "House claimed successfully", claimed: 1}
             }),
+        searchZipCode: protectedProcedure
+            .input(z.object({zipCode: z.string()}))
+            .mutation(async ({ctx, input}) => {
+                if (!ctx.authObject.userId) {
+                    throw new TRPCError({
+                        code: "UNAUTHORIZED",
+                        message: "You are not authorized to perform this action."
+                    });
+                }
+                const zipCode = await db.query.zipCodes.findFirst({
+                    where: eq(zipCodes.id, input.zipCode),
+                });
+                if (zipCode) {
+                    return zipCode;
+                } else {
+                    const options = {
+                        method: 'GET',
+                        hostname: 'vanitysoft-boundaries-io-v1.p.rapidapi.com',
+                        port: null,
+                        path: `/rest/v1/public/boundary/zipcode?zipcode=${input.zipCode}`,
+                        headers: {
+                            'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
+                            'x-rapidapi-host': 'vanitysoft-boundaries-io-v1.p.rapidapi.com'
+                        }
+                    };
+
+
+                    const response = await axios({
+                        method: options.method,
+                        url: `https://${options.hostname}${options.path}`,
+                        headers: options.headers,
+                    });
+
+                    console.log(response.data);
+
+                    const zipData = response.data as ZipSearchResults
+                    if (!zipData.features.length) {
+                        throw new TRPCError({
+                            code: "INTERNAL_SERVER_ERROR",
+                            message: "Zip code not found."
+                        })
+                    }
+                    return {city: zipData.features[0].properties.city, state: zipData.features[0].properties.state, id: zipData.features[0].properties.zipCode}
+                }
+            }),
         getUserZipCodes: protectedProcedure
             .query(async ({ctx}) => {
                 if (!ctx.authObject.userId) {
@@ -176,16 +221,16 @@ export const houseRouter = createTRPCRouter({
                         message: "You are not authorized to perform this action."
                     });
                 }
-                const userZipCodes = await db.query.usersToZipCodes.findMany({
-                    where: eq(usersToZipCodes.userId, ctx.authObject.userId),
+                const userZipCodes = await db.query.zipCodeSubscriptions.findMany({
+                    where: eq(zipCodeSubscriptions.userId, ctx.authObject.userId),
                     with: {
-                        zipCodes: true // Include the related zip code data
+                        zipCode: true // Include the related zip code data
                     }
                 });
                 const l = userZipCodes[0]
 
                 // Extract zip code information
-                const zipCodes = userZipCodes.map(userZipCode => userZipCode.zipCodes);
+                const zipCodes = userZipCodes.map(userZipCode => userZipCode.zipCode);
 
                 return zipCodes;
             }),
@@ -200,9 +245,7 @@ export const houseRouter = createTRPCRouter({
                 }
 
                 // Get the user's API limits
-                const userLimits = await db.query.userApiLimits.findFirst({
-                    where: eq(userApiLimits.userId, ctx.authObject.userId)
-                });
+                const userLimits = await getOrCreateApiLimits(ctx.authObject.userId);
 
                 if (!userLimits) {
                     throw new TRPCError({
@@ -211,12 +254,20 @@ export const houseRouter = createTRPCRouter({
                     });
                 }
 
+                if (userLimits.zipCodesLimit === null) {
+                    throw new TRPCError({
+                        code: "INTERNAL_SERVER_ERROR",
+                        message: "Upgrade your subscription to subscribe to zip codes."
+                    });
+                }
+
                 // Get the user's current zip codes
-                const userZipCodes = await db.query.usersToZipCodes.findMany({
-                    where: eq(usersToZipCodes.userId, ctx.authObject.userId)
+                const userZipCodes = await db.query.zipCodeSubscriptions.findMany({
+                    where: eq(zipCodeSubscriptions.userId, ctx.authObject.userId)
                 });
 
                 // Check if the user has reached their zip code limit
+
                 if (userZipCodes.length >= userLimits.zipCodesLimit) { // Assuming you added zipCodesLimit to userApiLimits
                     throw new TRPCError({
                         code: "BAD_REQUEST",
@@ -243,21 +294,12 @@ export const houseRouter = createTRPCRouter({
                 }
 
                 // Add the zip code to the user's list
-                await db.insert(usersToZipCodes).values({
+                await db.insert(zipCodeSubscriptions).values({
                     userId: ctx.authObject.userId,
                     zipCodeId: zipCodeId
                 });
 
                 return {status: "Zip code added successfully"};
-            }),
-        searchCity: protectedProcedure
-            .input(z.object({cityName: z.string()}))
-            .mutation(async ({ctx, input}) => {
-                if (!ctx.authObject.userId) {
-                    throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
-                }
-                // TODO: search for city
-                return {cityName: input.cityName, state: "CA"}
             }),
         generateText: protectedProcedure
             .input(z.object({
@@ -586,10 +628,6 @@ export const houseRouter = createTRPCRouter({
                         break;
                 }
 
-                // add the house data to the chatData array as a message from the user
-
-
-                // customize the system prompt for Financial, Property, and Location chats
                 if (input.topic === "Financial") {
                     chatData.push({
                         sender: "system",
@@ -667,12 +705,10 @@ export const houseRouter = createTRPCRouter({
                 //
                 // const aiResponse = response.choices?.[0]?.message?.content;
 
-                console.log("starting google")
-
                 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY!);
 
-                console.log('starting model')
                 const model = genAI.getGenerativeModel({model: "gemini-1.5-pro-exp-0801"});
+
                 console.log('starting generation')
 
                 const aiResponse = await model.generateContent(JSON.stringify(
@@ -704,8 +740,10 @@ export const houseRouter = createTRPCRouter({
 
                 console.log('Updated chat data...', chatData)
 
-                const filteredChatData = chatData.filter((message: { sender: string, message: string }) => message.sender !== "system")
-
+                const filteredChatData = chatData.filter((message: {
+                    sender: string,
+                    message: string
+                }) => message.sender !== "system")
 
                 await db.update(houses).set({
                     [input.topic.toLowerCase() + "Expertise"]: JSON.stringify(filteredChatData),

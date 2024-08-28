@@ -2,7 +2,7 @@ import {and, eq} from "drizzle-orm";
 import axios, {type AxiosRequestConfig, type AxiosResponse} from "axios";
 import process from "process";
 import {v4 as uuidv4} from "uuid";
-import {generations, houses, userApiLimits, usersToCities} from "@/db/schema";
+import {generations, houses, userApiLimits, zipCodeSubscriptions} from "@/db/schema";
 import {db} from "@/db";
 import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/helpers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
@@ -258,17 +258,17 @@ export const scheduledNewListingsScan = inngest.createFunction(
     {cron: '1/30 4-23 * * *'},
     async () => {
         console.log('Running scheduled new listings scan...')
-        const cities = await db.query.cities.findMany()
-        if (!cities.length) {
-            console.log('No cities found, exiting...')
+        const zipCodes = await db.query.zipCodes.findMany()
+        if (!zipCodes.length) {
+            console.log('No zipCodes found, exiting...')
             return
         }
-        for (const city of cities) {
-            // create an event for each city
+        for (const zipCode of zipCodes) {
+            // create an event for each zipCode
             const event = {
-                cityId: city.id,
-                cityName: city.name,
-                state: city.state
+                cityId: zipCode.id,
+                cityName: zipCode.city,
+                state: zipCode.state
             }
             await inngest.send({name: 'house/scan-city', data: event})
         }
@@ -358,10 +358,9 @@ export const handleAddHouseToUsers = inngest.createFunction(
     async ({event}) => {
 
         // search for all recards in usersToCities using the composite index on cityName and state
-        const usersSubscribedToCity = await db.query.usersToCities.findMany({
+        const usersSubscribedToCity = await db.query.zipCodeSubscriptions.findMany({
             where: and(
-                eq(usersToCities.cityName, event.data.cityName),
-                eq(usersToCities.state, event.data.state)
+                eq(zipCodeSubscriptions.zipCodeId, event.data.zipCode)
             )
         })
 

@@ -5,6 +5,31 @@ export interface ChatGPTMessage {
   content: string;
 }
 
+interface FeatureProperties {
+  zipCode: string;
+  country: string;
+  city: string;
+  county: string;
+  state: string;
+}
+
+interface FeatureGeometry {
+  type: "Polygon";
+  coordinates: [[number, number][]];
+}
+
+interface Feature {
+  type: "Feature";
+  properties: FeatureProperties;
+  geometry: FeatureGeometry;
+}
+
+export interface ZipSearchResults {
+  type: "FeatureCollection";
+  features: Feature[];
+}
+
+
 export interface OpenAIStreamPayload {
   model: string;
   messages: ChatGPTMessage[];

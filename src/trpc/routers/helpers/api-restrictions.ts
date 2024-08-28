@@ -21,6 +21,7 @@ export interface ApiLimits {
 export const getOrCreateApiLimits = async (userId: string) => {
     const apiLimits = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, userId)});
 
+
     // if the api limits are not found, create them
     if (!apiLimits) {
         const newApiLimits = {
@@ -35,7 +36,9 @@ export const getOrCreateApiLimits = async (userId: string) => {
             stripeCustomerId: null,
             stripeSubscriptionId: null,
             stripePriceId: null,
-            stripeCurrentPeriodEnd: null
+            stripeCurrentPeriodEnd: null,
+            zipCodesLimit: 0,
+            zipCodesUsage: 0
         };
         await db.insert(userApiLimits).values(newApiLimits);
         return newApiLimits;
@@ -73,6 +76,8 @@ export const getOrCreateApiLimits = async (userId: string) => {
             stripeCurrentPeriodEnd: null,
             stripeCustomerId: null,
             stripeSubscriptionId: null,
+            zipCodesLimit: 0,
+            zipCodesUsage: 0
         };
     }
 
