@@ -9,6 +9,7 @@ import {AddZipCodeDialog} from "@/app/dashboard/houses/components/zip-dialog";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {House} from "@/app/dashboard/contexts/prompts"; // Updated import
 import { Badge } from "@/components/ui/badge";
+import {HouseDialog} from "@/app/dashboard/houses/components/house-dialog";
 
 export default function HousesPageOverview() {
   const currentZipCodes = api.house.getUserZipCodes.useQuery(); // Updated query
@@ -27,6 +28,8 @@ export default function HousesPageOverview() {
   );
 
   const [openZipCodeDialog, setOpenZipCodeDialog] = useState(false);
+
+  const [houseDialogOpen, setHouseDialogOpen] = useState(false);
 
   return (
     <HouseDialogProvider>
@@ -69,7 +72,8 @@ export default function HousesPageOverview() {
                   className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
                   key={house.id}
                 >
-                  <HousePreviewCard house={house} />
+                  <HousePreviewCard house={house} onClick={() => setHouseDialogOpen(true)}/>
+                  <HouseDialog house={house} open={houseDialogOpen} onOpenChange={setHouseDialogOpen}/>
                 </div>
               ))}
             </div>
@@ -85,12 +89,13 @@ export default function HousesPageOverview() {
 
 interface HousePreviewCardProps {
   house: House;
+  onClick: () => void;
 }
 
-const HousePreviewCard: React.FC<HousePreviewCardProps> = ({ house }) => {
+const HousePreviewCard: React.FC<HousePreviewCardProps> = ({ house, onClick }) => {
   if (!house) return null;
   return (
-    <Card>
+    <Card onClick={onClick}>
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>{house.stAddress}</CardTitle>

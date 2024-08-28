@@ -8,6 +8,7 @@ import {LiveDataFeed} from "@/app/dashboard/components/live-data-feed";
 import {Button} from "@/components/ui/button";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {ChatInterface} from "@/app/dashboard/houses/components/chat-interface";
+import {cn} from "@/lib/utils";
 
 export const HouseDialog: React.FC<{
     house: House,
@@ -76,10 +77,12 @@ export const HouseDialog: React.FC<{
                         </ScrollArea>
                     </div>
                     <div className="w-[75%] pt-4 flex flex-col">
-                        <div className="px-4 pb-4 flex items-center justify-between">
-                            <Button variant="secondary" className="w-[150px]" onClick={() => setCurrentChat('Main')}>
+                        <div className="px-4 pb-4 flex items-center">
+                            <div className="bg-secondary rounded-lg p-1.5">
+                                <Button variant="secondary"  className={cn("w-[150px] hover:bg-secondary", currentChat === 'Main' && 'bg-white hover:bg-white text-black shadow')} onClick={() => setCurrentChat('Main')}>
                                 Main Chat
                             </Button>
+                            </div>
                             <Tabs value={currentChat} onValueChange={setCurrentChat as any} className="pl-4">
                                 <TabsList className={""}>
                                     <TabsTrigger value="Property">Property Chat</TabsTrigger>
