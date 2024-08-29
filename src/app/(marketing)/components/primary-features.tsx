@@ -1,7 +1,7 @@
 "use client"
-import { useEffect, useState } from 'react'
+import {useEffect, useState} from 'react'
 import Image from 'next/image'
-import { Tab } from '@headlessui/react'
+import {Tab} from '@headlessui/react'
 import clsx from 'clsx'
 
 import backgroundImage from '@/images/background-features.jpg'
@@ -11,144 +11,150 @@ import screenshotData from '@/images/screenshots/data.png'
 import screenshotGenerations from '@/images/screenshots/generations.png'
 
 const features = [
-  {
-    title: 'Hundreds of data points in a click',
-    description:
-      "We handle finding and neatly packaging together virtually all the data points you could want; listing data, property features, mortgage data, investment numbers, comparable sales, neighborhood features and more.",
-    image: screenshotDashboard,
-  },
     {
-    title: 'Add your real estate expertise',
-    description:
-      'Step by step, input what the data does not show about each property; things like the neighborhood vibe and feel, local holiday celebrations, traffic patterns, or anything else your clientele needs to know.',
-    image: screenshotGenerations
-  },
-  {
-    title: "Leverage your choice of state-of-the-art AI models",
-    description:
-      "Experiment and tune your AI to create content that expresses your unique brand voice.",
-    image: screenshotExperiment,
-  },
-  {
-    title: 'Create the content your clientele needs',
-    description:
-      "Create a virtually limitless amount of content, ranging from investment analysis to super-niche social media posts (think 'Why This House is Perfect for Gardeners' posted to a gardening community).",
-    image: screenshotData,
-  },
+        title: 'Transform raw data into compelling stories.',
+        description:
+            "From listing details to investment insights. Create content that matters, powered by comprehensive data at your fingertips.",
+        image: screenshotDashboard,
+    },
+    {
+        title: 'Share your expertise. Effortlessly.',
+        description:
+            'Add your personal touch with interactive chats. Because real estate is about more than just numbers.',
+        image: screenshotGenerations
+    },
+    {
+        title: "Always up-to-date. Always relevant.",
+        description:
+            "Stay ahead with real-time listing scans. Fresh data, fresh content. Automatically.",
+        image: screenshotExperiment,
+    },
+    {
+        title: 'Your brand. Your voice.',
+        description:
+            "Create content that's uniquely you. Authentic. Consistent. Powered by your expertise.",
+        image: screenshotData,
+    }
+
 ]
 
 export function PrimaryFeatures() {
-  const [tabOrientation, setTabOrientation] = useState('horizontal')
+    const [tabOrientation, setTabOrientation] = useState('horizontal')
 
-  useEffect(() => {
-    const lgMediaQuery = window.matchMedia('(min-width: 1024px)')
+    useEffect(() => {
+        const lgMediaQuery = window.matchMedia('(min-width: 1024px)')
 
-    function onMediaQueryChange({ matches }: {matches: boolean}) {
-      setTabOrientation(matches ? 'vertical' : 'horizontal')
-    }
+        function onMediaQueryChange({matches}: { matches: boolean }) {
+            setTabOrientation(matches ? 'vertical' : 'horizontal')
+        }
 
-    onMediaQueryChange(lgMediaQuery)
-    lgMediaQuery.addEventListener('change', onMediaQueryChange)
+        onMediaQueryChange(lgMediaQuery)
+        lgMediaQuery.addEventListener('change', onMediaQueryChange)
 
-    return () => {
-      lgMediaQuery.removeEventListener('change', onMediaQueryChange)
-    }
-  }, [])
+        return () => {
+            lgMediaQuery.removeEventListener('change', onMediaQueryChange)
+        }
+    }, [])
 
-  return (
-    <section
-      id="features"
-      aria-label="Features for running your books"
-      className="relative overflow-hidden bg-blue-600 pt-20 pb-28 sm:py-32"
-    >
-      <Image
-        className="absolute top-1/2 left-1/2 max-w-none translate-x-[-44%] translate-y-[-42%]"
-        src={backgroundImage}
-        alt=""
-        width={2245}
-        height={1636}
-        unoptimized
-      />
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-        <div className="max-w-2xl md:mx-auto md:text-center xl:max-w-none">
-          <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-5xl">
-            Effortlessly express your property expertise to investors, buyers, and sellers.
-          </h2>
-          <p className="mt-6 text-lg tracking-tight text-blue-100">
-            Pick the data points you want, combine your real estate expertise, and tell the story you want about the listings in your area.
-          </p>
-        </div>
-        <Tab.Group
-          as="div"
-          className="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0"
-          vertical={tabOrientation === 'vertical'}
+    return (
+        <section
+            id="features"
+            aria-label="Features for running your books"
+            className="relative overflow-hidden bg-blue-600 pt-20 pb-28 sm:py-32"
         >
-          {({ selectedIndex }) => (
-            <>
-              <div className="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
-                <Tab.List className="relative z-10 flex gap-x-4 whitespace-nowrap px-4 sm:mx-auto sm:px-0 lg:mx-0 lg:block lg:gap-x-0 lg:gap-y-1 lg:whitespace-normal">
-                  {features.map((feature, featureIndex) => (
-                    <div
-                      key={feature.title}
-                      className={clsx(
-                        'group relative rounded-full py-1 px-4 lg:rounded-r-none lg:rounded-l-xl lg:p-6',
-                        selectedIndex === featureIndex
-                          ? 'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10'
-                          : 'hover:bg-white/10 lg:hover:bg-white/5'
-                      )}
-                    >
-                      <h3>
-                        <Tab
-                          className={clsx(
-                            'font-display text-lg [&:not(:focus-visible)]:focus:outline-none',
-                            selectedIndex === featureIndex
-                              ? 'text-blue-600 lg:text-white'
-                              : 'text-blue-100 hover:text-white lg:text-white'
-                          )}
-                        >
-                          <span className="absolute inset-0 rounded-full lg:rounded-r-none lg:rounded-l-xl" />
-                          {feature.title}
-                        </Tab>
-                      </h3>
-                      <p
-                        className={clsx(
-                          'mt-2 hidden text-sm lg:block',
-                          selectedIndex === featureIndex
-                            ? 'text-white'
-                            : 'text-blue-100 group-hover:text-white'
-                        )}
-                      >
-                        {feature.description}
-                      </p>
-                    </div>
-                  ))}
-                </Tab.List>
-              </div>
-              <Tab.Panels className="lg:col-span-7">
-                {features.map((feature) => (
-                  <Tab.Panel key={feature.title} unmount={false}>
-                    <div className="relative sm:px-6 lg:hidden">
-                      <div className="absolute -inset-x-4 top-[-6.5rem] bottom-[-4.25rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
-                      <p className="relative mx-auto max-w-2xl text-base text-white sm:text-center">
-                        {feature.description}
-                      </p>
-                    </div>
-                    <div className="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
-                      <Image
-                        className="w-full"
-                        src={feature.image}
-                        alt=""
-                        priority
-                        sizes="(min-width: 1024px) 67.8125rem, (min-width: 640px) 100vw, 45rem"
-                      />
-                    </div>
-                  </Tab.Panel>
-                ))}
-              </Tab.Panels>
-            </>
-          )}
-        </Tab.Group>
-      </div>
-    </section>
-  )
+            <Image
+                className="absolute top-1/2 left-1/2 max-w-none translate-x-[-44%] translate-y-[-42%]"
+                src={backgroundImage}
+                alt=""
+                width={2245}
+                height={1636}
+                unoptimized
+            />
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+                <div className="max-w-xl md:mx-auto md:text-center xl:max-w-none">
+                    <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-4xl">
+                        A better way to connect with your market.
+                    </h2>
+                    <p className="mt-6 text-lg tracking-tight text-blue-100">
+                        Go beyond cold calls, generic content, and expensive leads. Engage your audience with fresh, relevant content that generates genuine interest and lasting connections.
+                    </p>
+                </div>
+                <Tab.Group
+                    as="div"
+                    className="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0"
+                    vertical={tabOrientation === 'vertical'}
+                >
+                    {({selectedIndex}) => (
+                        <>
+                            <div
+                                className="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
+                                <Tab.List
+                                    className="relative z-10 flex gap-x-4 whitespace-nowrap px-4 sm:mx-auto sm:px-0 lg:mx-0 lg:block lg:gap-x-0 lg:gap-y-1 lg:whitespace-normal">
+                                    {features.map((feature, featureIndex) => (
+                                        <div
+                                            key={feature.title}
+                                            className={clsx(
+                                                'group relative rounded-full py-1 px-4 lg:rounded-r-none lg:rounded-l-xl lg:p-6',
+                                                selectedIndex === featureIndex
+                                                    ? 'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10'
+                                                    : 'hover:bg-white/10 lg:hover:bg-white/5'
+                                            )}
+                                        >
+                                            <h3>
+                                                <Tab
+                                                    className={clsx(
+                                                        'font-display text-lg [&:not(:focus-visible)]:focus:outline-none',
+                                                        selectedIndex === featureIndex
+                                                            ? 'text-blue-600 lg:text-white'
+                                                            : 'text-blue-100 hover:text-white lg:text-white'
+                                                    )}
+                                                >
+                                                    <span
+                                                        className="absolute inset-0 rounded-full lg:rounded-r-none lg:rounded-l-xl"/>
+                                                    {feature.title}
+                                                </Tab>
+                                            </h3>
+                                            <p
+                                                className={clsx(
+                                                    'mt-2 hidden text-sm lg:block',
+                                                    selectedIndex === featureIndex
+                                                        ? 'text-white'
+                                                        : 'text-blue-100 group-hover:text-white'
+                                                )}
+                                            >
+                                                {feature.description}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </Tab.List>
+                            </div>
+                            <Tab.Panels className="lg:col-span-7">
+                                {features.map((feature) => (
+                                    <Tab.Panel key={feature.title} unmount={false}>
+                                        <div className="relative sm:px-6 lg:hidden">
+                                            <div
+                                                className="absolute -inset-x-4 top-[-6.5rem] bottom-[-4.25rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl"/>
+                                            <p className="relative mx-auto max-w-2xl text-base text-white sm:text-center">
+                                                {feature.description}
+                                            </p>
+                                        </div>
+                                        <div
+                                            className="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
+                                            <Image
+                                                className="w-full"
+                                                src={feature.image}
+                                                alt=""
+                                                priority
+                                                sizes="(min-width: 1024px) 67.8125rem, (min-width: 640px) 100vw, 45rem"
+                                            />
+                                        </div>
+                                    </Tab.Panel>
+                                ))}
+                            </Tab.Panels>
+                        </>
+                    )}
+                </Tab.Group>
+            </div>
+        </section>
+    )
 }

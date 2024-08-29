@@ -14,7 +14,7 @@ export default function RootLayout({children}: { children: React.ReactNode; }) {
     return (
         <ClerkProvider>
             <html lang="en" className="h-full bg-white">
-            <body className={" h-full"}>
+            <body className={"font-avenir-reg h-full"}>
             <main>{children}</main>
             <Toaster/>
             </body>

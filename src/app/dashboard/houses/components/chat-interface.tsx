@@ -12,7 +12,6 @@ import {Button} from "@/components/ui/button";
 import {ResetChatSlider} from "@/app/dashboard/houses/components/reset-chat-slider";
 import {Textarea} from "@/components/ui/textarea";
 import {PaperPlaneIcon} from "@radix-ui/react-icons";
-import {ChatMessage} from "@/app/dashboard/houses/page";
 import ReactMarkdown from 'react-markdown';
 import {twMerge} from "tailwind-merge";
 
@@ -238,7 +237,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                                     transition={{duration: 0.05}}
                                 >
                                     <AnimatePresence initial={false}>
-                                        {chatData[currentChat].map((message: ChatMessage, index: number) => (
+                                        {chatData[currentChat].map((message: { sender: string; message: string }, index: number) => (
                                             <motion.div
                                                 key={index}
                                                 variants={messageVariants}

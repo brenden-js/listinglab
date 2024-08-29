@@ -10,7 +10,7 @@ import screenshotEmail from '@/images/screenshots/email.png'
 
 const features = [
   {
-    name: 'Social Media',
+    name: 'Listing Data',
     summary: 'Quickly generate social media captions and posts.',
     description:
       'Start a social media page for new listings in your desired area, expand your network with quick listing updates, to updating your followers on your newest listing.',
@@ -44,7 +44,7 @@ const features = [
     },
   },
   {
-    name: 'Investment reports',
+    name: 'Financial Data',
     summary:
       'Generate insightful reports to investment clients.',
     description:
@@ -72,7 +72,7 @@ const features = [
     },
   },
   {
-    name: 'Personalized Sales',
+    name: 'Property Data',
     summary:
       'Quickly draft emails and texts to prospects about new listings.',
     description:
@@ -232,10 +232,10 @@ export function SecondaryFeatures() {
       <div className={"mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"}>
         <div className="mx-auto max-w-2xl md:text-center">
           <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-            Create the content your clients need, at scale.
+            Analyze the market for your clientele with data-driven insights.
           </h2>
           <p className="mt-4 text-lg tracking-tight text-slate-700">
-            Quickly iterate on your listing content ideas, and see what works fast. Attract your ideal clients with content that resonates with their needs.
+            Attract your ideal clients with content that resonates with their needs, in minutes.
           </p>
         </div>
         <FeaturesMobile />

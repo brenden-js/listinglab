@@ -18,6 +18,9 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        'avenir-reg': ['AvenirNextLTPro-Regular', 'sans-serif'], // Replace with your font's actual name
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
