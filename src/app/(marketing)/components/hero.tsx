@@ -33,7 +33,7 @@ const companies = [
 export function Hero() {
     return (
         <div className="bg-white">
-            <div className="mx-auto max-w-7xl px-4 py-48 sm:px-6 lg:px-8 text-center">
+            <div className="mx-auto max-w-7xl px-4 py-24 md:py-48 sm:px-6 lg:px-8 text-center">
                 <span className="font-serif text-xl text-gray-500 uppercase tracking-widest">
                     Listing Lab
                 </span>

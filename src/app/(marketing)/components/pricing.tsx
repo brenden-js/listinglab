@@ -108,26 +108,29 @@ export function Pricing() {
                     <Plan
                         name="Free"
                         price="$0"
-                        description="For infrequest use and simple content."
+                        description="Dip your toes in the water."
                         href="/register"
                         features={[
                             '10x 1 shot generations',
-                            '2 anywhere listings with full data gathering',
-                            '10 text generations',
-                            'Small 512 token max length generations',
+                            'Up to 5 anywhere listings w/ full data gathering',
+                            'Up to 2048 token max length generations',
+                            'Brand voice settings',
+                            'Custom prompts'
                         ]}
                     />
                     <Plan
                         featured
                         name="Pro"
                         price="$25"
-                        description="Start generating text content for listings with powerful AI models."
+                        description="Become a trusted authority for your market."
                         href="/register"
                         features={[
-                            '50x 1 shot generations',
-                            'Chats w/ fair use limits',
-                            '3 zipcodes w/ full data gathering',
-                            '10 anywhere listings w/ full data gathering',
+                            '100x 1 shot generations',
+                            'Up to 25 anywhere listings w/ full data gathering',
+                            'Auto scan 3 zipcodes w/ full data gathering on all listings',
+                            'Chat mode',
+                            'Brand voice settings',
+                            'Custom prompts',
                             'Large 8,192 token length generations',
                         ]}
                     />
@@ -137,8 +140,7 @@ export function Pricing() {
                         description="For organizations looking to transform their business with AI."
                         href="/register"
                         features={[
-                            'Custom zipcode and listing limits',
-                            'Custom text generation limits',
+                            'Completely customizable to your goals.',
                         ]}
                     />
                 </div>

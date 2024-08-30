@@ -1,14 +1,10 @@
-import amortize from 'amortize';
+import Decimal from 'decimal.js';
 
 interface AmortizationResult {
-  interest: number;
-  principal: number;
-  balance: number;
-  payment: number;
-  interestRound: string;
-  principalRound: string;
-  balanceRound: string;
-  paymentRound: string;
+  interest: Decimal;
+  principal: Decimal;
+  balance: Decimal;
+  payment: Decimal;
 }
 
 interface PossibleEquityResult {
@@ -18,76 +14,107 @@ interface PossibleEquityResult {
   monthlyTax: string;
   combinedMonthlyPayment: string;
   valueAndEquityRange: {
-    valueRange5Years: { min: number; max: number };
-    possibleEquity5Years: { min: number; max: number };
-    valueRange10Years: { min: number; max: number };
-    possibleEquity10Years: { min: number; max: number };
-    valueRange15Years: { min: number; max: number };
-    possibleEquity15Years: { min: number; max: number };
-  };
+    ownershipYear: number;
+    valueRange: { estimatedMin: string; estimatedMax: string };
+    equityRange: { estimatedMinEquity: string; estimatedMaxEquity: string };
+  }[]; // Updated to array of objects
   appreciationRateRange: {
     min: number;
     max: number;
   };
 }
 
-const interestRate = 0.075; // Assuming a fixed interest rate of 7.5%
-const fhaDownPaymentRate = 0.035; // FHA down payment rate of 3.5%
-const nonFhaDownPaymentRate = 0.2; // Non-FHA down payment rate of 20%
-const fhaUpfrontMIPRate = 0.0175; // FHA upfront MIP rate of 1.75%
-const fhaMonthlyMIPRate = 0.0055; // FHA monthly MIP rate of 0.55%
-const minAppreciationRate = 0.03; // Minimum appreciation rate of 3%
-const maxAppreciationRate = 0.05; // Maximum appreciation rate of 5%
+interface InvestmentResult {
+  netOperatingIncome: string;
+  capRate: string;
+  cashFlow: string;
+  grossRentMultiplier: string;
+  debtServiceCoverageRatio: string;
+  internalRateOfReturn: string;
+  returnOnInvestment: string;
+  pricePerSquareFoot: string;
+  breakEvenOccupancy: string;
+}
 
-const calculateAmortization = (amount: number, term: number): AmortizationResult => {
-  return amortize({
-    amount,
-    rate: interestRate,
-    totalTerm: 30 * 12,
-    amortizeTerm: term
-  });
-};
+const interestRate = new Decimal(0.075); // Assuming a fixed interest rate of 7.5%
+const fhaDownPaymentRate = new Decimal(0.035); // FHA down payment rate of 3.5%
+const nonFhaDownPaymentRate = new Decimal(0.2); // Non-FHA down payment rate of 20%
+const fhaUpfrontMIPRate = new Decimal(0.0175); // FHA upfront MIP rate of 1.75%
+const fhaMonthlyMIPRate = new Decimal(0.0055); // FHA monthly MIP rate of 0.55%
+const minAppreciationRate = new Decimal(0.03); // Minimum appreciation rate of 3%
+const maxAppreciationRate = new Decimal(0.05); // Maximum appreciation rate of 5%
 
-const calculateCompoundedValue = (initialValue: number, years: number, minRate: number, maxRate: number): { min: number; max: number } => {
-  let minValue = initialValue;
-  let maxValue = initialValue;
+const calculateAmortization = (amount: Decimal, term: number): AmortizationResult => {
+  const monthlyRate = interestRate.dividedBy(12);
+  const numberOfPayments = new Decimal(term);
+  const payment = amount.times(
+    monthlyRate.times(
+      new Decimal(1).plus(monthlyRate).pow(numberOfPayments)
+    ).dividedBy(
+      new Decimal(1).plus(monthlyRate).pow(numberOfPayments).minus(1)
+    )
+  );
 
-  for (let i = 0; i < years; i++) {
-    minValue *= 1 + minRate;
-    maxValue *= 1 + maxRate;
+  let balance = amount;
+  let totalInterest = new Decimal(0);
+  let totalPrincipal = new Decimal(0);
+
+  for (let i = 0; i < term; i++) {
+    const monthlyInterest = balance.times(monthlyRate);
+    const monthlyPrincipal = payment.minus(monthlyInterest);
+    balance = balance.minus(monthlyPrincipal);
+
+    totalInterest = totalInterest.plus(monthlyInterest);
+    totalPrincipal = totalPrincipal.plus(monthlyPrincipal);
   }
 
-  return { min: minValue, max: maxValue };
-};
-
-const calculatePossibleEquity = (valueRange: { min: number; max: number }, amortization: AmortizationResult): { min: number; max: number } => {
   return {
-    min: valueRange.min - parseFloat(amortization.balanceRound),
-    max: valueRange.max - parseFloat(amortization.balanceRound)
+    interest: totalInterest.toDecimalPlaces(2),
+    principal: totalPrincipal.toDecimalPlaces(2),
+    balance: balance.toDecimalPlaces(2),
+    payment: payment.toDecimalPlaces(2),
   };
 };
 
+const calculateCompoundedValue = (initialValue: Decimal, years: number, rate: Decimal): Decimal => {
+  return initialValue.times(new Decimal(1).plus(rate).pow(years)).toDecimalPlaces(2);
+};
+
+const calculatePossibleEquity = (value: Decimal, amortization: AmortizationResult): Decimal => {
+  return value.minus(amortization.balance).toDecimalPlaces(2);
+};
+
 const calculateValueAndEquityRange = (listingPrice: number, mortgageAmount: number, isFHA: boolean): PossibleEquityResult => {
-  const amortization5Years = calculateAmortization(mortgageAmount, 5 * 12);
-  const amortization10Years = calculateAmortization(mortgageAmount, 10 * 12);
-  const amortization15Years = calculateAmortization(mortgageAmount, 15 * 12);
+  const decimalListingPrice = new Decimal(listingPrice);
+  const decimalMortgageAmount = new Decimal(mortgageAmount);
 
-  const valueRange5Years = calculateCompoundedValue(listingPrice, 5, minAppreciationRate, maxAppreciationRate);
-  const valueRange10Years = calculateCompoundedValue(listingPrice, 10, minAppreciationRate, maxAppreciationRate);
-  const valueRange15Years = calculateCompoundedValue(listingPrice, 15, minAppreciationRate, maxAppreciationRate);
+  const valueAndEquityRange: { ownershipYear: number; valueRange: { estimatedMin: string; estimatedMax: string }; equityRange: { estimatedMinEquity: string; estimatedMaxEquity: string } }[] = []; // Changed to array
 
-  const possibleEquity5Years = calculatePossibleEquity(valueRange5Years, amortization5Years);
-  const possibleEquity10Years = calculatePossibleEquity(valueRange10Years, amortization10Years);
-  const possibleEquity15Years = calculatePossibleEquity(valueRange15Years, amortization15Years);
+  for (let years = 1; years <= 30; years++) {
+    const months = years * 12;
+    const amortization = calculateAmortization(decimalMortgageAmount, months);
 
-  const baseMonthlyPayment = amortization5Years.paymentRound;
+    const valueRange = {
+      estimatedMin: calculateCompoundedValue(decimalListingPrice, years, minAppreciationRate).toString(),
+      estimatedMax: calculateCompoundedValue(decimalListingPrice, years, maxAppreciationRate).toString(),
+    };
+
+    const equityRange = {
+      estimatedMinEquity: calculatePossibleEquity(new Decimal(valueRange.estimatedMin), amortization).toString(),
+      estimatedMaxEquity: calculatePossibleEquity(new Decimal(valueRange.estimatedMax), amortization).toString(),
+    };
+
+    valueAndEquityRange.push({ ownershipYear: years, valueRange, equityRange }); // Pushing data to array
+  }
+
+  const baseMonthlyPayment = calculateAmortization(decimalMortgageAmount, 60).payment.toString(); // Based on 5-year amortization
   const monthlyTax = ''; // Assuming monthly tax is not provided
 
-  const upfrontMIP = isFHA ? (mortgageAmount * fhaUpfrontMIPRate).toFixed(2) : undefined;
-  const monthlyMIP = isFHA ? (mortgageAmount * fhaMonthlyMIPRate).toFixed(2) : undefined;
+  const upfrontMIP = isFHA ? decimalMortgageAmount.times(fhaUpfrontMIPRate).toDecimalPlaces(2).toString() : undefined;
+  const monthlyMIP = isFHA ? decimalMortgageAmount.times(fhaMonthlyMIPRate).toDecimalPlaces(2).toString() : undefined;
 
   const combinedMonthlyPayment = isFHA
-    ? (parseFloat(baseMonthlyPayment) + parseFloat((mortgageAmount * fhaMonthlyMIPRate).toFixed(2))).toFixed(2)
+    ? calculateAmortization(decimalMortgageAmount, 60).payment.plus(new Decimal(monthlyMIP || '0')).toDecimalPlaces(2).toString()
     : baseMonthlyPayment;
 
   return {
@@ -96,33 +123,125 @@ const calculateValueAndEquityRange = (listingPrice: number, mortgageAmount: numb
     monthlyMIP,
     monthlyTax,
     combinedMonthlyPayment,
-    valueAndEquityRange: {
-      valueRange5Years,
-      possibleEquity5Years,
-      valueRange10Years,
-      possibleEquity10Years,
-      valueRange15Years,
-      possibleEquity15Years
-    },
+    valueAndEquityRange, // Now an array
     appreciationRateRange: {
-      min: minAppreciationRate,
-      max: maxAppreciationRate
+      min: minAppreciationRate.toNumber(),
+      max: maxAppreciationRate.toNumber()
     }
   };
 };
 
 export function getMortgageAndEquity(listingPrice: number): { fhaLoan: PossibleEquityResult; nonFhaLoan: PossibleEquityResult } {
-  const fhaDownPayment = listingPrice * fhaDownPaymentRate;
-  const fhaMortgageAmount = listingPrice - fhaDownPayment;
+  const fhaDownPayment = new Decimal(listingPrice).times(fhaDownPaymentRate);
+  const fhaMortgageAmount = new Decimal(listingPrice).minus(fhaDownPayment);
 
-  const nonFhaDownPayment = listingPrice * nonFhaDownPaymentRate;
-  const nonFhaMortgageAmount = listingPrice - nonFhaDownPayment;
+  const nonFhaDownPayment = new Decimal(listingPrice).times(nonFhaDownPaymentRate);
+  const nonFhaMortgageAmount = new Decimal(listingPrice).minus(nonFhaDownPayment);
 
-  const fhaLoan = calculateValueAndEquityRange(listingPrice, fhaMortgageAmount, true);
-  const nonFhaLoan = calculateValueAndEquityRange(listingPrice, nonFhaMortgageAmount, false);
+  const fhaLoan = calculateValueAndEquityRange(listingPrice, fhaMortgageAmount.toNumber(), true);
+  const nonFhaLoan = calculateValueAndEquityRange(listingPrice, nonFhaMortgageAmount.toNumber(), false);
 
   return {
     fhaLoan,
     nonFhaLoan
   };
+}
+
+export function getInvestmentCalculations(
+  listingPrice: number,
+  estimatedMonthlyRent: number,
+  annualPropertyTaxes: number,
+  annualInsurance: number,
+  annualMaintenance: number,
+  vacancyRate: number,
+  annualMortgagePayment: number,
+  holdingPeriodYears: number,
+  futureSellingPrice: number,
+  squareFootage: number,
+): InvestmentResult {
+  const grossAnnualIncome = new Decimal(estimatedMonthlyRent * 12);
+  const annualVacancy = grossAnnualIncome.times(vacancyRate / 100);
+  const effectiveGrossIncome = grossAnnualIncome.minus(annualVacancy);
+  const annualOperatingExpenses = new Decimal(annualPropertyTaxes + annualInsurance + annualMaintenance);
+  const netOperatingIncome = effectiveGrossIncome.minus(annualOperatingExpenses).toDecimalPlaces(2);
+
+  const capRate = netOperatingIncome.dividedBy(listingPrice).times(100).toDecimalPlaces(2);
+  const cashFlow = netOperatingIncome.minus(annualMortgagePayment).toDecimalPlaces(2);
+  const grossRentMultiplier = new Decimal(listingPrice).dividedBy(grossAnnualIncome).toDecimalPlaces(2);
+  const debtServiceCoverageRatio = netOperatingIncome.dividedBy(annualMortgagePayment).toDecimalPlaces(2);
+
+  // Calculate Internal Rate of Return (IRR)
+  const initialInvestment = new Decimal(listingPrice);
+  const cashFlows = [];
+  for (let i = 0; i < holdingPeriodYears; i++) {
+    cashFlows.push(
+      new Decimal(estimatedMonthlyRent * 12)
+        .minus(annualPropertyTaxes)
+        .minus(annualInsurance)
+        .minus(annualMaintenance)
+        .minus(annualMortgagePayment)
+    );
+  }
+  cashFlows.push(new Decimal(futureSellingPrice));
+  const irr = calculateIRR(initialInvestment, cashFlows).times(100).toDecimalPlaces(2);
+
+  // Calculate Return on Investment (ROI)
+  const totalProfit = new Decimal(futureSellingPrice).minus(listingPrice);
+  const roi = totalProfit.dividedBy(listingPrice).times(100).toDecimalPlaces(2);
+
+  // Calculate Price Per Square Foot
+  const pricePerSquareFoot = new Decimal(listingPrice).dividedBy(squareFootage).toDecimalPlaces(2);
+
+  // Calculate Break-Even Occupancy
+  const breakEvenOccupancy =
+    annualOperatingExpenses.plus(annualMortgagePayment).dividedBy(grossAnnualIncome).times(100).toDecimalPlaces(2);
+
+  return {
+    netOperatingIncome: netOperatingIncome.toString(),
+    capRate: capRate.toString(),
+    cashFlow: cashFlow.toString(),
+    grossRentMultiplier: grossRentMultiplier.toString(),
+    debtServiceCoverageRatio: debtServiceCoverageRatio.toString(),
+    internalRateOfReturn: irr.toString(),
+    returnOnInvestment: roi.toString(),
+    pricePerSquareFoot: pricePerSquareFoot.toString(),
+    breakEvenOccupancy: breakEvenOccupancy.toString(),
+  };
+}
+
+// Helper function to calculate IRR (robust version)
+function calculateIRR(initialInvestment: Decimal, cashFlows: Decimal[]): Decimal {
+  let guess = calculateInitialIRRGuess(cashFlows);
+  const tolerance = new Decimal(1e-6);
+  const maxIterations = 1000;
+
+  for (let i = 0; i < maxIterations; i++) {
+    let npv = initialInvestment.negated();
+    let npvDerivative = new Decimal(0);
+    for (let j = 0; j < cashFlows.length; j++) {
+      const factor = new Decimal(1).plus(guess).pow(j + 1);
+      npv = npv.plus(cashFlows[j].dividedBy(factor));
+      npvDerivative = npvDerivative.minus(cashFlows[j].times(new Decimal(j + 1)).dividedBy(factor.pow(2)));
+    }
+
+    if (npv.abs().lessThan(tolerance)) {
+      return guess;
+    }
+
+    const newGuess = guess.minus(npv.dividedBy(npvDerivative));
+    if (newGuess.equals(guess)) {
+      return new Decimal(NaN);
+    }
+
+    guess = newGuess;
+  }
+
+  return new Decimal(NaN);
+}
+
+// Helper function to calculate an initial guess for IRR
+function calculateInitialIRRGuess(cashFlows: Decimal[]): Decimal {
+  const totalCashFlow = cashFlows.reduce((sum, cf) => sum.plus(cf), new Decimal(0));
+  const averageCashFlow = totalCashFlow.dividedBy(cashFlows.length);
+  return averageCashFlow.dividedBy(cashFlows[0].abs());
 }
