@@ -14,6 +14,7 @@ const PopupVideoPlayer = () => {
     const handlePlayerReady = () => {
         setIsLoading(false);
     }
+
     return (
         <>
             <Button className="flex items-center gap-2 transition-colors duration-300 hover:text-blue-300"
@@ -27,9 +28,9 @@ const PopupVideoPlayer = () => {
                 onOpenChange={setIsOpen}
             >
                 <DialogContent
-                    className="w-full max-w-[90vw] max-h-[80vh] overflow-auto rounded-lg bg-white p-4 flex flex-col items-center justify-center">
+                    className="w-full max-w-[1750px] max-h-[80vh] overflow-auto rounded-lg bg-white p-4 pt-12 flex flex-col items-center justify-center">
 
-                    <div className="h-[calc(80vh-4rem)] aspect-video mx-auto relative">
+                    <div className="relative max-h-[800px] w-full" style={{aspectRatio: '4 / 3'}}>
                         {isLoading && (
                             <div
                                 className="rounded-xl absolute inset-0 flex items-center justify-center bg-gray-200 animate-pulse">
