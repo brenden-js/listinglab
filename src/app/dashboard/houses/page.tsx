@@ -95,7 +95,7 @@ interface HousePreviewCardProps {
 const HousePreviewCard: React.FC<HousePreviewCardProps> = ({ house, onClick }) => {
   if (!house) return null;
   return (
-    <Card onClick={onClick}>
+    <Card className={"hover:cursor-pointer"} onClick={onClick}>
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>{house.stAddress}</CardTitle>
