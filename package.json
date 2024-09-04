@@ -42,7 +42,6 @@
     "@trpc/next": "11.0.0-rc.477",
     "@trpc/react-query": "11.0.0-rc.477",
     "@trpc/server": "11.0.0-rc.477",
-    "amortize": "^1.1.0",
     "aws-iot-device-sdk-v2": "^1.20.0",
     "axios": "^1.7.3",
     "class-variance-authority": "^0.7.0",

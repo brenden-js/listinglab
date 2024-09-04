@@ -92,9 +92,6 @@ importers:
       '@trpc/server':
         specifier: 11.0.0-rc.477
         version: 11.0.0-rc.477
-      amortize:
-        specifier: ^1.1.0
-        version: 1.1.0
       aws-iot-device-sdk-v2:
         specifier: ^1.20.0
         version: 1.20.0
@@ -2140,9 +2137,6 @@ packages:
 
   ajv@8.6.3:
     resolution: {integrity: sha512-SMJOdDP6LqTkD0Uq8qLi+gMwSt0imXLSV080qFVwJCpH9U6Mb+SUGHAXM0KNbcBPguytWyvFxcHgMLe2D2XSpw==}
-
-  amortize@1.1.0:
-    resolution: {integrity: sha512-km08OI2MszLrLHcTXYgr9dx+F4KHeFnrgn1KIsZEHDVXOLExZeB5Gwj/lLtDScyeu7nN7F6UplBCZ8GNDhFVaw==}
 
   ansi-regex@4.1.1:
     resolution: {integrity: sha512-ILlv4k/3f6vfQ4OoP2AGvirOktlQ98ZEL1k9FaQjxa3L1abBgbuTDAdPOpvbGncC0BTVQrl+OM8xZGK6tWXt7g==}
@@ -7890,8 +7884,6 @@ snapshots:
       require-from-string: 2.0.2
       uri-js: 4.4.1
     optional: true
-
-  amortize@1.1.0: {}
 
   ansi-regex@4.1.1: {}
 

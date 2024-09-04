@@ -45,13 +45,9 @@ export default $config({
             return undefined
         }
 
-         const realtime = new sst.aws.Realtime("RealtimeLink", {
-            authorizer: { handler: "authorizer.handler", link: [clerkSecret] },
-        });
-
         const next = new sst.aws.Nextjs("ListingLab", {
             link: [
-                realtime, clerkPublic, clerkSecret, dbUrl, dbToken, openAiKey, houseApiKey, googleApiKey, stripeSecretKey,
+                clerkPublic, clerkSecret, dbUrl, dbToken, openAiKey, houseApiKey, googleApiKey, stripeSecretKey,
                 stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestSigningKey, inngestEventKey
             ],
             domain: getDomain(),

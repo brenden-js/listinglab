@@ -307,11 +307,11 @@ export const newListingsInCityScan = inngest.createFunction(
 
         let formatted = response.data as ListingSearchInCityResponse
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log('Shortening response in development...')
-            const shortened = formatted.data[0]
-            formatted.data = [shortened]
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //     console.log('Shortening response in development...')
+        //     const shortened = formatted.data[0]
+        //     formatted.data = [shortened]
+        // }
 
         for (const listing of formatted.data) {
             const foundListing = await db.query.houses.findFirst(
