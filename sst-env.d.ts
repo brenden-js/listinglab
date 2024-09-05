@@ -55,11 +55,6 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "RealtimeLink": {
-      "authorizer": string
-      "endpoint": string
-      "type": "sst.aws.Realtime"
-    }
     "StripePublicKey": {
       "type": "sst.sst.Secret"
       "value": string
@@ -73,6 +68,10 @@ declare module "sst" {
       "value": string
     }
     "TogetherApiKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "ZipCodeApiKey": {
       "type": "sst.sst.Secret"
       "value": string
     }

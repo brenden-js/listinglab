@@ -20,50 +20,52 @@ interface ChatInterfaceProps {
     setShowDataView: (show: boolean) => void;
     house: House;
 }
+
 const baseTextStyles = "text-gray-800 leading-relaxed";
 const headingStyles = "font-semibold tracking-tight";
 
 type ComponentProps = {
-  className?: string;
-  children?: React.ReactNode;
+    className?: string;
+    children?: React.ReactNode;
 } & React.HTMLAttributes<HTMLElement>;
 
 type CodeProps = ComponentProps & {
-  inline?: boolean;
+    inline?: boolean;
 };
 
 const markdownComponents = {
-  h1: ({ className, ...props }: ComponentProps) => (
-    <h1 className={twMerge(`${baseTextStyles} ${headingStyles} text-3xl mt-8 mb-4`, className)} {...props} />
-  ),
-  h2: ({ className, ...props }: ComponentProps) => (
-    <h2 className={twMerge(`${baseTextStyles} ${headingStyles} text-2xl mt-6 mb-3`, className)} {...props} />
-  ),
-  h3: ({ className, ...props }: ComponentProps) => (
-    <h3 className={twMerge(`${baseTextStyles} ${headingStyles} text-xl mt-4 mb-2`, className)} {...props} />
-  ),
-  p: ({ className, ...props }: ComponentProps) => (
-    <p className={twMerge(`${baseTextStyles} mb-4`, className)} {...props} />
-  ),
-  ul: ({ className, ...props }: ComponentProps) => (
-    <ul className={twMerge("list-disc pl-5 mb-4", className)} {...props} />
-  ),
-  ol: ({ className, ...props }: ComponentProps) => (
-    <ol className={twMerge("list-decimal pl-5 mb-4", className)} {...props} />
-  ),
-  li: ({ className, ...props }: ComponentProps) => (
-    <li className={twMerge(`${baseTextStyles} mb-2`, className)} {...props} />
-  ),
-  code: ({ className, inline, ...props }: CodeProps) => (
-    inline ? (
-      <code className={twMerge("bg-gray-100 text-red-600 rounded px-1 py-0.5 text-sm", className)} {...props} />
-    ) : (
-      <code className={twMerge("block bg-gray-100 rounded p-3 overflow-x-auto text-sm my-4", className)} {...props} />
-    )
-  ),
-  blockquote: ({ className, ...props }: ComponentProps) => (
-    <blockquote className={twMerge("border-l-4 border-gray-300 pl-4 italic my-4", className)} {...props} />
-  ),
+    h1: ({className, ...props}: ComponentProps) => (
+        <h1 className={twMerge(`${baseTextStyles} ${headingStyles} text-3xl mt-8 mb-4`, className)} {...props} />
+    ),
+    h2: ({className, ...props}: ComponentProps) => (
+        <h2 className={twMerge(`${baseTextStyles} ${headingStyles} text-2xl mt-6 mb-3`, className)} {...props} />
+    ),
+    h3: ({className, ...props}: ComponentProps) => (
+        <h3 className={twMerge(`${baseTextStyles} ${headingStyles} text-xl mt-4 mb-2`, className)} {...props} />
+    ),
+    p: ({className, ...props}: ComponentProps) => (
+        <p className={twMerge(`${baseTextStyles} mb-4`, className)} {...props} />
+    ),
+    ul: ({className, ...props}: ComponentProps) => (
+        <ul className={twMerge("list-disc pl-5 mb-4", className)} {...props} />
+    ),
+    ol: ({className, ...props}: ComponentProps) => (
+        <ol className={twMerge("list-decimal pl-5 mb-4", className)} {...props} />
+    ),
+    li: ({className, ...props}: ComponentProps) => (
+        <li className={twMerge(`${baseTextStyles} mb-2`, className)} {...props} />
+    ),
+    code: ({className, inline, ...props}: CodeProps) => (
+        inline ? (
+            <code className={twMerge("bg-gray-100 text-red-600 rounded px-1 py-0.5 text-sm", className)} {...props} />
+        ) : (
+            <code
+                className={twMerge("block bg-gray-100 rounded p-3 overflow-x-auto text-sm my-4", className)} {...props} />
+        )
+    ),
+    blockquote: ({className, ...props}: ComponentProps) => (
+        <blockquote className={twMerge("border-l-4 border-gray-300 pl-4 italic my-4", className)} {...props} />
+    ),
 };
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataView, house}) => {
     const {currentChat} = useHouseDialog();
@@ -72,53 +74,52 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
 
     const utils = api.useUtils()
 
+    const [updateTrigger, setUpdateTrigger] = useState(false);
+
     const updateChat = api.house.updateChat.useMutation({
         onMutate: async (newMessage) => {
-            await utils.house.getHouses.cancel()
-            const previousHouses = utils.house.getHouses.getData()
-            if (previousHouses) {
-                utils.house.getHouses.setData(undefined, (old) => {
-                    return old?.map(h => {
-                        if (h?.id === house?.id) {
-                            const expertiseField = `${newMessage.topic.toLowerCase()}Expertise`
-                            const currentExpertise = h[expertiseField as keyof House] ? JSON.parse(h[expertiseField as keyof House]) : []
-                            return {
-                                ...h,
-                                [expertiseField]: JSON.stringify([
-                                    ...currentExpertise,
-                                    {
-                                        sender: "You",
-                                        message: newMessage.message.message,
-                                    }
-                                ]),
-                            }
+            if (!house) return;
+
+            await utils.house.getHouseDetails.cancel();
+
+            // 1. Get existing data (similar to onSuccess)
+            utils.house.getHouseDetails.setData(house.id, (oldData: House | undefined) => {
+                if (!oldData) return; // Handle cases where oldData is undefined
+
+                const expertiseField = `${newMessage.topic.toLowerCase()}Expertise` as keyof House;
+
+                // 2. Update data (notice the consistent approach)
+                return {
+                    ...oldData,
+                    [expertiseField]: JSON.stringify([
+                        ...(oldData[expertiseField] ? JSON.parse(oldData[expertiseField]) : []),
+                        {
+                            sender: "You",
+                            message: newMessage.message.message
                         }
-                        return h
-                    })
-                })
-            }
-            return {previousHouses}
+                    ]),
+                };
+            });
         },
         onError: (err, newMessage, context) => {
-            if (context?.previousHouses) {
-                utils.house.getHouses.setData(undefined, context.previousHouses)
-            }
             toast.error("Failed to send message")
         },
         onSuccess: (data, variables) => {
-            const currentHouses = utils.house.getHouses.getData();
-            if (currentHouses) {
-                const updatedHouses = currentHouses.map((house) => {
-                    if (house?.id === variables.houseId) {
+            if (!house) return;
+            utils.house.getHouseDetails.setData(
+                house.id,
+                (oldData: House | undefined) => { // Use House type or appropriate type
+                    if (oldData) {
                         return {
-                            ...house,
-                            [variables.topic.toLowerCase() + 'Expertise']: JSON.stringify(data.filteredChatData),
+                            ...oldData,
+                            [variables.topic.toLowerCase() + 'Expertise']: JSON.stringify(
+                                data.filteredChatData
+                            ),
                         };
                     }
-                    return house;
-                });
-                utils.house.getHouses.setData(undefined, () => updatedHouses);
-            }
+                    // Optionally handle cases where oldData is undefined
+                }
+            );
         },
     });
 
@@ -237,7 +238,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                                     transition={{duration: 0.05}}
                                 >
                                     <AnimatePresence initial={false}>
-                                        {chatData[currentChat].map((message: { sender: string; message: string }, index: number) => (
+                                        {chatData[currentChat].map((message: {
+                                            sender: string;
+                                            message: string
+                                        }, index: number) => (
                                             <motion.div
                                                 key={index}
                                                 variants={messageVariants}
@@ -247,7 +251,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                                                 className={`p-3 max-w-[65%] my-2 rounded-lg ${message.sender === 'You' ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100'}`}
                                             >
                                                 <p className="font-semibold">{message.sender}</p>
-                                                <ReactMarkdown components={markdownComponents}>{message.message}</ReactMarkdown>
+                                                <ReactMarkdown
+                                                    components={markdownComponents}>{message.message}</ReactMarkdown>
                                             </motion.div>
                                         ))}
                                     </AnimatePresence>

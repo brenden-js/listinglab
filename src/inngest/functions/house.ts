@@ -7,7 +7,6 @@ import {db} from "@/db";
 import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/helpers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
 import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
-import {ListingScanUpdate, LiveDataFeedUpdate, publishStatusFromServer} from "@/inngest/functions/helpers/mqtt";
 import {inngest} from "@/inngest/client";
 import {ListingSearchInCityResponse} from "@/inngest/functions/helpers/house-search-type";
 
@@ -87,13 +86,6 @@ export const handleEnrichHouse = inngest.createFunction(
                 zipCode: formatted.data.home.location.address.postal_code
             })
             console.log("Succesfully added house.")
-            const message = {
-                houseId: event.data.houseId,
-                dataCategory: 'Property',
-                updateType: 'LiveDataFeedUpdate',
-                jobStatus: 'complete',
-            } as LiveDataFeedUpdate
-            await publishStatusFromServer(message, event.data.userId)
 
             return {
                 lat: formatted.data.home.location.address.coordinate.lat,
@@ -135,13 +127,13 @@ export const handleEnrichHouse = inngest.createFunction(
                     .set({nearbyPlaces: JSON.stringify(places.places)})
                     .where(eq(houses.id, event.data.houseId))
 
-                const message = {
-                    houseId: event.data.houseId,
-                    dataCategory: 'Location',
-                    updateType: 'LiveDataFeedUpdate',
-                    jobStatus: 'complete',
-                } as LiveDataFeedUpdate;
-                await publishStatusFromServer(message, event.data.userId)
+                // const message = {
+                //     houseId: event.data.houseId,
+                //     dataCategory: 'Location',
+                //     updateType: 'LiveDataFeedUpdate',
+                //     jobStatus: 'complete',
+                // } as LiveDataFeedUpdate;
+                // await publishStatusFromServer(message, event.data.userId)
             })
 
         await step.run("Get mortgage and investment info", async () => {
@@ -153,13 +145,13 @@ export const handleEnrichHouse = inngest.createFunction(
             const data = getMortgageAndEquity(foundListing.price)
 
             await db.update(houses).set({investment: JSON.stringify(data)})
-            const message = {
-                houseId: event.data.houseId,
-                dataCategory: 'Financial',
-                updateType: 'LiveDataFeedUpdate',
-                jobStatus: 'complete',
-            } as LiveDataFeedUpdate
-            await publishStatusFromServer(message, event.data.userId)
+            // const message = {
+            //     houseId: event.data.houseId,
+            //     dataCategory: 'Financial',
+            //     updateType: 'LiveDataFeedUpdate',
+            //     jobStatus: 'complete',
+            // } as LiveDataFeedUpdate
+            // await publishStatusFromServer(message, event.data.userId)
         })
 
         await step.run("Get recently sold listings", async () => {
@@ -212,14 +204,14 @@ export const handleEnrichHouse = inngest.createFunction(
             console.log("minimzedArray...................", minimizedArray)
 
             await db.update(houses).set({recentlySold: JSON.stringify(minimizedArray)}).where(eq(houses.id, event.data.houseId))
-            const message = {
-                houseId: event.data.houseId,
-                dataCategory: 'Financial',
-                updateType: 'LiveDataFeedUpdate',
-                jobStatus: 'complete',
-            } as LiveDataFeedUpdate
-
-            await publishStatusFromServer(message, event.data.userId)
+            // const message = {
+            //     houseId: event.data.houseId,
+            //     dataCategory: 'Financial',
+            //     updateType: 'LiveDataFeedUpdate',
+            //     jobStatus: 'complete',
+            // } as LiveDataFeedUpdate
+            //
+            // await publishStatusFromServer(message, event.data.userId)
         })
     }
 )
@@ -399,13 +391,13 @@ export const handleAddHouseToUsers = inngest.createFunction(
             }
             await db.insert(houses).values(house)
 
-            const message = {
-                houseId: event.data.houseId,
-                stAddress: event.data.stAddress,
-                updateType: 'ListingScanUpdate',
-            } as ListingScanUpdate
-
-            await publishStatusFromServer(message, user.userId)
+            // const message = {
+            //     houseId: event.data.houseId,
+            //     stAddress: event.data.stAddress,
+            //     updateType: 'ListingScanUpdate',
+            // } as ListingScanUpdate
+            //
+            // await publishStatusFromServer(message, user.userId)
         }
     }
 )

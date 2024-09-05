@@ -102,7 +102,7 @@ export const userRouter = createTRPCRouter({
                                 currency: "USD",
                                 product_data: {
                                     name: "Listing Lab Pro",
-                                    description: "Access Pro models and increase usage quotas."
+                                    description: "Subscribe to new listings in 3 zip codes with full chat access and data gathering on all listings."
                                 },
                                 unit_amount: 2500,
                                 recurring: {

@@ -21,6 +21,7 @@ export default $config({
         const googleApiKey = new sst.Secret("GoogleApiKey")
         const googleAiKey = new sst.Secret("GoogleAiKey")
         const houseApiKey = new sst.Secret("HouseApiKey")
+        const zipCodeApiKey = new sst.Secret("ZipCodeApiKey")
 
         const stripePublicKey = new sst.Secret("StripePublicKey")
         const stripeSecretKey = new sst.Secret("StripeSecretKey")
@@ -72,7 +73,8 @@ export default $config({
                 INNGEST_SIGNING_KEY: inngestSigningKey.value,
                 INNGEST_EVENT_KEY: inngestEventKey.value,
                 TOGETHER_API_KEY: togetherApiKey.value,
-                GOOGLE_AI_KEY: googleAiKey.value
+                GOOGLE_AI_KEY: googleAiKey.value,
+                ZIPCODE_API_KEY: zipCodeApiKey.value,
             },
             permissions: [
                 {

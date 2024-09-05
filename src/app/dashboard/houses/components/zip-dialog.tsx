@@ -22,18 +22,19 @@ export const AddZipCodeDialog = ({
     const [zipCode, setZipCode] = useState("");
     const addZipCode = api.house.setUserZipCode.useMutation(); // Updated mutation
     const zipCodes = api.house.getUserZipCodes.useQuery();
+    const searchZipCode = api.house.searchZipCode.useMutation();
 
     const handleAddZipCode = async () => {
-        try {
-            const result = await addZipCode.mutateAsync({zipCode});
+        if (searchZipCode.isSuccess && searchZipCode.data) {
+            const {city, state, id} = searchZipCode.data;
+            const result = await addZipCode.mutateAsync({zipCode: id, city, state});
             if (result.status === "Zip code added successfully") {
                 toast.success("Zip code added successfully");
+                setZipCode("");
+                searchZipCode.reset();
                 onOpenChange(false);
                 zipCodes.refetch(); // Refetch zip codes after adding
             }
-        } catch (error) {
-            // Handle errors, e.g., display an error message
-            console.error("Error adding zip code:", error);
         }
     };
 
@@ -42,8 +43,6 @@ export const AddZipCodeDialog = ({
             toast.error(addZipCode.error.message);
         }
     }, [addZipCode.isError]);
-
-    const searchZipCode = api.house.searchZipCode.useMutation();
 
     useEffect(() => {
         if (searchZipCode.isError) {

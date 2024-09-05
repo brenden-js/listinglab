@@ -13,6 +13,15 @@ import {inngest} from "@/inngest/client";
 import Together from "together-ai";
 import {GoogleGenerativeAI} from "@google/generative-ai";
 
+type ZipCodeDetails = {
+    City: string;
+    State: string;
+    Latitude: number;
+    Longitude: number;
+    ZipCode: string;
+    County: string;
+};
+
 export const houseRouter = createTRPCRouter({
         searchHouse: protectedProcedure
             .input(z.object({stAddress: z.string()}))
@@ -177,40 +186,42 @@ export const houseRouter = createTRPCRouter({
                         message: "You are not authorized to perform this action."
                     });
                 }
+                console.log('Searching zip code in our DB...')
+
                 const zipCode = await db.query.zipCodes.findFirst({
                     where: eq(zipCodes.id, input.zipCode),
                 });
+
                 if (zipCode) {
+                    console.log('Zip code found in our DB...')
                     return zipCode;
                 } else {
-                    const options = {
-                        method: 'GET',
-                        hostname: 'vanitysoft-boundaries-io-v1.p.rapidapi.com',
-                        port: null,
-                        path: `/rest/v1/public/boundary/zipcode?zipcode=${input.zipCode}`,
-                        headers: {
-                            'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
-                            'x-rapidapi-host': 'vanitysoft-boundaries-io-v1.p.rapidapi.com'
+                    const getZipCodeDetails = async (zipCode: string): Promise<ZipCodeDetails> => {
+                        try {
+                            const response = await axios.get<ZipCodeDetails>(
+                                `https://api.zip-codes.com/ZipCodesAPI.svc/1.0/QuickGetZipCodeDetails/${zipCode}?key=${process.env.ZIPCODE_API_KEY}`
+                            );
+                            return response.data;
+                        } catch (error) {
+                            console.error('Error fetching ZIP code details:', error);
+                            throw new TRPCError({
+                                code: "INTERNAL_SERVER_ERROR",
+                                message: "Zip code not found."
+                            })
                         }
                     };
 
+                    const details = await getZipCodeDetails(input.zipCode);
 
-                    const response = await axios({
-                        method: options.method,
-                        url: `https://${options.hostname}${options.path}`,
-                        headers: options.headers,
-                    });
+                    const cityLowerCase = details.City.toLocaleLowerCase();
 
-                    console.log(response.data);
+                    const formattedCity = cityLowerCase.charAt(0).toUpperCase() + cityLowerCase.slice(1);
 
-                    const zipData = response.data as ZipSearchResults
-                    if (!zipData.features.length) {
-                        throw new TRPCError({
-                            code: "INTERNAL_SERVER_ERROR",
-                            message: "Zip code not found."
-                        })
+                    return {
+                        city: formattedCity,
+                        state: details.State,
+                        id: details.ZipCode,
                     }
-                    return {city: zipData.features[0].properties.city, state: zipData.features[0].properties.state, id: zipData.features[0].properties.zipCode}
                 }
             }),
         getUserZipCodes: protectedProcedure
@@ -235,7 +246,7 @@ export const houseRouter = createTRPCRouter({
                 return zipCodes;
             }),
         setUserZipCode: protectedProcedure
-            .input(z.object({zipCode: z.string()}))
+            .input(z.object({zipCode: z.string(), city: z.string(), state: z.string()}))
             .mutation(async ({ctx, input}) => {
                 if (!ctx.authObject.userId) {
                     throw new TRPCError({
@@ -282,12 +293,12 @@ export const houseRouter = createTRPCRouter({
 
                 let zipCodeId;
                 if (!existingZipCode) {
-                    // Create a new zip code entry if it doesn't exist
-                    zipCodeId = input.zipCode; // Use zip code as ID
+                    // Create a new zip code entry if it doesn't exist, use zip code as ID
+                    zipCodeId = input.zipCode;
                     await db.insert(zipCodes).values({
                         id: zipCodeId,
-                        city: 'Unknown', // You might need to fetch city and state based on zip code
-                        state: 'Unknown'
+                        city: input.city,
+                        state: input.state
                     });
                 } else {
                     zipCodeId = existingZipCode.id;
@@ -298,6 +309,8 @@ export const houseRouter = createTRPCRouter({
                     userId: ctx.authObject.userId,
                     zipCodeId: zipCodeId
                 });
+
+                await db.update(userApiLimits).set({zipCodesUsage: userZipCodes.length + 1}).where(eq(userApiLimits.userId, ctx.authObject.userId))
 
                 return {status: "Zip code added successfully"};
             }),
