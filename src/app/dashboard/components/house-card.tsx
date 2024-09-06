@@ -54,10 +54,6 @@ export const HouseCard = ({house}: { house: House | UnhydratedHouse }) => {
                                 Remove house
                             </Button>
                         </div>
-                        {!house.claimed ?
-                            <Button disabled={claimHouse.isPending} className={clsx(claimHouse.isPending && "animate-pulse")} onClick={() => onClaim(house.id)}>Get data for this house</Button>
-                            : <LiveDataFeed houseId={house.id} claimed={!!house.claimed}/>
-                        }
                     </CardContent>
                 </Card>
                 <div className="my-4">

@@ -70,7 +70,6 @@ export const HouseDialog: React.FC<{
                                         Sqft:</strong> {house.pricePerSqft ? `$${house.pricePerSqft}` : 'N/A'}
                                     </p>
                                 </div>
-                                <LiveDataFeed houseId={house.id} claimed={!!house.claimed}/>
                                 <Button disabled={!!house.claimed || claimHouse.isPending} onClick={handleEnableSearch}>Get
                                     Data</Button>
                             </div>
