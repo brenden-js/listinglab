@@ -14,12 +14,17 @@ import {Textarea} from "@/components/ui/textarea";
 import {PaperPlaneIcon} from "@radix-ui/react-icons";
 import ReactMarkdown from 'react-markdown';
 import {twMerge} from "tailwind-merge";
+import {cn} from "@/lib/utils";
+import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 interface ChatInterfaceProps {
     showDataView: boolean;
     setShowDataView: (show: boolean) => void;
     house: House;
 }
+
+type ChatType = 'Property' | 'Location' | 'Financial' | 'Main';
+
 
 const baseTextStyles = "text-gray-800 leading-relaxed";
 const headingStyles = "font-semibold tracking-tight";
@@ -35,16 +40,16 @@ type CodeProps = ComponentProps & {
 
 const markdownComponents = {
     h1: ({className, ...props}: ComponentProps) => (
-        <h1 className={twMerge(`${baseTextStyles} ${headingStyles} text-3xl mt-8 mb-4`, className)} {...props} />
+        <h1 className={twMerge(`${baseTextStyles} ${headingStyles} text-3xl my-2`, className)} {...props} />
     ),
     h2: ({className, ...props}: ComponentProps) => (
-        <h2 className={twMerge(`${baseTextStyles} ${headingStyles} text-2xl mt-6 mb-3`, className)} {...props} />
+        <h2 className={twMerge(`${baseTextStyles} ${headingStyles} text-2xl my-1.5`, className)} {...props} />
     ),
     h3: ({className, ...props}: ComponentProps) => (
-        <h3 className={twMerge(`${baseTextStyles} ${headingStyles} text-xl mt-4 mb-2`, className)} {...props} />
+        <h3 className={twMerge(`${baseTextStyles} ${headingStyles} text-xl my-1`, className)} {...props} />
     ),
     p: ({className, ...props}: ComponentProps) => (
-        <p className={twMerge(`${baseTextStyles} mb-4`, className)} {...props} />
+        <p className={twMerge(`${baseTextStyles} mb-1`, className)} {...props} />
     ),
     ul: ({className, ...props}: ComponentProps) => (
         <ul className={twMerge("list-disc pl-5 mb-4", className)} {...props} />
@@ -53,7 +58,7 @@ const markdownComponents = {
         <ol className={twMerge("list-decimal pl-5 mb-4", className)} {...props} />
     ),
     li: ({className, ...props}: ComponentProps) => (
-        <li className={twMerge(`${baseTextStyles} mb-2`, className)} {...props} />
+        <li className={twMerge(`${baseTextStyles} mb-0.5`, className)} {...props} />
     ),
     code: ({className, inline, ...props}: CodeProps) => (
         inline ? (
@@ -68,7 +73,7 @@ const markdownComponents = {
     ),
 };
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setShowDataView, house}) => {
-    const {currentChat} = useHouseDialog();
+    const [currentChat, setCurrentChat] = useState<ChatType>('Main');
     const [newMessage, setNewMessage] = useState("");
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -191,6 +196,22 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
 
     return (
         <>
+            <div className="px-4 pb-4 flex items-center">
+                <div className="bg-secondary rounded-lg p-1.5">
+                    <Button variant="secondary"
+                            className={cn("w-[150px] hover:bg-secondary", currentChat === 'Main' && 'bg-white hover:bg-white text-black shadow')}
+                            onClick={() => setCurrentChat('Main')}>
+                        Main Chat
+                    </Button>
+                </div>
+                <Tabs value={currentChat} onValueChange={setCurrentChat as any} className="pl-4">
+                    <TabsList className={""}>
+                        <TabsTrigger value="Property">Property Chat</TabsTrigger>
+                        <TabsTrigger value="Location">Location Chat</TabsTrigger>
+                        <TabsTrigger value="Financial">Financial Chat</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            </div>
             <ScrollArea ref={scrollAreaRef} className="flex-grow pr-4">
                 <div className="flex-1 overflow-hidden">
                     <div className="p-4 space-y-4">

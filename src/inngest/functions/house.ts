@@ -145,6 +145,7 @@ export const handleEnrichHouse = inngest.createFunction(
             const data = getMortgageAndEquity(foundListing.price)
 
             await db.update(houses).set({investment: JSON.stringify(data)})
+            .where(eq(houses.id, event.data.houseId))
             // const message = {
             //     houseId: event.data.houseId,
             //     dataCategory: 'Financial',
@@ -268,7 +269,7 @@ export const scheduledNewListingsScan = inngest.createFunction(
 )
 
 export const newListingsInCityScan = inngest.createFunction(
-    {id: 'handle-new-listings-in-city-scan'},
+    {id: 'handle-new-listings-in-city-scan', concurrency: 1},
     {event: 'house/scan-city'},
     async ({event}) => {
         const options = {
@@ -345,7 +346,7 @@ export const newListingsInCityScan = inngest.createFunction(
 )
 
 export const handleAddHouseToUsers = inngest.createFunction(
-    {id: 'handle-add-house-to-users'},
+    {id: 'handle-add-house-to-users', concurrency: 10},
     {event: 'house/add-house-to-users'},
     async ({event}) => {
 

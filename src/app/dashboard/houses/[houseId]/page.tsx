@@ -2,33 +2,30 @@
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {LiveDataFeed} from "@/app/dashboard/components/live-data-feed";
 import {Button} from "@/components/ui/button";
-import {cn} from "@/lib/utils";
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {ChatInterface} from "@/app/dashboard/houses/components/chat-interface";
 import React, {useState} from "react";
 import {api} from "@/trpc/react";
-import {HouseDialogProvider} from "@/app/dashboard/contexts/house-dialog-context";
+import Link from "next/link";
+import {ArrowLeftIcon} from "@radix-ui/react-icons";
 
 const HouseDetailsPage = ({params}: { params: { houseId: string } }) => {
     const house = api.house.getHouseDetails.useQuery(params.houseId)
-
-    const [currentChat, setCurrentChat] = useState('Main');
     const [showDataView, setShowDataView] = useState(false);
 
-    const claimHouse = api.house.claimHouse.useMutation()
+    if (!house.data) return <div></div>
 
-    const handleEnableSearch = () => {
-        if (!house.data) return
-        console.log('Claiming house...')
-        claimHouse.mutate({houseId: house.data.id})
-    };
-
-    if (!house.data) return <div>Loading...</div>
     return (
-        <HouseDialogProvider>
-            <div className="w-full h-full flex flex-col">
-                <div>
-                    <div>{house.data.stAddress}</div>
+            <div className="w-full h-full max-h-[100vh] flex flex-col">
+                <div className={'flex pt-4'}>
+                    <Link href={`/dashboard/houses`} passHref>
+                        <Button variant="secondary" size="sm" className={"ml-3"}>
+                            <ArrowLeftIcon className="mr-2"/>
+                            Houses
+                        </Button>
+                    </Link>
+                    <h1 className={"text-2xl font-bold ml-4"}>
+                        {`${house.data.stAddress}, ${house.data.city}, ${house.data.state} ${house.data.zipCode}`}
+                    </h1>
                 </div>
                 <div className="flex flex-1 overflow-hidden">
                     <div className="w-[25%] pt-4 border-r border-gray-200 pr-5 overflow-y-auto">
@@ -52,36 +49,16 @@ const HouseDetailsPage = ({params}: { params: { houseId: string } }) => {
                                         Sqft:</strong> {house.data.pricePerSqft ? `$${house.data.pricePerSqft}` : 'N/A'}
                                     </p>
                                 </div>
-                                <LiveDataFeed houseId={house.data.id} claimed={!!house.data.claimed}/>
-                                <Button disabled={!!house.data.claimed || claimHouse.isPending}
-                                        onClick={handleEnableSearch}>Get
-                                    Data</Button>
+                                {house.data && (<LiveDataFeed houseId={house.data.id} house={house.data} isPending={house.isPending}/>)}
                             </div>
                         </ScrollArea>
                     </div>
                     <div className="w-[75%] pt-4 flex flex-col">
-                        <div className="px-4 pb-4 flex items-center">
-                            <div className="bg-secondary rounded-lg p-1.5">
-                                <Button variant="secondary"
-                                        className={cn("w-[150px] hover:bg-secondary", currentChat === 'Main' && 'bg-white hover:bg-white text-black shadow')}
-                                        onClick={() => setCurrentChat('Main')}>
-                                    Main Chat
-                                </Button>
-                            </div>
-                            <Tabs value={currentChat} onValueChange={setCurrentChat as any} className="pl-4">
-                                <TabsList className={""}>
-                                    <TabsTrigger value="Property">Property Chat</TabsTrigger>
-                                    <TabsTrigger value="Location">Location Chat</TabsTrigger>
-                                    <TabsTrigger value="Financial">Financial Chat</TabsTrigger>
-                                </TabsList>
-                            </Tabs>
-                        </div>
                         <ChatInterface showDataView={showDataView} setShowDataView={setShowDataView}
                                        house={house.data}/>
                     </div>
                 </div>
             </div>
-        </HouseDialogProvider>
     )
 }
 

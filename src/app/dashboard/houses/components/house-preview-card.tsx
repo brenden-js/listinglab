@@ -9,7 +9,7 @@ interface HousePreviewCardProps {
 export const HousePreviewCard: React.FC<HousePreviewCardProps> = ({ house }) => {
   if (!house) return null;
   return (
-    <Card className={"hover:cursor-pointer"}>
+    <Card className={"hover:cursor-pointer h-36"}>
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>{house.stAddress}</CardTitle>
