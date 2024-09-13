@@ -246,27 +246,27 @@ export const handleAddGeneration = inngest.createFunction(
     }
 )
 
-export const scheduledNewListingsScan = inngest.createFunction(
-    {id: 'handle-scheduled-new-listings-scan'},
-    {cron: '1/30 4-23 * * *'},
-    async () => {
-        console.log('Running scheduled new listings scan...')
-        const zipCodes = await db.query.zipCodes.findMany()
-        if (!zipCodes.length) {
-            console.log('No zipCodes found, exiting...')
-            return
-        }
-        for (const zipCode of zipCodes) {
-            // create an event for each zipCode
-            const event = {
-                cityId: zipCode.id,
-                cityName: zipCode.city,
-                state: zipCode.state
-            }
-            await inngest.send({name: 'house/scan-city', data: event})
-        }
-    }
-)
+// export const scheduledNewListingsScan = inngest.createFunction(
+//     {id: 'handle-scheduled-new-listings-scan'},
+//     {cron: '1/30 4-23 * * *'},
+//     async () => {
+//         console.log('Running scheduled new listings scan...')
+//         const zipCodes = await db.query.zipCodes.findMany()
+//         if (!zipCodes.length) {
+//             console.log('No zipCodes found, exiting...')
+//             return
+//         }
+//         for (const zipCode of zipCodes) {
+//             // create an event for each zipCode
+//             const event = {
+//                 cityId: zipCode.id,
+//                 cityName: zipCode.city,
+//                 state: zipCode.state
+//             }
+//             await inngest.send({name: 'house/scan-city', data: event})
+//         }
+//     }
+// )
 
 export const newListingsInCityScan = inngest.createFunction(
     {id: 'handle-new-listings-in-city-scan', concurrency: 1},

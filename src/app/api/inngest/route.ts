@@ -5,7 +5,7 @@ import {
     handleAddGeneration, handleAddHouseToUsers,
     handleEnrichHouse,
     incrementHouseUsage,
-    incrementTextUsage, newListingsInCityScan, scheduledNewListingsScan
+    incrementTextUsage, newListingsInCityScan,
 } from "@/inngest/functions/house";
 
 
@@ -17,7 +17,7 @@ export const {GET, POST, PUT} = serve({
         incrementHouseUsage,
         incrementTextUsage,
         handleSubscriptionPurchased,
-        scheduledNewListingsScan,
+        // scheduledNewListingsScan,
         newListingsInCityScan,
         handleAddHouseToUsers
     ],
