@@ -69,19 +69,24 @@ export default function HousesPageOverview() {
                 </div>
                 <Separator/>
                 <div className="p-3">
-                    <AddHouse />
+
                     {houses.isPending && <LoadingSkeletons/>}
                     {!houses.isPending && houses.isSuccess && houses.data.length > 0 && (
-                        <div className="flex flex-wrap -mx-2">
+                        <div className="flex flex-wrap">
+                            <div className={"px-2 w-full lg:w-1/2 xl:w-1/3 2xl:w-1/4 mb-4"}>
+                                <AddHouse />
+                            </div>
                             {houses.data.map((house) => (
+                                <>
                                 <div
-                                    className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
+                                    className="w-full lg:w-1/2 xl:w-1/3 2xl:w-1/4 px-2 mb-4"
                                     key={house.id}
                                 >
                                     <Link href={`/dashboard/houses/${house.id}`} passHref>
                                         <HousePreviewCard house={house} />
                                     </Link>
                                 </div>
+                                </>
                             ))}
                         </div>
                     )}

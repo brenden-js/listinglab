@@ -1,28 +1,24 @@
 "use client"
+
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger
-} from "@/components/ui/drawer";
-import {ScrollArea} from "@/components/ui/scroll-area";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {api} from "@/trpc/react";
-import {useContext,  useState} from "react";
+import {useContext, useState} from "react";
 import {Input} from "@/components/ui/input";
-import { ReloadIcon} from "@radix-ui/react-icons";
-import clsx from "clsx";
+import {PlusIcon, ReloadIcon} from "@radix-ui/react-icons";
 import {CurrentPromptContext, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
 import {toast} from "sonner";
 
 export const AddHouse = () => {
-  const {selectedHouses, addHouse, removeHouse} = useContext(CurrentPromptContext)
-  const recentHouses = api.house.getHouses.useQuery(undefined, {})
+  const {selectedHouses, addHouse} = useContext(CurrentPromptContext)
   const houseMutation = api.house.searchHouse.useMutation({
     onSuccess: (data) => {
       addHouse(data)
@@ -40,42 +36,29 @@ export const AddHouse = () => {
     await houseMutation.mutateAsync({stAddress: rawAddress});
   };
 
-
   const [newHousePreview, setNewHousePreview] = useState<UnhydratedHouse>()
+  const [isOpen, setIsOpen] = useState(false)
+
   return (
-    <Drawer onClose={() => setNewHousePreview(undefined)}>
-      <DrawerTrigger
-        className=""
-        asChild
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open)
+      if (!open) setNewHousePreview(undefined)
+    }}>
+      <DialogTrigger asChild>
         <button
           type="button"
-            className="sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4 relative duration-100 block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+          className="h-36 w-full duration-100 rounded-lg border-2 border-dashed border-gray-300 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
         >
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            xmlns="http://www.w3.org/2000/svg"
-            stroke="currentColor"
-            fill="none"
-            viewBox="0 0 48 48"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6"
-            />
-          </svg>
-          <span className="mt-2 block text-sm font-medium text-gray-900">My houses</span>
+          <PlusIcon className="mx-auto h-8 w-8 text-gray-400"/>
+          <span className="mt-2 block text-sm font-medium text-gray-900">Add house</span>
         </button>
-      </DrawerTrigger>
-      <DrawerContent className={"h-[80vh]"}>
-        <DrawerHeader className={"max-w-xl mx-auto"}>
-          <DrawerTitle className="text-center">Select a house</DrawerTitle>
-          <DrawerDescription>Use the search bar to find a house or select a previously used house.</DrawerDescription>
-        </DrawerHeader>
-        <div className="flex justify-between w-[650px] mx-auto mb-4">
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[650px]">
+        <DialogHeader>
+          <DialogTitle>Search for new house</DialogTitle>
+          <DialogDescription>Enter the full address, and we will find the closest match</DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-between w-full mx-auto mb-4">
           <Input
             value={rawAddress}
             onChange={(e) => setRawAddress(e.target.value)}
@@ -99,26 +82,18 @@ export const AddHouse = () => {
             {houseMutation.error.message}
           </p>
         )}
-        {/* We check to see if the house has been removed after initial search and find of the house */}
         {newHousePreview && !!selectedHouses.length && (
-          <div id="new-house-preview" className="mb-4 mt-2 items-center mx-auto flex-col w-[650px] rounded-md pr-4">
+          <div id="new-house-preview" className="mb-4 mt-2 items-center mx-auto flex-col w-full rounded-md pr-4">
             <Card className={"min-w-[400px]"}>
               <CardHeader>
                 <CardContent className="pt-5 flex items-center justify-between">
                   {newHousePreview.stAddress}, {newHousePreview.city} {newHousePreview.zipCode} found!
-                  <DrawerClose asChild><Button variant={'secondary'}>Close and continue</Button></DrawerClose>
                 </CardContent>
               </CardHeader>
             </Card>
           </div>
         )}
-        <DrawerFooter className={"max-w-xl mx-auto"}>
-          <DrawerClose
-            asChild>
-            <Button variant={"secondary"}>Close</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   )
 }
