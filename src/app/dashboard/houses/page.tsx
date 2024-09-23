@@ -13,6 +13,8 @@ import {HouseDialog} from "@/app/dashboard/houses/components/house-dialog";
 import {HousePreviewCard} from "@/app/dashboard/houses/components/house-preview-card";
 import {LoadingSkeletons} from "@/app/dashboard/houses/components/house-preview-skeletons";
 import Link from "next/link";
+import {HousesDrawer} from "@/app/dashboard/components/houses-drawer";
+import {AddHouse} from "@/app/dashboard/houses/components/add-house";
 
 export default function HousesPageOverview() {
     const currentZipCodes = api.house.getUserZipCodes.useQuery(); // Updated query
@@ -67,6 +69,7 @@ export default function HousesPageOverview() {
                 </div>
                 <Separator/>
                 <div className="p-3">
+                    <AddHouse />
                     {houses.isPending && <LoadingSkeletons/>}
                     {!houses.isPending && houses.isSuccess && houses.data.length > 0 && (
                         <div className="flex flex-wrap -mx-2">
