@@ -142,6 +142,19 @@ export const houseRouter = createTRPCRouter({
                     where: and(eq(houses.userId, ctx.authObject.userId), eq(houses.id, input)),
                 });
             }),
+        setSeen: protectedProcedure
+            .input(z.object({houseId: z.string()}))
+            .mutation(async ({ctx, input}) => {
+                if (!ctx.authObject.userId) {
+                    throw new TRPCError({code: "UNAUTHORIZED", message: "You are not authorized to perform this action."})
+                }
+                const house = await db.query.houses.findFirst({where: and(eq(houses.id, input.houseId), eq(houses.userId, ctx.authObject.userId))})
+                if (!house) {
+                    throw new TRPCError({code: "NOT_FOUND", message: "Could not find that house."})
+                }
+                await db.update(houses).set({seen: 1}).where(eq(houses.id, input.houseId))
+                return {status: "House seen successfully"}
+            }),
         deleteChat: protectedProcedure
             .input(z.object({houseId: z.string(), topic: z.enum(["Property", "Location", "Financial", "Main"])}))
             .mutation(async ({ctx, input}) => {

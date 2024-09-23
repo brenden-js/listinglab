@@ -12,8 +12,11 @@ export const HousePreviewCard: React.FC<HousePreviewCardProps> = ({ house }) => 
     <Card className={"hover:cursor-pointer h-36"}>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>{house.stAddress}</CardTitle>
+            <CardTitle>{house.stAddress}</CardTitle>
+            <div>
+                {house.seen === 0 || house.seen === null && <Badge variant="default">New</Badge>}
           <Badge variant="secondary">{house.price?.toLocaleString("en-US", { style: "currency", currency: "USD" })}</Badge>
+            </div>
         </div>
       </CardHeader>
       <CardContent>

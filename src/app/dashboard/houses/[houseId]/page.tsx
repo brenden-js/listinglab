@@ -3,7 +3,7 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import {LiveDataFeed} from "@/app/dashboard/components/live-data-feed";
 import {Button} from "@/components/ui/button";
 import {ChatInterface} from "@/app/dashboard/houses/components/chat-interface";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {api} from "@/trpc/react";
 import Link from "next/link";
 import {ArrowLeftIcon} from "@radix-ui/react-icons";
@@ -11,6 +11,17 @@ import {ArrowLeftIcon} from "@radix-ui/react-icons";
 const HouseDetailsPage = ({params}: { params: { houseId: string } }) => {
     const house = api.house.getHouseDetails.useQuery(params.houseId)
     const [showDataView, setShowDataView] = useState(false);
+
+    const utils = api.useUtils()
+
+    const seenMutation = api.house.setSeen.useMutation()
+
+    useEffect(() => {
+        if (house.data) {
+            seenMutation.mutate({houseId: house.data.id})
+            utils.house.getHouses.invalidate()
+        }
+    }, [house.data])
 
     if (!house.data) return <div></div>
 
