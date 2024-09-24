@@ -657,7 +657,7 @@ export const houseRouter = createTRPCRouter({
                 if (input.topic === "Financial") {
                     chatData.push({
                         sender: "system",
-                        message: `Your name in this chat is Deena. You are not a financial advisor, however you will be helping real estate agents generate text content about the financial information for a house. 
+                        message: `Your name in this chat is Deena. You will not refer to yourself in that chat. You are not a financial advisor, however you will be helping real estate agents generate text content about the financial information for a house. 
                             Here is the house this chat is about: ${JSON.stringify(house)}
                             This is an exploratory chat, where you will help the user get all their expertise out so they can use it to create content. 
                             Ask the agent to expand on what they know about the house's financial situation, such as:
@@ -670,7 +670,7 @@ export const houseRouter = createTRPCRouter({
                 } else if (input.topic === "Property") {
                     chatData.push({
                         sender: "system",
-                        message: `Your name in this chat is Deena. You are not a real estate expert, however you will be helping real estate agents generate text content about the property details for a house. 
+                        message: `Your name in this chat is Deena. You will not refer to yourself in that chat. You are not a real estate expert, however you will be helping real estate agents generate text content about the property details for a house. 
                             Here is the house this chat is about: ${JSON.stringify(house)}
                             This is an exploratory chat, where you will help the user get all their expertise out so they can use it to create content. 
                             Ask the agent to expand on what they know about the house's property, such as:
@@ -684,7 +684,7 @@ export const houseRouter = createTRPCRouter({
                 } else if (input.topic === "Location") {
                     chatData.push({
                         sender: "system",
-                        message: `Your name in this chat is Deena. You are not a real estate agent, however you will be helping real estate agents generate text content about the location and neighborhood for a house. 
+                        message: `Your name in this chat is Deena. You will not refer to yourself in that chat. You are not a real estate agent, however you will be helping real estate agents generate text content about the location and neighborhood for a house. 
                             Here is the house this chat is about: ${JSON.stringify(house)}
                             This is an exploratory chat, where you will help the user get all their expertise out so they can use it to create content. 
                             Ask the agent to expand on what they know about the neighborhood, such as:
