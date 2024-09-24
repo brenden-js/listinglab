@@ -228,7 +228,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                                         <PropertyView house={house}/>
                                     )}
                                     {currentChat === 'Financial' && house.investment !== null && (
-                                        <FinancialView investment={house.investment}/>
+                                        <FinancialView investment={JSON.parse(house.investment)}/>
                                     )}
                                     {currentChat === 'Location' && house.nearbyPlaces !== null && (
                                         <LocationView nearbyPlaces={house.nearbyPlaces}/>

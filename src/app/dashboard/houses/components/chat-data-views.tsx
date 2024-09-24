@@ -1,5 +1,7 @@
 import React from 'react';
 import {House} from "@/app/dashboard/contexts/prompts";
+import {EquityLineChart} from "@/app/dashboard/houses/components/equity-chart";
+import {MortgagePaymentChart} from "@/app/dashboard/houses/components/chart-mortgage";
 
 // Utility types
 type Maybe<T> = T | null | undefined;
@@ -74,52 +76,101 @@ export const LocationView: React.FC<LocationViewProps> = ({nearbyPlaces}) => {
 };
 
 // Financial component
-type LoanInfo = {
+export type LoanInfo = {
     baseMonthlyPayment: string;
     upfrontMIP?: string;
     monthlyMIP?: string;
     monthlyTax: string;
     combinedMonthlyPayment: string;
     valueAndEquityRange: {
-        valueRange5Years: { min: number; max: number };
-        possibleEquity5Years: { min: number; max: number };
+        ownershipYear: number;
+        valueRange: { estimatedMin: string; estimatedMax: string };
+        equityRange: { estimatedMinEquity: string; estimatedMaxEquity: string };
+    }[];
+    appreciationRateRange: {
+        min: number;
+        max: number;
     };
 };
 
-type Investment = {
+export type Investment = {
     fhaLoan: LoanInfo;
     nonFhaLoan: LoanInfo;
 };
 
 type FinancialViewProps = {
-    investment: string; // JSON string
+    investment: Investment; // Correct prop type
 };
 
 export const FinancialView: React.FC<FinancialViewProps> = ({investment}) => {
-    const {fhaLoan, nonFhaLoan}: Investment = React.useMemo(() => JSON.parse(investment), [investment]);
+    const {fhaLoan, nonFhaLoan} = investment;
+
+    const getProjectionForYear = (loanType: 'fhaLoan' | 'nonFhaLoan', year: number) => {
+        const projection = investment[loanType].valueAndEquityRange.find(
+            (item) => item.ownershipYear === year
+        );
+        return projection || null;
+    };
+
+    const fhaProjection5Years = getProjectionForYear('fhaLoan', 5);
+    const nonFhaProjection5Years = getProjectionForYear('nonFhaLoan', 5);
 
     return (
         <div>
+            <EquityLineChart investment={investment}/>
+            <div className="mb-4 w-1/2">
+                <MortgagePaymentChart loan={fhaLoan}/>
+            </div>
+            <div className="mb-4 w-1/2">
+                <MortgagePaymentChart loan={nonFhaLoan}/>
+            </div>
             <h3 className="text-xl font-bold mb-4">Financial Analysis</h3>
             <div className="mb-4">
                 <h4 className="text-lg font-semibold">FHA Loan</h4>
-                <p><strong>Monthly Payment:</strong> ${fhaLoan.baseMonthlyPayment}</p>
-                <p><strong>Upfront MIP:</strong> ${fhaLoan.upfrontMIP}</p>
-                <p><strong>Monthly MIP:</strong> ${fhaLoan.monthlyMIP}</p>
-                <p><strong>Combined Monthly Payment:</strong> ${fhaLoan.combinedMonthlyPayment}</p>
+                <p><strong>Monthly Payment:</strong> ${parseFloat(fhaLoan.baseMonthlyPayment).toLocaleString()}</p>
+                {fhaLoan.upfrontMIP &&
+                    <p><strong>Upfront MIP:</strong> ${parseFloat(fhaLoan.upfrontMIP).toLocaleString()}</p>}
+                {fhaLoan.monthlyMIP &&
+                    <p><strong>Monthly MIP:</strong> ${parseFloat(fhaLoan.monthlyMIP).toLocaleString()}</p>}
+                <p><strong>Combined Monthly
+                    Payment:</strong> ${parseFloat(fhaLoan.combinedMonthlyPayment).toLocaleString()}</p>
             </div>
             <div className="mb-4">
                 <h4 className="text-lg font-semibold">Conventional Loan</h4>
-                <p><strong>Monthly Payment:</strong> ${nonFhaLoan.baseMonthlyPayment}</p>
-                <p><strong>Combined Monthly Payment:</strong> ${nonFhaLoan.combinedMonthlyPayment}</p>
+                <p><strong>Monthly Payment:</strong> ${parseFloat(nonFhaLoan.baseMonthlyPayment).toLocaleString()}</p>
+                <p><strong>Combined Monthly
+                    Payment:</strong> ${parseFloat(nonFhaLoan.combinedMonthlyPayment).toLocaleString()}</p>
             </div>
             <div>
                 <h4 className="text-lg font-semibold">5-Year Projections</h4>
-                <p><strong>Value Range:</strong> ${fhaLoan.valueAndEquityRange.valueRange5Years.min.toLocaleString()} -
-                    ${fhaLoan.valueAndEquityRange.valueRange5Years.max.toLocaleString()}</p>
-                <p><strong>Possible
-                    Equity:</strong> ${fhaLoan.valueAndEquityRange.possibleEquity5Years.min.toLocaleString()} -
-                    ${fhaLoan.valueAndEquityRange.possibleEquity5Years.max.toLocaleString()}</p>
+                {fhaProjection5Years && (
+                    <>
+                        <p>
+                            <strong>FHA Value Range:</strong> $
+                            {parseFloat(fhaProjection5Years.valueRange.estimatedMin).toLocaleString()} - $
+                            {parseFloat(fhaProjection5Years.valueRange.estimatedMax).toLocaleString()}
+                        </p>
+                        <p>
+                            <strong>FHA Possible Equity:</strong> $
+                            {parseFloat(fhaProjection5Years.equityRange.estimatedMinEquity).toLocaleString()} - $
+                            {parseFloat(fhaProjection5Years.equityRange.estimatedMaxEquity).toLocaleString()}
+                        </p>
+                    </>
+                )}
+                {nonFhaProjection5Years && (
+                    <>
+                        <p>
+                            <strong>Conv. Value Range:</strong> $
+                            {parseFloat(nonFhaProjection5Years.valueRange.estimatedMin).toLocaleString()} - $
+                            {parseFloat(nonFhaProjection5Years.valueRange.estimatedMax).toLocaleString()}
+                        </p>
+                        <p>
+                            <strong>Conv. Possible Equity:</strong> $
+                            {parseFloat(nonFhaProjection5Years.equityRange.estimatedMinEquity).toLocaleString()} - $
+                            {parseFloat(nonFhaProjection5Years.equityRange.estimatedMaxEquity).toLocaleString()}
+                        </p>
+                    </>
+                )}
             </div>
         </div>
     );
