@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {CheckCircledIcon, CrossCircledIcon, ReloadIcon} from "@radix-ui/react-icons";
 import {api} from "@/trpc/react";
 import {Button} from "@/components/ui/button";
@@ -10,27 +10,26 @@ export const LiveDataFeed = ({house, isPending, houseId}: { house: House, isPend
     );
 
     const [searching, setSearching] = useState(false);
-
+    const checkCountRef = useRef(0); // Use a ref to persist the count across renders
     const claimHouse = api.house.claimHouse.useMutation({
         onSuccess: async (data) => {
             // Immediately refetch after claiming
             setSearching(true);
             await refetch();
-
-            // Set up interval for subsequent refetches
-            let intervalId = setInterval(async () => {
-                const {data: refetchedHouse} = await refetch();
-                if (areAllFieldsPopulated(refetchedHouse)) {
-                    setSearching(false);
-                    clearInterval(intervalId);
-                }
-            }, 3000);
-
-            // Clear interval when component unmounts to avoid memory leaks
-            return () => clearInterval(intervalId);
+            checkUpdates(); // Start checking for updates
         }
     });
 
+    const checkUpdates = async () => {
+        const { data: refetchedHouse } = await refetch();
+        checkCountRef.current++;
+
+        if (areAllFieldsPopulated(refetchedHouse) || checkCountRef.current >= 5) {
+            setSearching(false);
+        } else {
+            setTimeout(checkUpdates, 3000);
+        }
+    };
     const handleClaimHouse = () => {
         if (!house) return
         claimHouse.mutate({houseId: house.id})
@@ -55,6 +54,8 @@ export const LiveDataFeed = ({house, isPending, houseId}: { house: House, isPend
             return <CrossCircledIcon className="h-4 w-4"/>
         } else if (searching) {
             return <ReloadIcon className="animate-spin h-4 w-4"/>
+        } else if (!searching && house[field] === null) {
+            return <CrossCircledIcon className="h-4 w-4"/>
         }
     };
 

@@ -77,25 +77,16 @@ export const LocationView: React.FC<LocationViewProps> = ({nearbyPlaces}) => {
 
 // Financial component
 export type LoanInfo = {
-    baseMonthlyPayment: string;
-    upfrontMIP?: string;
-    monthlyMIP?: string;
-    monthlyTax: string;
-    combinedMonthlyPayment: string;
-    valueAndEquityRange: {
-        ownershipYear: number;
-        valueRange: { estimatedMin: string; estimatedMax: string };
-        equityRange: { estimatedMinEquity: string; estimatedMaxEquity: string };
-    }[];
-    appreciationRateRange: {
-        min: number;
-        max: number;
-    };
+    total: string;
+    closingCosts: string
+    mip: string;
+    tax: string;
+    principalAndInterest: string;
 };
 
 export type Investment = {
     fhaLoan: LoanInfo;
-    nonFhaLoan: LoanInfo;
+    conventionalLoan: LoanInfo;
 };
 
 type FinancialViewProps = {
@@ -103,74 +94,15 @@ type FinancialViewProps = {
 };
 
 export const FinancialView: React.FC<FinancialViewProps> = ({investment}) => {
-    const {fhaLoan, nonFhaLoan} = investment;
-
-    const getProjectionForYear = (loanType: 'fhaLoan' | 'nonFhaLoan', year: number) => {
-        const projection = investment[loanType].valueAndEquityRange.find(
-            (item) => item.ownershipYear === year
-        );
-        return projection || null;
-    };
-
-    const fhaProjection5Years = getProjectionForYear('fhaLoan', 5);
-    const nonFhaProjection5Years = getProjectionForYear('nonFhaLoan', 5);
+    const {fhaLoan, conventionalLoan} = investment;
 
     return (
-        <div>
-            <EquityLineChart investment={investment}/>
+        <div className="flex flex-row gap-4">
             <div className="mb-4 w-1/2">
-                <MortgagePaymentChart loan={fhaLoan}/>
+                <MortgagePaymentChart loan={fhaLoan} loanType="FHA"/>
             </div>
             <div className="mb-4 w-1/2">
-                <MortgagePaymentChart loan={nonFhaLoan}/>
-            </div>
-            <h3 className="text-xl font-bold mb-4">Financial Analysis</h3>
-            <div className="mb-4">
-                <h4 className="text-lg font-semibold">FHA Loan</h4>
-                <p><strong>Monthly Payment:</strong> ${parseFloat(fhaLoan.baseMonthlyPayment).toLocaleString()}</p>
-                {fhaLoan.upfrontMIP &&
-                    <p><strong>Upfront MIP:</strong> ${parseFloat(fhaLoan.upfrontMIP).toLocaleString()}</p>}
-                {fhaLoan.monthlyMIP &&
-                    <p><strong>Monthly MIP:</strong> ${parseFloat(fhaLoan.monthlyMIP).toLocaleString()}</p>}
-                <p><strong>Combined Monthly
-                    Payment:</strong> ${parseFloat(fhaLoan.combinedMonthlyPayment).toLocaleString()}</p>
-            </div>
-            <div className="mb-4">
-                <h4 className="text-lg font-semibold">Conventional Loan</h4>
-                <p><strong>Monthly Payment:</strong> ${parseFloat(nonFhaLoan.baseMonthlyPayment).toLocaleString()}</p>
-                <p><strong>Combined Monthly
-                    Payment:</strong> ${parseFloat(nonFhaLoan.combinedMonthlyPayment).toLocaleString()}</p>
-            </div>
-            <div>
-                <h4 className="text-lg font-semibold">5-Year Projections</h4>
-                {fhaProjection5Years && (
-                    <>
-                        <p>
-                            <strong>FHA Value Range:</strong> $
-                            {parseFloat(fhaProjection5Years.valueRange.estimatedMin).toLocaleString()} - $
-                            {parseFloat(fhaProjection5Years.valueRange.estimatedMax).toLocaleString()}
-                        </p>
-                        <p>
-                            <strong>FHA Possible Equity:</strong> $
-                            {parseFloat(fhaProjection5Years.equityRange.estimatedMinEquity).toLocaleString()} - $
-                            {parseFloat(fhaProjection5Years.equityRange.estimatedMaxEquity).toLocaleString()}
-                        </p>
-                    </>
-                )}
-                {nonFhaProjection5Years && (
-                    <>
-                        <p>
-                            <strong>Conv. Value Range:</strong> $
-                            {parseFloat(nonFhaProjection5Years.valueRange.estimatedMin).toLocaleString()} - $
-                            {parseFloat(nonFhaProjection5Years.valueRange.estimatedMax).toLocaleString()}
-                        </p>
-                        <p>
-                            <strong>Conv. Possible Equity:</strong> $
-                            {parseFloat(nonFhaProjection5Years.equityRange.estimatedMinEquity).toLocaleString()} - $
-                            {parseFloat(nonFhaProjection5Years.equityRange.estimatedMaxEquity).toLocaleString()}
-                        </p>
-                    </>
-                )}
+                <MortgagePaymentChart loan={conventionalLoan} loanType="Conventional"/>
             </div>
         </div>
     );

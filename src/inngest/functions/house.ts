@@ -6,9 +6,9 @@ import {generations, houses, userApiLimits, zipCodeSubscriptions} from "@/db/sch
 import {db} from "@/db";
 import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/helpers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
-import {getMortgageAndEquity} from "@/inngest/functions/helpers/equity-principal-equations";
 import {inngest} from "@/inngest/client";
 import {ListingSearchInCityResponse} from "@/inngest/functions/helpers/house-search-type";
+import {calculateTotalMonthlyPayment} from "@/inngest/functions/helpers/investment-calcs";
 
 
 export const incrementHouseUsage = inngest.createFunction(
@@ -142,78 +142,65 @@ export const handleEnrichHouse = inngest.createFunction(
                 throw new Error('No price was found, cannot get mortgage info')
             }
 
-            const data = getMortgageAndEquity(foundListing.price)
+            const conventionalLoan = calculateTotalMonthlyPayment( 'conventional', foundListing.price, 5.49)
+            // need to add the upfrontMIP in future
+            const fhaLoan = calculateTotalMonthlyPayment( 'fha', foundListing.price, 5.49)
 
-            await db.update(houses).set({investment: JSON.stringify(data)})
+            await db.update(houses).set({investment: JSON.stringify({conventionalLoan, fhaLoan})})
             .where(eq(houses.id, event.data.houseId))
-            // const message = {
-            //     houseId: event.data.houseId,
-            //     dataCategory: 'Financial',
-            //     updateType: 'LiveDataFeedUpdate',
-            //     jobStatus: 'complete',
-            // } as LiveDataFeedUpdate
-            // await publishStatusFromServer(message, event.data.userId)
         })
 
-        await step.run("Get recently sold listings", async () => {
-            const data = JSON.stringify({
-                limit: 10,
-                offset: 0,
-                postal_code: foundListing.zipCode,
-                status: [
-                    'sold'
-                ],
-                sort: {
-                    direction: 'desc',
-                    field: 'list_date'
-                }
-            });
-
-            let response;
-
-            try {
-                response = await axios.post('https://realty-in-us.p.rapidapi.com/properties/v3/list', data, {
-                    headers: {
-                        'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
-                        'x-rapidapi-host': 'realty-in-us.p.rapidapi.com',
-                        'Content-Type': 'application/json'
-                    },
-                    withCredentials: true
-                });
-
-                if (!response) {
-                    return new Error('Could not get api response')
-                }
-            } catch (error) {
-                console.error(error);
-            }
-            const formatted = response!.data as RecentlySoldResponse
-
-            const minimizedArray = formatted.data.home_search.results.map((soldListing) => {
-                return {
-                    soldPrice: soldListing.last_sold_price,
-                    soldDate: soldListing.last_sold_date,
-                    beds: soldListing.description.beds,
-                    baths: soldListing.description.baths,
-                    lotSqft: soldListing.description.lot_sqft,
-                    sqft: soldListing.description.sqft,
-                    pricePerSqft: (soldListing.last_sold_price / soldListing.description.sqft).toFixed(2),
-                    stAddress: soldListing.location.address.line
-                }
-            })
-
-            console.log("minimzedArray...................", minimizedArray)
-
-            await db.update(houses).set({recentlySold: JSON.stringify(minimizedArray)}).where(eq(houses.id, event.data.houseId))
-            // const message = {
-            //     houseId: event.data.houseId,
-            //     dataCategory: 'Financial',
-            //     updateType: 'LiveDataFeedUpdate',
-            //     jobStatus: 'complete',
-            // } as LiveDataFeedUpdate
-            //
-            // await publishStatusFromServer(message, event.data.userId)
-        })
+        // await step.run("Get recently sold listings", async () => {
+        //     const data = JSON.stringify({
+        //         limit: 10,
+        //         offset: 0,
+        //         postal_code: foundListing.zipCode,
+        //         status: [
+        //             'sold'
+        //         ],
+        //         sort: {
+        //             direction: 'desc',
+        //             field: 'list_date'
+        //         }
+        //     });
+        //
+        //     let response;
+        //
+        //     try {
+        //         response = await axios.post('https://realty-in-us.p.rapidapi.com/properties/v3/list', data, {
+        //             headers: {
+        //                 'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
+        //                 'x-rapidapi-host': 'realty-in-us.p.rapidapi.com',
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             withCredentials: true
+        //         });
+        //
+        //         if (!response) {
+        //             return new Error('Could not get api response')
+        //         }
+        //     } catch (error) {
+        //         console.error(error);
+        //     }
+        //     const formatted = response!.data as RecentlySoldResponse
+        //
+        //     const minimizedArray = formatted.data.home_search.results.map((soldListing) => {
+        //         return {
+        //             soldPrice: soldListing.last_sold_price,
+        //             soldDate: soldListing.last_sold_date,
+        //             beds: soldListing.description.beds,
+        //             baths: soldListing.description.baths,
+        //             lotSqft: soldListing.description.lot_sqft,
+        //             sqft: soldListing.description.sqft,
+        //             pricePerSqft: (soldListing.last_sold_price / soldListing.description.sqft).toFixed(2),
+        //             stAddress: soldListing.location.address.line
+        //         }
+        //     })
+        //
+        //     console.log("minimzedArray...................", minimizedArray)
+        //
+        //     await db.update(houses).set({recentlySold: JSON.stringify(minimizedArray)}).where(eq(houses.id, event.data.houseId))
+        // })
     }
 )
 
@@ -246,27 +233,27 @@ export const handleAddGeneration = inngest.createFunction(
     }
 )
 
-// export const scheduledNewListingsScan = inngest.createFunction(
-//     {id: 'handle-scheduled-new-listings-scan'},
-//     {cron: '1/30 4-23 * * *'},
-//     async () => {
-//         console.log('Running scheduled new listings scan...')
-//         const zipCodes = await db.query.zipCodes.findMany()
-//         if (!zipCodes.length) {
-//             console.log('No zipCodes found, exiting...')
-//             return
-//         }
-//         for (const zipCode of zipCodes) {
-//             // create an event for each zipCode
-//             const event = {
-//                 cityId: zipCode.id,
-//                 cityName: zipCode.city,
-//                 state: zipCode.state
-//             }
-//             await inngest.send({name: 'house/scan-city', data: event})
-//         }
-//     }
-// )
+export const scheduledNewListingsScan = inngest.createFunction(
+    {id: 'handle-scheduled-new-listings-scan'},
+    {cron: '1/30 4-23 * * *'},
+    async () => {
+        console.log('Running scheduled new listings scan...')
+        const zipCodes = await db.query.zipCodes.findMany()
+        if (!zipCodes.length) {
+            console.log('No zipCodes found, exiting...')
+            return
+        }
+        for (const zipCode of zipCodes) {
+            // create an event for each zipCode
+            const event = {
+                cityId: zipCode.id,
+                cityName: zipCode.city,
+                state: zipCode.state
+            }
+            await inngest.send({name: 'house/scan-city', data: event})
+        }
+    }
+)
 
 export const newListingsInCityScan = inngest.createFunction(
     {id: 'handle-new-listings-in-city-scan', concurrency: 1},

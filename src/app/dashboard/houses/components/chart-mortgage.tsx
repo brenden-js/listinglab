@@ -22,23 +22,24 @@ interface MortgagePaymentChartData {
   name: string;
   value: number;
   fill: string;
+
 }
 
-export const MortgagePaymentChart: React.FC<{ loan: LoanInfo }> = ({ loan }) => {
+export const MortgagePaymentChart: React.FC<{ loan: LoanInfo, loanType: string }> = ({ loan, loanType }) => {
   const chartData: MortgagePaymentChartData[] = React.useMemo(() => {
     const data: MortgagePaymentChartData[] = [
       {
         name: "Principal & Interest",
-        value: parseFloat(loan.baseMonthlyPayment),
+        value: parseFloat(loan.principalAndInterest),
         fill: "hsl(var(--chart-1))",
       },
     ];
 
     // Conditionally add MIP if it exists
-    if (loan.monthlyMIP) {
+    if (loan.mip) {
       data.push({
         name: "Monthly MIP",
-        value: parseFloat(loan.monthlyMIP),
+        value: parseFloat(loan.mip),
         fill: "hsl(var(--chart-2))",
       });
     }
@@ -46,7 +47,7 @@ export const MortgagePaymentChart: React.FC<{ loan: LoanInfo }> = ({ loan }) => 
     // Add Monthly Taxes - always include, even if 0
     data.push({
       name: "Property Taxes",
-      value: parseFloat(loan.monthlyTax || '0'), // Use 0 if loan.monthlyTax is empty string
+      value: parseFloat(loan.tax),
       fill: "hsl(var(--chart-3))",
     });
 
@@ -68,7 +69,7 @@ export const MortgagePaymentChart: React.FC<{ loan: LoanInfo }> = ({ loan }) => 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Monthly Mortgage Payment</CardTitle>
+        <CardTitle>{`Estimated ${loanType} Monthly Payment`}</CardTitle>
         <CardDescription>Breakdown of Costs</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
@@ -85,8 +86,9 @@ export const MortgagePaymentChart: React.FC<{ loan: LoanInfo }> = ({ loan }) => 
               data={chartData}
               dataKey="value"
               nameKey="name"
-              innerRadius={60}
+              innerRadius={75}
               strokeWidth={5}
+              outerRadius={110}
             >
               <Label
                 content={({ viewBox }) => {
@@ -111,7 +113,7 @@ export const MortgagePaymentChart: React.FC<{ loan: LoanInfo }> = ({ loan }) => 
                           y={(viewBox.cy || 0) + 24}
                           className="fill-muted-foreground"
                         >
-                          Total
+                          Per Month
                         </tspan>
                       </text>
                     );

@@ -17,7 +17,8 @@ const HouseDetailsPage = ({params}: { params: { houseId: string } }) => {
     const seenMutation = api.house.setSeen.useMutation()
 
     useEffect(() => {
-        if (house.data) {
+        if (!house.data) return
+        if (house.data.seen === null || house.data.seen === 0) {
             seenMutation.mutate({houseId: house.data.id})
             utils.house.getHouses.invalidate()
         }
