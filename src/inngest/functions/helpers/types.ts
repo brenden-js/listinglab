@@ -9,6 +9,12 @@ export interface Place {
   goodForChildren?: boolean
   liveMusic?: boolean
   goodForWatchingSports?: boolean
+  location: Location
+}
+
+export interface Location {
+  latitude: number
+  longitude: number
 }
 
 export interface DisplayName {

@@ -102,7 +102,7 @@ export const handleEnrichHouse = inngest.createFunction(
           "https://places.googleapis.com/v1/places:searchNearby",
           {
             headers: {
-              "X-Goog-FieldMask": "places.displayName,places.goodForChildren,places.liveMusic,places.goodForWatchingSports,places.editorialSummary,places.types",
+              "X-Goog-FieldMask": "places.displayName,places.location,places.goodForChildren,places.liveMusic,places.goodForWatchingSports,places.editorialSummary,places.types",
               "X-Goog-Api-Key": process.env.GOOGLE_API_KEY!
             },
             method: "POST",
@@ -126,14 +126,6 @@ export const handleEnrichHouse = inngest.createFunction(
         await db.update(houses)
           .set({nearbyPlaces: JSON.stringify(places.places)})
           .where(eq(houses.id, event.data.houseId))
-
-        // const message = {
-        //     houseId: event.data.houseId,
-        //     dataCategory: 'Location',
-        //     updateType: 'LiveDataFeedUpdate',
-        //     jobStatus: 'complete',
-        // } as LiveDataFeedUpdate;
-        // await publishStatusFromServer(message, event.data.userId)
       })
 
     await step.run("Get mortgage and investment info", async () => {

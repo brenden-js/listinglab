@@ -19,6 +19,7 @@ export default $config({
 
         const openAiKey = new sst.Secret("OpenAiKey")
         const googleApiKey = new sst.Secret("GoogleApiKey")
+        const publicGoogleApiKey = new sst.Secret("PublicGoogleApiKey")
         const googleAiKey = new sst.Secret("GoogleAiKey")
         const houseApiKey = new sst.Secret("HouseApiKey")
         const zipCodeApiKey = new sst.Secret("ZipCodeApiKey")
@@ -49,7 +50,7 @@ export default $config({
         const next = new sst.aws.Nextjs("ListingLab", {
             link: [
                 clerkPublic, clerkSecret, dbUrl, dbToken, openAiKey, houseApiKey, googleApiKey, stripeSecretKey,
-                stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestSigningKey, inngestEventKey
+                stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestSigningKey, inngestEventKey, publicGoogleApiKey
             ],
             domain: getDomain(),
             environment: {
@@ -63,6 +64,7 @@ export default $config({
                 DATABASE_TOKEN: dbToken.value,
                 OPENAI_SECRET_KEY: openAiKey.value,
                 GOOGLE_API_KEY: googleApiKey.value,
+                NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: publicGoogleApiKey.value,
                 HOUSE_DATA_API_KEY: houseApiKey.value,
                 NEXT_PUBLIC_STRIPE_PUBLISHABLE_API_KEY: stripePublicKey.value,
                 STRIPE_SECRET_KEY: stripeSecretKey.value,
@@ -76,12 +78,6 @@ export default $config({
                 GOOGLE_AI_KEY: googleAiKey.value,
                 ZIPCODE_API_KEY: zipCodeApiKey.value,
             },
-            permissions: [
-                {
-                    actions: ["iot:Publish"],
-                    resources: ["arn:aws:iot:us-west-2:479299194412:topic/*"]
-                }
-            ]
         });
     },
 });

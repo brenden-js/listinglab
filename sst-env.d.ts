@@ -55,6 +55,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "PublicGoogleApiKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "StripePublicKey": {
       "type": "sst.sst.Secret"
       "value": string
