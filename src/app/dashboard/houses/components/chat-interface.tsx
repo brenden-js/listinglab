@@ -1,3 +1,4 @@
+"use client"
 import React, {useEffect, useRef, useState} from "react";
 import {api} from "@/trpc/react";
 import {House} from "@/app/dashboard/contexts/prompts";
@@ -15,7 +16,7 @@ import ReactMarkdown from 'react-markdown';
 import {twMerge} from "tailwind-merge";
 import {cn} from "@/lib/utils";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {LoadScript} from "@react-google-maps/api";
+import {APIProvider} from '@vis.gl/react-google-maps';
 
 interface ChatInterfaceProps {
   showDataView: boolean;
@@ -228,11 +229,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                   {currentChat === 'Financial' && house.investment !== null && (
                     <FinancialView investment={JSON.parse(house.investment)}/>
                   )}
-                  <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
+                  <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
                     {currentChat === 'Location' && house.nearbyPlaces !== null && (
                       <LocationView nearbyPlaces={house.nearbyPlaces} lat={house.lat!} lon={house.lon!}/>
                     )}
-                  </LoadScript>
+                  </APIProvider>
                   {currentChat === 'Main' && (
                     <div className={" flex items-center justify-center"}>
                       <div className="px-4">

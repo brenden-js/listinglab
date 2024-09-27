@@ -1,8 +1,17 @@
-import React from 'react';
+"use client"
+import React, {useCallback, useState} from 'react';
 import {House} from "@/app/dashboard/contexts/prompts";
 import {MortgagePaymentChart} from "@/app/dashboard/houses/components/chart-mortgage";
 import {Place} from "@/inngest/functions/helpers/types";
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import {
+  Map,
+  AdvancedMarker,
+  InfoWindow,
+  Pin,
+  AdvancedMarkerAnchorPoint,
+  useAdvancedMarkerRef, AdvancedMarkerProps
+} from "@vis.gl/react-google-maps";
+import {PinIcon} from "lucide-react";
 
 
 // Property component
@@ -34,30 +43,90 @@ export const PropertyView: React.FC<PropertyViewProps> = ({house}) => {
 // Location component
 
 type LocationViewProps = {
-  nearbyPlaces: string; // JSON string
+  nearbyPlaces: string;
   lat: number;
   lon: number;
 };
 
-export const LocationView: React.FC<LocationViewProps> = ({nearbyPlaces, lat, lon}) => {
+export const LocationView: React.FC<LocationViewProps> = ({ nearbyPlaces, lat, lon }) => {
   const places: Place[] = React.useMemo(() => JSON.parse(nearbyPlaces), [nearbyPlaces]);
 
+  const [hoveredPlaceId, setHoveredPlaceId] = useState<string | null>(null);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [selectedMarker, setSelectedMarker] = useState<google.maps.marker.AdvancedMarkerElement | null>(null);
+
+  const onMarkerClick = useCallback(
+    (id: string | null, marker?: google.maps.marker.AdvancedMarkerElement) => {
+      setSelectedPlaceId(id);
+
+      if (marker) {
+        setSelectedMarker(marker);
+      }
+    },
+    []
+  );
+
+  const onMouseEnter = useCallback((id: string | null) => setHoveredPlaceId(id), []);
+  const onMouseLeave = useCallback(() => setHoveredPlaceId(null), []);
+
   return (
-    <div style={{ height: '500px', width: '100%' }}>
-        <GoogleMap
-          mapContainerStyle={{ height: '100%', width: '100%' }}
-          center={{ lat, lng: lon }}
-          zoom={12}
-        >
-          {places.map((place) => (
-            <Marker
-              key={place.displayName.text}
-              position={{ lat: place.location.latitude, lng: place.location.longitude }}
-              title={place.displayName.text}
+    <div style={{height: '500px', width: '100%'}}>
+      <Map
+        center={{lat, lng: lon}}
+        mapId={'234234'}
+        defaultZoom={12}
+        defaultCenter={{lat, lng: lon}}
+        disableDefaultUI
+        gestureHandling={'greedy'}
+        clickableIcons={false} // Disable info window on click
+      >
+        {places.map((place) => (
+          <AdvancedMarkerWithRef
+            key={place.displayName.text}
+            position={{lat: place.location.latitude, lng: place.location.longitude}}
+            onMouseEnter={() => onMouseEnter(place.displayName.text)}
+            onMouseLeave={onMouseLeave}
+            anchorPoint={AdvancedMarkerAnchorPoint.BOTTOM}
+            style={{
+              transform: `scale(${[hoveredPlaceId, selectedPlaceId].includes(place.displayName.text) ? 1.2 : 1})`,
+              transition: 'transform 0.3s ease-in-out',
+            }}
+          >
+            <Pin
+              background={selectedPlaceId === place.displayName.text ? '#22ccff' : null}
+              borderColor={selectedPlaceId === place.displayName.text ? '#1e89a1' : null}
+              glyphColor={selectedPlaceId === place.displayName.text ? '#0f677a' : null}
             />
-          ))}
-        </GoogleMap>
+          </AdvancedMarkerWithRef>
+        ))}
+
+        {selectedMarker && (
+          <InfoWindow anchor={selectedMarker} onCloseClick={() => setSelectedPlaceId(null)}>
+            <h2>{selectedPlaceId}</h2>
+          </InfoWindow>
+        )}
+      </Map>
     </div>
+  );
+}
+
+export const AdvancedMarkerWithRef = (
+  props: AdvancedMarkerProps
+) => {
+  const {children, ...advancedMarkerProps} = props;
+  const [markerRef, marker] = useAdvancedMarkerRef();
+
+  return (
+    <AdvancedMarker
+      onClick={() => {
+        if (marker) {
+          console.log('marker clicked');
+        }
+      }}
+      ref={markerRef}
+      {...advancedMarkerProps}>
+      {children}
+    </AdvancedMarker>
   );
 };
 
