@@ -12,6 +12,8 @@ import {
   useAdvancedMarkerRef, AdvancedMarkerProps
 } from "@vis.gl/react-google-maps";
 import {PinIcon} from "lucide-react";
+import {Card, CardHeader} from "@/components/ui/card";
+import {Badge} from "@/components/ui/badge";
 
 
 // Property component
@@ -70,45 +72,81 @@ export const LocationView: React.FC<LocationViewProps> = ({ nearbyPlaces, lat, l
   const onMouseLeave = useCallback(() => setHoveredPlaceId(null), []);
 
   return (
-    <div style={{height: '500px', width: '100%'}}>
-      <Map
-        center={{lat, lng: lon}}
-        mapId={'234234'}
-        defaultZoom={12}
-        defaultCenter={{lat, lng: lon}}
-        disableDefaultUI
-        gestureHandling={'greedy'}
-        clickableIcons={false} // Disable info window on click
-      >
-        {places.map((place) => (
-          <AdvancedMarkerWithRef
-            key={place.displayName.text}
-            position={{lat: place.location.latitude, lng: place.location.longitude}}
-            onMouseEnter={() => onMouseEnter(place.displayName.text)}
-            onMouseLeave={onMouseLeave}
-            anchorPoint={AdvancedMarkerAnchorPoint.BOTTOM}
-            style={{
-              transform: `scale(${[hoveredPlaceId, selectedPlaceId].includes(place.displayName.text) ? 1.2 : 1})`,
-              transition: 'transform 0.3s ease-in-out',
-            }}
-          >
-            <Pin
-              background={selectedPlaceId === place.displayName.text ? '#22ccff' : null}
-              borderColor={selectedPlaceId === place.displayName.text ? '#1e89a1' : null}
-              glyphColor={selectedPlaceId === place.displayName.text ? '#0f677a' : null}
-            />
-          </AdvancedMarkerWithRef>
-        ))}
+    <>
+      <div style={{height: '500px', width: '100%'}}>
+        <Map
+          center={{lat, lng: lon}}
+          mapId={'234234'}
+          defaultZoom={12}
+          defaultCenter={{lat, lng: lon}}
+          disableDefaultUI
+          gestureHandling={'greedy'}
+          clickableIcons={false} // Disable info window on click
+        >
+          {places.map((place) => (
+            <AdvancedMarkerWithRef
+              key={place.displayName.text}
+              position={{lat: place.location.latitude, lng: place.location.longitude}}
+              onMouseEnter={() => onMouseEnter(place.displayName.text)}
+              onMouseLeave={onMouseLeave}
+              anchorPoint={AdvancedMarkerAnchorPoint.BOTTOM}
+              style={{
+                transform: `scale(${[hoveredPlaceId, selectedPlaceId].includes(place.displayName.text) ? 1.2 : 1})`,
+                transition: 'transform 0.3s ease-in-out',
+              }}
+            >
+              <Pin
+                background={selectedPlaceId === place.displayName.text ? '#22ccff' : null}
+                borderColor={selectedPlaceId === place.displayName.text ? '#1e89a1' : null}
+                glyphColor={selectedPlaceId === place.displayName.text ? '#0f677a' : null}/>
+            </AdvancedMarkerWithRef>
+          ))}
 
-        {selectedMarker && (
-          <InfoWindow anchor={selectedMarker} onCloseClick={() => setSelectedPlaceId(null)}>
-            <h2>{selectedPlaceId}</h2>
-          </InfoWindow>
-        )}
-      </Map>
-    </div>
+          {selectedMarker && (
+            <InfoWindow anchor={selectedMarker} onCloseClick={() => setSelectedPlaceId(null)}>
+              <h2>{selectedPlaceId}</h2>
+            </InfoWindow>
+          )}
+        </Map>
+      </div>
+      <div className={"mt-4 grid gap-3 grid-cols-3"}>
+        {places.map((place) => (
+          <Card className={""}>
+            <CardHeader>
+              <h3 className={"text-lg font-bold"}>{place.displayName.text}</h3>
+              <h4>{place.editorialSummary?.text}</h4>
+              <CategoryList categories={place.types}/>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+    </>
   );
 }
+
+interface Props {
+  categories: string[];
+}
+
+const CategoryList: React.FC<Props> = ({ categories }) => {
+  const formattedCategories = categories.map((category) => {
+    // Replace underscores with spaces and capitalize each word
+    return category.replace(/_/g, ' ').replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+  });
+
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {formattedCategories.map((category, index) => (
+        <li key={index}>
+          <Badge variant="outline" className="mr-2">
+            {category}
+          </Badge>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
 
 export const AdvancedMarkerWithRef = (
   props: AdvancedMarkerProps
