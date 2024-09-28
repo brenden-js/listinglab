@@ -14,6 +14,7 @@ import {
 import {PinIcon} from "lucide-react";
 import {Card, CardHeader} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
+import {AppreciationChart} from "@/app/dashboard/houses/components/chart-appreciation";
 
 
 // Property component
@@ -190,12 +191,15 @@ export const FinancialView: React.FC<FinancialViewProps> = ({investment}) => {
   const {fhaLoan, conventionalLoan} = investment;
 
   return (
-    <div className="flex flex-row gap-4">
-      <div className="mb-4 w-1/2">
+    <div className="grid grid-cols-2 gap-4">
+      <div className="">
         <MortgagePaymentChart loan={fhaLoan} loanType="FHA"/>
       </div>
-      <div className="mb-4 w-1/2">
+      <div className="">
         <MortgagePaymentChart loan={conventionalLoan} loanType="Conventional"/>
+      </div>
+      <div className="">
+        <AppreciationChart/>
       </div>
     </div>
   );

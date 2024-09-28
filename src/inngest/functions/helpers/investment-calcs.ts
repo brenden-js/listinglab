@@ -90,3 +90,5 @@ export const calculateTotalMonthlyPayment = (
         principalAndInterest: monthlyMortgagePayment.toDecimalPlaces(2).toString(),
     };
 };
+
+
