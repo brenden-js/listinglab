@@ -14,6 +14,29 @@ import {getOrCreateApiLimits} from "@/trpc/routers/helpers/api-restrictions";
 
 
 export const userRouter = createTRPCRouter({
+  addPreference: protectedProcedure
+      .input(z.object({name: z.string().min(1), preference: z.string()}))
+      .mutation(async ({ctx, input}) => {
+        if (!ctx.authObject.userId) {
+          throw new Error("Not authed")
+        }
+        const id = uuidv4()
+        await ctx.db.insert(prompts).values({
+          promptId: id,
+          userId: ctx.authObject.userId,
+          name: input.name,
+          prompt: input.preference
+        });
+        return id
+      }),
+  deletePreference: protectedProcedure
+      .input(z.string().min(12))
+      .mutation(async ({ctx, input}) => {
+        if (!ctx.authObject.userId) {
+          throw new Error('Not authed')
+        }
+        await ctx.db.delete(prompts).where(and(eq(prompts.userId, ctx.authObject.userId), eq(prompts.promptId, input)))
+      }),
     addPrompt: protectedProcedure
         .input(z.object({name: z.string().min(1), prompt: z.string()}))
         .mutation(async ({ctx, input}) => {
