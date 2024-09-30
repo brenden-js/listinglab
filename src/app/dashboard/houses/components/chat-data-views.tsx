@@ -84,9 +84,25 @@ export const LocationView: React.FC<LocationViewProps> = ({ nearbyPlaces, lat, l
           gestureHandling={'greedy'}
           clickableIcons={false} // Disable info window on click
         >
+          <AdvancedMarkerWithRef
+            key={`${lat}-${lon}`}
+            position={{lat, lng: lon}}
+            onMouseEnter={() => onMouseEnter(null)}
+            onMouseLeave={onMouseLeave}
+            anchorPoint={AdvancedMarkerAnchorPoint.BOTTOM}
+            style={{
+              transform: `scale(${[hoveredPlaceId, selectedPlaceId].includes(null) ? 1.2 : 1})`,
+              transition: 'transform 0.3s ease-in-out',
+            }}
+          >
+            <Pin
+              background={selectedPlaceId === null ? '#22ccff' : null}
+              borderColor={selectedPlaceId === null ? '#1e89a1' : null}
+              glyphColor={selectedPlaceId === null ? '#0f677a' : null}/>
+          </AdvancedMarkerWithRef>
           {places.map((place) => (
             <AdvancedMarkerWithRef
-              key={place.displayName.text}
+              key={`${place.location.latitude}-${place.location.longitude}`}
               position={{lat: place.location.latitude, lng: place.location.longitude}}
               onMouseEnter={() => onMouseEnter(place.displayName.text)}
               onMouseLeave={onMouseLeave}

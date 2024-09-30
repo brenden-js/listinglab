@@ -9,7 +9,6 @@ import {createTRPCRouter, protectedProcedure} from "@/trpc/trpc";
 import {clerkClient} from "@clerk/nextjs/server";
 import {prompts, userApiLimits} from "@/db/schema";
 import {db} from "@/db";
-import {Resource} from "sst";
 import {getOrCreateApiLimits} from "@/trpc/routers/helpers/api-restrictions";
 
 

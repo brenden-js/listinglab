@@ -148,8 +148,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
+
       const scrollableElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollableElement) {
+      if (scrollableElement && !showDataView) {
         scrollableElement.scrollTop = scrollableElement.scrollHeight;
       }
     }
@@ -199,12 +200,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
         <div className="bg-secondary rounded-lg p-1.5">
           <Button variant="secondary"
                   className={cn("w-[150px] hover:bg-secondary", currentChat === 'Main' && 'bg-white hover:bg-white text-black shadow')}
-                  onClick={() => setCurrentChat('Main')}>
+                  onClick={() => setCurrentChat('Main')}
+                  onDoubleClick={() => setShowDataView(!showDataView)}
+          >
             Main Chat
           </Button>
         </div>
-        <Tabs value={currentChat} onValueChange={setCurrentChat as any} className="pl-4">
-          <TabsList className={""}>
+        <Tabs value={currentChat} onDoubleClick={() => setShowDataView(!showDataView)}
+              onValueChange={setCurrentChat as any} className="pl-4 flex-grow">
+          <TabsList>
             <TabsTrigger value="Property">Property Chat</TabsTrigger>
             <TabsTrigger value="Location">Location Chat</TabsTrigger>
             <TabsTrigger value="Financial">Financial Chat</TabsTrigger>
