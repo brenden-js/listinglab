@@ -100,9 +100,9 @@ export const LocationView: React.FC<LocationViewProps> = ({ nearbyPlaces, lat, l
               borderColor={selectedPlaceId === null ? '#1e89a1' : null}
               glyphColor={selectedPlaceId === null ? '#0f677a' : null}/>
           </AdvancedMarkerWithRef>
-          {places.map((place) => (
+          {places.map((place, index) => (
             <AdvancedMarkerWithRef
-              key={`${place.location.latitude}-${place.location.longitude}`}
+              key={index}
               position={{lat: place.location.latitude, lng: place.location.longitude}}
               onMouseEnter={() => onMouseEnter(place.displayName.text)}
               onMouseLeave={onMouseLeave}
@@ -127,8 +127,8 @@ export const LocationView: React.FC<LocationViewProps> = ({ nearbyPlaces, lat, l
         </Map>
       </div>
       <div className={"mt-4 grid gap-3 grid-cols-3"}>
-        {places.map((place) => (
-          <Card className={""}>
+        {places.map((place, index) => (
+          <Card className={""} key={index}>
             <CardHeader>
               <h3 className={"text-lg font-bold"}>{place.displayName.text}</h3>
               <h4>{place.editorialSummary?.text}</h4>

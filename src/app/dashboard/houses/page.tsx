@@ -7,7 +7,7 @@ import {Separator} from "@/components/ui/separator";
 import {HouseDialogProvider} from "@/app/dashboard/contexts/house-dialog-context";
 import {AddZipCodeDialog} from "@/app/dashboard/houses/components/zip-dialog";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {House} from "@/app/dashboard/contexts/prompts"; // Updated import
+import {House} from "@/app/dashboard/contexts/prompts";
 import {Badge} from "@/components/ui/badge";
 import {HouseDialog} from "@/app/dashboard/houses/components/house-dialog";
 import {HousePreviewCard} from "@/app/dashboard/houses/components/house-preview-card";
@@ -17,50 +17,52 @@ import {HousesDrawer} from "@/app/dashboard/components/houses-drawer";
 import {AddHouse} from "@/app/dashboard/houses/components/add-house";
 
 export default function HousesPageOverview() {
-    const currentZipCodes = api.house.getUserZipCodes.useQuery(); // Updated query
+    const currentZipCodes = api.house.getUserZipCodes.useQuery();
 
     useEffect(() => {
         if (currentZipCodes.isSuccess && currentZipCodes.data.length > 0) {
-            // Select the first zip code by default
             setSelectedZipCode(currentZipCodes.data[0].id);
         }
     }, [currentZipCodes]);
 
-    const houses = api.house.getHouses.useQuery();
-
+    const { data: housesData, isLoading: housesLoading } = api.house.getHouses.useQuery();
     const [selectedZipCode, setSelectedZipCode] = useState<string | undefined>(
         undefined
     );
-
     const [openZipCodeDialog, setOpenZipCodeDialog] = useState(false);
+    const [activeFilter, setActiveFilter] = useState<"all" | "today" | "new">("all");
 
-    const [houseDialogOpen, setHouseDialogOpen] = useState(false);
+    const getFilteredHouses = () => {
+        if (!housesData) return [];
+
+        switch (activeFilter) {
+            case "today":
+                return housesData.filter(
+                    (house) =>
+                        house.createdAt &&
+                        new Date(house.createdAt).toDateString() ===
+                        new Date().toDateString()
+                );
+            case "new":
+                return housesData.filter((house) => house.seen === 0 || !house.seen);
+            default:
+                return housesData;
+        }
+    };
+
+    const filteredHouses = getFilteredHouses();
 
     return (
         <HouseDialogProvider>
             <div className={"h-full flex flex-col"}>
                 <div className={"ml-3 flex items-center flex-row h-16"}>
                     <h2 className="text-lg font-semibold">Houses</h2>
-                    {/* Display current zip code */}
-                    {currentZipCodes.isPending && (
-                        <div className={"animate-pulse h-5 w-16 rounded-xl"}></div>
-                    )}
-                    {!currentZipCodes.isPending &&
-                        currentZipCodes.isSuccess &&
-                        currentZipCodes.data.length > 0 && (
-                            <div className="ml-3 flex items-center gap-2">
-                                <div className="text-lg font-semibold">
-                                    {currentZipCodes.data[0].id},{" "}
-                                    {currentZipCodes.data[0].state}
-                                </div>
-                            </div>
-                        )}
                     <Button
                         variant="secondary"
                         className={"ml-3"}
                         onClick={() => setOpenZipCodeDialog(true)}
                     >
-                        Manage Zip Codes
+                        Manage Zip Code Subscriptions
                     </Button>
                     <AddZipCodeDialog
                         open={openZipCodeDialog}
@@ -69,15 +71,34 @@ export default function HousesPageOverview() {
                 </div>
                 <Separator/>
                 <div className="p-3">
+                    <div className="flex gap-2 mb-4">
+                        <Button
+                            variant={activeFilter === "all" ? "default" : "outline"}
+                            onClick={() => setActiveFilter("all")}
+                        >
+                            All
+                        </Button>
+                        <Button
+                            variant={activeFilter === "today" ? "default" : "outline"}
+                            onClick={() => setActiveFilter("today")}
+                        >
+                            Today
+                        </Button>
+                        <Button
+                            variant={activeFilter === "new" ? "default" : "outline"}
+                            onClick={() => setActiveFilter("new")}
+                        >
+                            New
+                        </Button>
+                    </div>
 
-                    {houses.isPending && <LoadingSkeletons/>}
-                    {!houses.isPending && houses.isSuccess && houses.data.length > 0 && (
+                    {housesLoading && <LoadingSkeletons/>}
+                    {!housesLoading && filteredHouses.length > 0 && (
                         <div className="flex flex-wrap">
                             <div className={"px-2 w-full lg:w-1/2 xl:w-1/3 2xl:w-1/4 mb-4"}>
                                 <AddHouse />
                             </div>
-                            {houses.data.map((house) => (
-                                <>
+                            {filteredHouses.map((house) => (
                                 <div
                                     className="w-full lg:w-1/2 xl:w-1/3 2xl:w-1/4 px-2 mb-4"
                                     key={house.id}
@@ -86,11 +107,10 @@ export default function HousesPageOverview() {
                                         <HousePreviewCard house={house} />
                                     </Link>
                                 </div>
-                                </>
                             ))}
                         </div>
                     )}
-                    {!houses.isPending && houses.isSuccess && houses.data.length === 0 && (
+                    {!housesLoading && filteredHouses.length === 0 && (
                         <div>No houses found.</div>
                     )}
                 </div>
@@ -98,4 +118,3 @@ export default function HousesPageOverview() {
         </HouseDialogProvider>
     );
 }
-

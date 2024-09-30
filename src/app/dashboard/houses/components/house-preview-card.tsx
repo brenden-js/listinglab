@@ -1,33 +1,32 @@
 import React from "react";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {House} from "@/app/dashboard/contexts/prompts";
-
+import {formatDistanceToNow} from 'date-fns'; // Import date-fns function
 interface HousePreviewCardProps {
   house: House;
 }
-export const HousePreviewCard: React.FC<HousePreviewCardProps> = ({ house }) => {
+
+export const HousePreviewCard: React.FC<HousePreviewCardProps> = ({house}) => {
   if (!house) return null;
   return (
-    <Card className={"hover:cursor-pointer h-36"}>
+    <Card className={"hover:cursor-pointer min-h-44"}>
       <CardHeader>
         <div className="flex justify-between items-center">
             <CardTitle>{house.stAddress}</CardTitle>
-            <div>
-                {house.seen === 0 || house.seen === null && <Badge variant="default">New</Badge>}
-          <Badge variant="secondary">{house.price?.toLocaleString("en-US", { style: "currency", currency: "USD" })}</Badge>
-            </div>
+          <div>
+            {house.seen === 0 || house.seen === null && <Badge variant="default">New</Badge>}
+            <Badge variant="secondary">{house.price?.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD"
+            })}</Badge>
+          </div>
         </div>
+        <CardDescription className={""}>{house.createdAt
+              ? formatDistanceToNow(new Date(house.createdAt), {addSuffix: true})
+              : "unknown time ago"}</CardDescription>
       </CardHeader>
       <CardContent>
-        {/*<div className="relative h-48 w-full">*/}
-        {/*  <Image*/}
-        {/*    src={house.imageUrl}*/}
-        {/*    alt={house.address}*/}
-        {/*    fill*/}
-        {/*    objectFit="cover"*/}
-        {/*  />*/}
-        {/*</div>*/}
         <div className="mt-2">
           <div className="text-sm text-gray-600">
             {house.city}, {house.state} {house.zipCode}
