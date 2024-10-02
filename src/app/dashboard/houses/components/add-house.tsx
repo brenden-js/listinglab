@@ -16,9 +16,11 @@ import {Input} from "@/components/ui/input";
 import {PlusIcon, ReloadIcon} from "@radix-ui/react-icons";
 import {CurrentPromptContext, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
 import {toast} from "sonner";
+import Link from "next/link";
 
 export const AddHouse = () => {
   const {selectedHouses, addHouse} = useContext(CurrentPromptContext)
+  const utils = api.useUtils()
   const houseMutation = api.house.searchHouse.useMutation({
     onSuccess: (data) => {
       addHouse(data)
@@ -73,7 +75,7 @@ export const AddHouse = () => {
             className={"w-[150px]"}
             disabled={houseMutation.isPending || selectedHouses.length >= 1 || rawAddress.length < 6}
           >
-            {houseMutation.isPending && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+            {houseMutation.isPending && <ReloadIcon className="mr-2 h-4 w-4 animate-spin"/>}
             Get listing
           </Button>
         </div>
@@ -88,6 +90,9 @@ export const AddHouse = () => {
               <CardHeader>
                 <CardContent className="pt-5 flex items-center justify-between">
                   {newHousePreview.stAddress}, {newHousePreview.city} {newHousePreview.zipCode} found!
+                  <Link href={`/dashboard/houses/${newHousePreview.id}`} passHref>
+                    <Button variant={'default'}>Go to house</Button>
+                  </Link>
                 </CardContent>
               </CardHeader>
             </Card>

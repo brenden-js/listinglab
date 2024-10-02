@@ -45,7 +45,7 @@ export const calculateTotalMonthlyPayment = (
             loanTermYears * 12, // Number of periods
             decimalLoanAmount.toNumber()
         )
-    );
+    ).times(-1);
 
     const annualPropertyTax = listingPrice * 0.01;
     const monthlyPropertyTax = new Decimal(annualPropertyTax).dividedBy(12);

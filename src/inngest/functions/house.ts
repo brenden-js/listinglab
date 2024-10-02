@@ -67,6 +67,7 @@ export const handleEnrichHouse = inngest.createFunction(
         baths: formatted.data.home.description.baths,
         beds: formatted.data.home.description.beds,
         city: formatted.data.home.location.address.city,
+        claimed: 1,
         description: formatted.data.home.description.text,
         details: JSON.stringify(formatted.data.home.details),
         garage: formatted.data.home.description.garage,
@@ -90,7 +91,7 @@ export const handleEnrichHouse = inngest.createFunction(
       return {
         lat: formatted.data.home.location.address.coordinate.lat,
         lon: formatted.data.home.location.address.coordinate.lon,
-        price: 100,
+        price: formatted.data.home.list_price,
         stAddress: formatted.data.home.location.address.line,
         zipCode: formatted.data.home.location.address.postal_code
       }
@@ -137,11 +138,7 @@ export const handleEnrichHouse = inngest.createFunction(
       const conventionalLoan = calculateTotalMonthlyPayment('conventional', foundListing.price, 5.49)
 
       const fhaLoan = calculateTotalMonthlyPayment('fha', foundListing.price, 5.49)
-
-      const conventionalEquityOver30Years = calculateEquityOver30Years(foundListing.price, foundListing.price * 0.2, 5.49, 'conventional')
-
-      const fhaEquityOver30Years = calculateEquityOver30Years(foundListing.price, foundListing.price * 0.035, 5.49, 'fha')
-      await db.update(houses).set({investment: JSON.stringify({conventionalLoan, fhaLoan, conventionalEquityOver30Years, fhaEquityOver30Years})})
+      await db.update(houses).set({investment: JSON.stringify({conventionalLoan, fhaLoan})})
         .where(eq(houses.id, event.data.houseId))
     })
 
