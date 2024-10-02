@@ -1,3 +1,4 @@
+import { pmt } from 'financial';
 import Decimal from 'decimal.js';
 
 interface MonthlyPaymentParams {
@@ -15,31 +16,6 @@ interface MonthlyPaymentBreakdown {
     principalAndInterest: string;
 }
 
-// Function to calculate monthly mortgage payment
-const calculateMonthlyPayment = (params: MonthlyPaymentParams): string => {
-    const {loanType, loanAmount, interestRate, loanTermYears} = params;
-
-    let decimalLoanAmount = new Decimal(loanAmount);
-    const decimalInterestRate = new Decimal(interestRate).dividedBy(100);
-    const loanTermMonths = new Decimal(loanTermYears).times(12);
-
-    const downPaymentRate = loanType === 'fha' ? new Decimal(0.035) : new Decimal(0.20);
-    const downPayment = decimalLoanAmount.times(downPaymentRate);
-
-    const principal = decimalLoanAmount.minus(downPayment);
-    const monthlyInterestRate = decimalInterestRate.dividedBy(12);
-
-    const monthlyPayment = principal.times(
-        monthlyInterestRate
-            .times(new Decimal(1).plus(monthlyInterestRate).pow(loanTermMonths))
-            .dividedBy(
-                new Decimal(1).plus(monthlyInterestRate).pow(loanTermMonths).minus(1)
-            )
-    );
-
-    return monthlyPayment.toDecimalPlaces(2).toString();
-};
-
 // Function to calculate total monthly payment breakdown
 export const calculateTotalMonthlyPayment = (
     loanType: 'fha' | 'conventional',
@@ -50,12 +26,13 @@ export const calculateTotalMonthlyPayment = (
     let decimalLoanAmount = new Decimal(listingPrice)
         .times(1 - (loanType === 'fha' ? 0.035 : 0.2));
 
+    let upfrontMIP = new Decimal(0); // Initialize upfrontMIP
     let monthlyMIP = new Decimal(0);
     if (loanType === 'fha') {
         const upfrontMIPRate = new Decimal(0.0175);
         const annualMIPRate = new Decimal(0.0055);
 
-        const upfrontMIP = decimalLoanAmount.times(upfrontMIPRate);
+        upfrontMIP = decimalLoanAmount.times(upfrontMIPRate);
         const annualMIP = decimalLoanAmount.times(annualMIPRate);
         monthlyMIP = annualMIP.dividedBy(12);
 
@@ -63,12 +40,11 @@ export const calculateTotalMonthlyPayment = (
     }
 
     const monthlyMortgagePayment = new Decimal(
-        calculateMonthlyPayment({
-            loanType,
-            loanAmount: decimalLoanAmount.toNumber(),
-            interestRate,
-            loanTermYears,
-        })
+        pmt(
+            interestRate / 1200, // Rate per period
+            loanTermYears * 12, // Number of periods
+            decimalLoanAmount.toNumber()
+        )
     );
 
     const annualPropertyTax = listingPrice * 0.01;
@@ -92,3 +68,65 @@ export const calculateTotalMonthlyPayment = (
 };
 
 
+export const calculateEquityOver30Years = (
+    listingPrice: number,
+    interestRate: number,
+    expectedAppreciationRate: number,
+    loanType: 'conventional' | 'fha'
+): { year: number; equity: string }[] => {
+    const loanTermYears = 30;
+    let decimalLoanAmount = new Decimal(listingPrice)
+        .times(1 - (loanType === 'fha' ? 0.035 : 0.2));
+
+    let upfrontMIP = new Decimal(0); // Initialize upfrontMIP
+    let monthlyMIP = new Decimal(0);
+    if (loanType === 'fha') {
+        const upfrontMIPRate = new Decimal(0.0175);
+        const annualMIPRate = new Decimal(0.0055);
+
+        upfrontMIP = decimalLoanAmount.times(upfrontMIPRate);
+        const annualMIP = decimalLoanAmount.times(annualMIPRate);
+        monthlyMIP = annualMIP.dividedBy(12);
+
+        decimalLoanAmount = decimalLoanAmount.plus(upfrontMIP);
+    }
+
+    // Calculate fixed monthly payment
+    const monthlyPayment = new Decimal(
+        pmt(
+            interestRate / 1200, // Rate per period
+            loanTermYears * 12, // Number of periods
+            decimalLoanAmount.toNumber()
+        )
+    );
+
+    let remainingBalance = decimalLoanAmount;
+    let currentHomeValue = new Decimal(listingPrice); // Start with listing price
+    const equitySchedule: { year: number; equity: string }[] = [
+        { year: 0, equity: currentHomeValue.minus(remainingBalance).toFixed(2) }, // Initial equity
+    ];
+
+    for (let year = 1; year <= 30; year++) {
+        // Calculate appreciation for the year on the CURRENT home value
+        currentHomeValue = currentHomeValue.times(
+            new Decimal(1).plus(expectedAppreciationRate / 100)
+        );
+
+        // Calculate remaining loan balance after a year of payments
+        for (let month = 1; month <= 12; month++) {
+            const interestPayment = remainingBalance.times(interestRate / 1200);
+            const principalPayment = monthlyPayment.minus(interestPayment);
+            remainingBalance = remainingBalance.minus(principalPayment);
+        }
+
+        // Calculate equity for the current year
+        const currentEquity = currentHomeValue.minus(remainingBalance);
+
+        equitySchedule.push({
+            year,
+            equity: currentEquity.toFixed(2),
+        });
+    }
+
+    return equitySchedule;
+};

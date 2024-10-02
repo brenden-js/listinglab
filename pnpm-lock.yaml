@@ -116,6 +116,9 @@ importers:
       drizzle-orm:
         specifier: ^0.33.0
         version: 0.33.0(@libsql/client@0.6.2)(@types/react@18.3.3)(react@18.3.1)
+      financial:
+        specifier: ^0.2.4
+        version: 0.2.4
       framer-motion:
         specifier: ^11.3.24
         version: 11.3.24(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -3262,6 +3265,10 @@ packages:
   finalhandler@1.2.0:
     resolution: {integrity: sha512-5uXcUVftlQMFnWC9qu/svkWv3GTd2PfUhK/3PLkYNAe7FbqJMt3515HaxE6eRL74GdsriiwujiawdaB1BpEISg==}
     engines: {node: '>= 0.8'}
+
+  financial@0.2.4:
+    resolution: {integrity: sha512-FNmbPW7o8oARCEJVOqb311oZp639fsnCkNltrXXahuqei7O8rm5QLTHEDbreRrrZAAmXjTGx5I8T0yPI3yyd9A==}
+    engines: {node: '>=18'}
 
   find-my-way@8.2.0:
     resolution: {integrity: sha512-HdWXgFYc6b1BJcOBDBwjqWuHJj1WYiqrxSh25qtU4DabpMFdj/gSunNBQb83t+8Zt67D7CXEzJWTkxaShMTMOA==}
@@ -9368,6 +9375,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
     optional: true
+
+  financial@0.2.4: {}
 
   find-my-way@8.2.0:
     dependencies:

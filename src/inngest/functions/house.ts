@@ -8,7 +8,7 @@ import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/helpers
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
 import {inngest} from "@/inngest/client";
 import {ListingSearchInCityResponse} from "@/inngest/functions/helpers/house-search-type";
-import {calculateTotalMonthlyPayment} from "@/inngest/functions/helpers/investment-calcs";
+import {calculateEquityOver30Years, calculateTotalMonthlyPayment} from "@/inngest/functions/helpers/investment-calcs";
 
 
 export const incrementHouseUsage = inngest.createFunction(
@@ -135,10 +135,13 @@ export const handleEnrichHouse = inngest.createFunction(
       }
 
       const conventionalLoan = calculateTotalMonthlyPayment('conventional', foundListing.price, 5.49)
-      // need to add the upfrontMIP in future
+
       const fhaLoan = calculateTotalMonthlyPayment('fha', foundListing.price, 5.49)
 
-      await db.update(houses).set({investment: JSON.stringify({conventionalLoan, fhaLoan})})
+      const conventionalEquityOver30Years = calculateEquityOver30Years(foundListing.price, foundListing.price * 0.2, 5.49, 'conventional')
+
+      const fhaEquityOver30Years = calculateEquityOver30Years(foundListing.price, foundListing.price * 0.035, 5.49, 'fha')
+      await db.update(houses).set({investment: JSON.stringify({conventionalLoan, fhaLoan, conventionalEquityOver30Years, fhaEquityOver30Years})})
         .where(eq(houses.id, event.data.houseId))
     })
 

@@ -15,6 +15,7 @@ import {PinIcon} from "lucide-react";
 import {Card, CardHeader} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {AppreciationChart} from "@/app/dashboard/houses/components/chart-appreciation";
+import EquityChart from "@/app/dashboard/houses/components/chart-equity";
 
 
 // Property component
@@ -197,14 +198,17 @@ export type LoanInfo = {
 export type Investment = {
   fhaLoan: LoanInfo;
   conventionalLoan: LoanInfo;
+  fhaEquityOver30Years: { year: number; equity: string }[]
+  conventionalEquityOver30Years: { year: number; equity: string }[]
 };
 
 type FinancialViewProps = {
   investment: Investment; // Correct prop type
+  listingPrice: number;
 };
 
-export const FinancialView: React.FC<FinancialViewProps> = ({investment}) => {
-  const {fhaLoan, conventionalLoan} = investment;
+export const FinancialView: React.FC<FinancialViewProps> = ({investment, listingPrice}) => {
+  const {fhaLoan, conventionalLoan, fhaEquityOver30Years, conventionalEquityOver30Years} = investment;
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -214,8 +218,14 @@ export const FinancialView: React.FC<FinancialViewProps> = ({investment}) => {
       <div className="">
         <MortgagePaymentChart loan={conventionalLoan} loanType="Conventional"/>
       </div>
-      <div className="">
+      <div className="col-span-2">
         <AppreciationChart/>
+      </div>
+      <div>
+        <EquityChart listingPrice={listingPrice} loanType={'fha'}/>
+      </div>
+      <div>
+        <EquityChart listingPrice={listingPrice} loanType={'conventional'}/>
       </div>
     </div>
   );

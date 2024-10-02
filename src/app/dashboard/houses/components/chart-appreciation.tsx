@@ -71,7 +71,7 @@ export function AppreciationChart() {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer className="aspect-auto h-[250px] w-full" config={chartConfig}>
           <AreaChart
             accessibilityLayer
             data={chartData3Percent}
@@ -86,6 +86,7 @@ export function AppreciationChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              interval={4}
             />
             <ChartTooltip
               cursor={false}

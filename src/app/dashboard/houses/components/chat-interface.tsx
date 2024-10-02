@@ -231,7 +231,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                     <PropertyView house={house}/>
                   )}
                   {currentChat === 'Financial' && house.investment !== null && (
-                    <FinancialView investment={JSON.parse(house.investment)}/>
+                    <FinancialView investment={JSON.parse(house.investment)} listingPrice={house.price!}/>
                   )}
                   <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
                     {currentChat === 'Location' && house.nearbyPlaces !== null && (
