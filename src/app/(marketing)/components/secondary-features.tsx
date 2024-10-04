@@ -230,9 +230,9 @@ export function SecondaryFeatures() {
       className="pt-20 pb-14 sm:pb-20 sm:pt-32 lg:pb-32"
     >
       <div className={"mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"}>
-        <div className="mx-auto max-w-2xl md:text-center">
+        <div className="mx-auto max-w-3xl md:text-center">
           <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-            Analyze the market for your clientele with data-driven insights.
+            Skip the manual assembly of all the different data points, and start producing.
           </h2>
           <p className="mt-4 text-lg tracking-tight text-slate-700">
             Attract your ideal clients with content that resonates with their needs, in minutes.

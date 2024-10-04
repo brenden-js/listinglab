@@ -73,10 +73,10 @@ export function PrimaryFeatures() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
                 <div className="max-w-xl md:mx-auto md:text-center xl:max-w-none">
                     <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-4xl">
-                        A better way to connect with your market.
+                        Grow your audience with ultra specific listing content. <br/>Without the hassle of manual content creation.
                     </h2>
                     <p className="mt-6 text-lg tracking-tight text-blue-100">
-                        Go beyond cold calls, generic content, and expensive leads. Engage your audience with fresh, relevant content that generates genuine interest and lasting connections.
+                        Go beyond cold calls, generic content, and expensive leads. Engage your audience with fresh, relevant real estate content about the latest listings to capture genuine interest and lasting connections.
                     </p>
                 </div>
                 <Tab.Group
