@@ -21,10 +21,10 @@ export function CallToAction() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
         <div className="mx-auto max-w-lg text-center">
           <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl">
-            Start now with our free tier.
+            Create an account for free.
           </h2>
           <p className="mt-4 text-lg tracking-tight text-white">
-            Join us in creating real estate content that goes beyond the data, and brings your real estate expertise directly to clientele.
+            Join us in creating real estate content that goes beyond the data and bringing in a new era of real estate marketing.
           </p>
           <Link href={'/sign-up'}>
             <Button className="mt-10">

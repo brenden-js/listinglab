@@ -1,160 +1,116 @@
 "use client"
-import {useEffect, useState} from 'react'
-import Image from 'next/image'
-import {Tab} from '@headlessui/react'
-import clsx from 'clsx'
 
-import backgroundImage from '@/images/background-features.jpg'
-import screenshotDashboard from '@/images/screenshots/dashboard.png'
-import screenshotExperiment from '@/images/screenshots/experiment.png'
-import screenshotData from '@/images/screenshots/data.png'
-import screenshotGenerations from '@/images/screenshots/generations.png'
+import {BarChart3, MessageCircle, RefreshCw, UserCircle, ArrowRight, BookHeart, Lightbulb} from 'lucide-react'
+import { motion } from 'framer-motion'
 
 const features = [
-    {
-        title: 'Transform raw data into compelling stories.',
-        description:
-            "From listing details to investment insights. Create content that matters, powered by comprehensive data at your fingertips.",
-        image: screenshotDashboard,
-    },
-    {
-        title: 'Share your expertise. Effortlessly.',
-        description:
-            'Add your personal touch with interactive chats. Because real estate is about more than just numbers.',
-        image: screenshotGenerations
-    },
-    {
-        title: "Always up-to-date. Always relevant.",
-        description:
-            "Stay ahead with real-time listing scans. Fresh data, fresh content. Automatically.",
-        image: screenshotExperiment,
-    },
-    {
-        title: 'Your brand. Your voice.',
-        description:
-            "Create content that's uniquely you. Authentic. Consistent. Powered by your expertise.",
-        image: screenshotData,
-    }
-
+  {
+    title: 'Transform raw data into compelling stories',
+    description:
+      "From listing details to investment insights. Create content that matters, powered by comprehensive data at your fingertips.",
+    icon: BarChart3,
+  },
+  {
+    title: 'Share your expertise. Effortlessly.',
+    description:
+      'Add your personal touch with interactive chats. Because real estate is about more than just numbers.',
+    icon: Lightbulb,
+  },
+  {
+    title: "Always up-to-date. Always relevant.",
+    description:
+      "Stay ahead with real-time listing scans. Fresh data, fresh content. Automatically.",
+    icon: RefreshCw,
+  },
+  {
+    title: 'Your brand. Your voice.',
+    description:
+      "Create content that's uniquely you. Authentic. Consistent. Powered by your expertise.",
+    icon: UserCircle,
+  }
 ]
 
-export function PrimaryFeatures() {
-    const [tabOrientation, setTabOrientation] = useState('horizontal')
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2
+    }
+  }
+}
 
-    useEffect(() => {
-        const lgMediaQuery = window.matchMedia('(min-width: 1024px)')
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 10
+    }
+  }
+}
 
-        function onMediaQueryChange({matches}: { matches: boolean }) {
-            setTabOrientation(matches ? 'vertical' : 'horizontal')
-        }
-
-        onMediaQueryChange(lgMediaQuery)
-        lgMediaQuery.addEventListener('change', onMediaQueryChange)
-
-        return () => {
-            lgMediaQuery.removeEventListener('change', onMediaQueryChange)
-        }
-    }, [])
-
-    return (
-        <section
-            id="features"
-            aria-label="Features for running your books"
-            className="relative overflow-hidden bg-blue-600 pt-20 pb-28 sm:py-32"
+export default function PrimaryFeatures() {
+  return (
+    <section
+      id="features"
+      aria-label="Primary features"
+      className="relative overflow-hidden bg-gradient-to-br from-blue-100 via-indigo-200 to-blue-300 py-24 sm:py-32"
+    >
+      <div className="absolute inset-0 bg-grid-slate-100/[0.05] bg-[bottom_1px_center] dark:bg-grid-slate-700/[0.05]" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mx-auto max-w-2xl lg:text-center"
         >
-            <Image
-                className="absolute top-1/2 left-1/2 max-w-none translate-x-[-44%] translate-y-[-42%]"
-                src={backgroundImage}
-                alt=""
-                width={2245}
-                height={1636}
-                unoptimized
-            />
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-                <div className="max-w-xl md:mx-auto md:text-center xl:max-w-none">
-                    <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-4xl">
-                        Grow your audience with ultra specific listing content. <br/>Without the hassle of manual content creation.
-                    </h2>
-                    <p className="mt-6 text-lg tracking-tight text-blue-100">
-                        Go beyond cold calls, generic content, and expensive leads. Engage your audience with fresh, relevant real estate content about the latest listings to capture genuine interest and lasting connections.
-                    </p>
-                </div>
-                <Tab.Group
-                    as="div"
-                    className="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0"
-                    vertical={tabOrientation === 'vertical'}
+          <h2 className="text-base font-semibold leading-7 text-indigo-600">Grow your audience</h2>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            Ultra specific listing content without the hassle
+          </p>
+          <p className="mt-6 text-lg leading-8 text-gray-600">
+            Go beyond cold calls, generic content, and expensive leads. Engage your audience with fresh, relevant real estate content about the latest listings to capture genuine interest and lasting connections.
+          </p>
+        </motion.div>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none"
+        >
+          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-2">
+            {features.map((feature) => (
+              <div key={feature.title} className="feature-item">
+                <div
+                  className="mb-4 block items-center rounded-full"
                 >
-                    {({selectedIndex}) => (
-                        <>
-                            <div
-                                className="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
-                                <Tab.List
-                                    className="relative z-10 flex gap-x-4 whitespace-nowrap px-4 sm:mx-auto sm:px-0 lg:mx-0 lg:block lg:gap-x-0 lg:gap-y-1 lg:whitespace-normal">
-                                    {features.map((feature, featureIndex) => (
-                                        <div
-                                            key={feature.title}
-                                            className={clsx(
-                                                'group relative rounded-full py-1 px-4 lg:rounded-r-none lg:rounded-l-xl lg:p-6',
-                                                selectedIndex === featureIndex
-                                                    ? 'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10'
-                                                    : 'hover:bg-white/10 lg:hover:bg-white/5'
-                                            )}
-                                        >
-                                            <h3>
-                                                <Tab
-                                                    className={clsx(
-                                                        'font-display text-lg [&:not(:focus-visible)]:focus:outline-none',
-                                                        selectedIndex === featureIndex
-                                                            ? 'text-blue-600 lg:text-white'
-                                                            : 'text-blue-100 hover:text-white lg:text-white'
-                                                    )}
-                                                >
-                                                    <span
-                                                        className="absolute inset-0 rounded-full lg:rounded-r-none lg:rounded-l-xl"/>
-                                                    {feature.title}
-                                                </Tab>
-                                            </h3>
-                                            <p
-                                                className={clsx(
-                                                    'mt-2 hidden text-sm lg:block',
-                                                    selectedIndex === featureIndex
-                                                        ? 'text-white'
-                                                        : 'text-blue-100 group-hover:text-white'
-                                                )}
-                                            >
-                                                {feature.description}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </Tab.List>
-                            </div>
-                            <Tab.Panels className="lg:col-span-7">
-                                {features.map((feature) => (
-                                    <Tab.Panel key={feature.title} unmount={false}>
-                                        <div className="relative sm:px-6 lg:hidden">
-                                            <div
-                                                className="absolute -inset-x-4 top-[-6.5rem] bottom-[-4.25rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl"/>
-                                            <p className="relative mx-auto max-w-2xl text-base text-white sm:text-center">
-                                                {feature.description}
-                                            </p>
-                                        </div>
-                                        <div
-                                            className="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-blue-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">
-                                            <Image
-                                                className="w-full"
-                                                src={feature.image}
-                                                alt=""
-                                                priority
-                                                sizes="(min-width: 1024px) 67.8125rem, (min-width: 640px) 100vw, 45rem"
-                                            />
-                                        </div>
-                                    </Tab.Panel>
-                                ))}
-                            </Tab.Panels>
-                        </>
-                    )}
-                </Tab.Group>
-            </div>
-        </section>
-    )
+                  <feature.icon className="inline-block h-10 w-10 text-black" aria-hidden="true" />
+                  {feature.title === 'Transform raw data into compelling stories' && (
+                    <>
+                      <ArrowRight className="inline-block h-8 w-8  mx-2" aria-hidden="true" />
+                      <BookHeart className="inline-block h-10 w-10 " aria-hidden="true" />
+                    </>
+                  )}
+                  {feature.title === 'Share your expertise. Effortlessly.' && (
+                    <>
+                      <ArrowRight className="inline-block h-8 w-8  mx-2" aria-hidden="true" />
+                      <MessageCircle className="inline-block h-10 w-10 " aria-hidden="true" />
+                    </>
+                  )}
+                </div>
+                <dt className="text-2xl font-semibold leading-7 text-gray-900">{feature.title}</dt>
+                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
+                  <p className="flex-auto">{feature.description}</p>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </motion.div>
+      </div>
+    </section>
+  )
 }
