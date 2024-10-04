@@ -100,11 +100,11 @@ const DummyChat = () => {
   return (
     <div className="my-36 px-3" ref={chatContainerRef}>
       <div className="mx-auto max-w-3xl md:text-center">
-          <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="font-display text-3xl  text-slate-900 sm:text-4xl font-bold tracking-tight">
             Skip the manual assembly of all the different data points, and start producing.
           </h2>
           <p className="mt-4 text-lg tracking-tight text-slate-700 mb-8">
-            Attract your ideal clients with content that resonates with their needs, in minutes.
+            Cut down your time to edit and publish, to minutes.
           </p>
       </div>
       <div
