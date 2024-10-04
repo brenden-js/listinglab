@@ -1,6 +1,8 @@
 import clsx from 'clsx'
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
+import {ArrowRight} from "lucide-react";
+import React from "react";
 
 function CheckIcon({className}: { className: string }) {
   return (
@@ -92,16 +94,15 @@ export function Pricing() {
       className="bg-slate-900 py-20 sm:py-32"
     >
       <div className={"mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"}>
-        <div className="md:text-center">
-          <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl">
-            <span className="relative whitespace-nowrap">
-              <span className="relative">Start growing with organic</span>
-            </span>{' '}
-            lead generation.
+        <div className="mx-auto max-w-3xl md:text-center">
+          <h2 className="font-display block text-3xl tracking-tight text-white sm:text-4xl">
+            <span className="inline-block">Produce Content</span>
+            {/* Use a wrapper to control spacing and alignment */}
+            <span className="inline-block align-middle mx-4 mb-1"> {/* Adjust margin as needed */}
+              <ArrowRight/>
+        </span>
+            <span className="inline-block">Produce Deals</span>
           </h2>
-          <p className="mt-4 text-lg text-slate-400">
-            Comes with everything you need to start generating incredible content.
-          </p>
         </div>
         <div
           className="-mx-4 mt-16 grid max-w-2xl grid-cols-1 gap-y-10 sm:mx-auto lg:-mx-8 lg:max-w-none lg:grid-cols-2 xl:mx-0 xl:gap-x-8">
@@ -134,8 +135,8 @@ export function Pricing() {
             ]}
           />
           <Plan
-            name="Custom"
-            price="Contact"
+            name="As many zip codes as you need"
+            price="Custom Pricing"
             description="For organizations looking to transform their business with AI."
             href="/register"
             features={[

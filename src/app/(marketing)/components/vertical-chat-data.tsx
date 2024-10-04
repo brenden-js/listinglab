@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Home, MapPin, DollarSign, Store, Building, TrendingUp, Plus } from 'lucide-react';
+import {Home, MapPin, DollarSign, Store, Building, TrendingUp, Plus, List} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
@@ -12,12 +12,9 @@ const DataList = () => {
     { text: "Payment estimates", icon: <DollarSign className="w-6 h-6" /> },
     { text: "Nearby places", icon: <Store className="w-6 h-6" /> },
     { text: "Listing details", icon: <Home className="w-6 h-6" /> },
-    { text: "Property details", icon: <Building className="w-6 h-6" /> },
+    { text: "Property details", icon: <List className="w-6 h-6" /> },
     { text: "ROI, NOI, IRR", icon: <TrendingUp className="w-6 h-6" /> },
   ];
-
-  // Calculate how many items per row based on screen size
-  const itemsPerRow = window.innerWidth > 768 ? 3 : 2;
 
   return (
     <div className="text-white text-center">
@@ -28,7 +25,7 @@ const DataList = () => {
             className="flex flex-col items-center mb-4"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: (index % itemsPerRow) * 0.1 }} // Stagger animation within rows
+            transition={{ duration: 0.5 }}
           >
             <motion.div
               className="flex items-center justify-center w-10 h-10 bg-primary rounded-full mb-2"

@@ -39,7 +39,7 @@ type CodeProps = ComponentProps & {
   inline?: boolean;
 };
 
-const markdownComponents = {
+export const markdownComponents = {
   h1: ({className, ...props}: ComponentProps) => (
     <h1 className={twMerge(`${baseTextStyles} ${headingStyles} text-3xl my-2`, className)} {...props} />
   ),
