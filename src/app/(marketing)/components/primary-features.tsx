@@ -1,6 +1,6 @@
 "use client"
 
-import {BarChart3, MessageCircle, RefreshCw, UserCircle, ArrowRight, BookHeart, Lightbulb} from 'lucide-react'
+import {BarChart3, MessageCircle, RefreshCw, UserCircle, ArrowRight, BookHeart, Lightbulb, Home} from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const features = [
@@ -101,6 +101,12 @@ export default function PrimaryFeatures() {
                       <MessageCircle className="inline-block h-10 w-10 " aria-hidden="true" />
                     </>
                   )}
+                  {feature.title === 'Always up-to-date. Always relevant.' && (
+                    <Home className="inline-block h-10 w-10  mx-2" aria-hidden="true" />
+                )}
+                  {feature.title === 'Your brand. Your voice.' && (
+                    <MessageCircle className="inline-block h-10 w-10  mx-2" aria-hidden="true" />
+                )}
                 </div>
                 <dt className="text-2xl font-semibold leading-7 text-gray-900">{feature.title}</dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
