@@ -17,7 +17,6 @@ export default function Home() {
       <DummyChat />
       <CallToAction />
       <Pricing />
-      <Faqs />
     </>
   );
 }
