@@ -201,6 +201,17 @@ export const houseRouter = createTRPCRouter({
                 }
                 console.log('Searching zip code in our DB...')
 
+              const userZipCode = await db.query.zipCodeSubscriptions.findFirst({
+                    where: eq(zipCodeSubscriptions.zipCodeId, input.zipCode)
+                });
+
+                if (userZipCode) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: "You have already subscribed to this zip code."
+                    });
+                }
+
                 const zipCode = await db.query.zipCodes.findFirst({
                     where: eq(zipCodes.id, input.zipCode),
                 });
@@ -299,6 +310,18 @@ export const houseRouter = createTRPCRouter({
                     });
                 }
 
+                // check if user has already subscribed to this zip code
+                const userZipCode = await db.query.zipCodeSubscriptions.findFirst({
+                    where: eq(zipCodeSubscriptions.zipCodeId, input.zipCode)
+                });
+
+                if (userZipCode) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: "You have already subscribed to this zip code."
+                    });
+                }
+
                 // Check if the zip code already exists
                 const existingZipCode = await db.query.zipCodes.findFirst({
                     where: eq(zipCodes.id, input.zipCode)
@@ -346,6 +369,8 @@ export const houseRouter = createTRPCRouter({
         }
 
         await db.delete(zipCodeSubscriptions).where(eq(zipCodeSubscriptions.zipCodeId, input.zipCodeId))
+
+        await db.delete(houses).where(and(eq(houses.zipCode, input.zipCodeId), eq(houses.userId, ctx.authObject.userId)))
 
         await db.update(userApiLimits)
           .set({zipCodesUsage: user.zipCodesUsage - 1})

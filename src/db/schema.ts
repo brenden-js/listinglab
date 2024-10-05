@@ -26,7 +26,7 @@ export const houses = sqlLiteTable(
   "house",
   {
     createdAt: integer("createdAt", {mode: 'timestamp'}).notNull(),
-    id: text("id").notNull(),
+    id: text("id").notNull().primaryKey(),
     baths: integer("baths"),
     beds: integer("beds"),
     city: text("city").notNull(),
@@ -62,7 +62,6 @@ export const houses = sqlLiteTable(
   },
   (house) => ({
     userIdIdx: index("houses_userId_idx").on(house.userId),
-    primaryKey: primaryKey({name: 'stAddressAndZip', columns: [house.stAddress, house.zipCode]}),
   })
 )
 
