@@ -238,7 +238,7 @@ export const scheduledNewListingsScan = inngest.createFunction(
     for (const zipCode of zipCodes) {
       // create an event for each zipCode
       const event = {
-        cityId: zipCode.id,
+        zipId: zipCode.id,
         cityName: zipCode.city,
         state: zipCode.state
       }
@@ -255,7 +255,7 @@ export const newListingsInCityScan = inngest.createFunction(
       method: 'GET',
       url: 'https://zillow-com4.p.rapidapi.com/properties/search',
       params: {
-        location: `${event.data.cityName}, ${event.data.state}`,
+        location: `${event.data.zipId}, ${event.data.state}`,
         limit: 5,
         status: 'forSale',
         sort: 'daysOn',
@@ -298,7 +298,7 @@ export const newListingsInCityScan = inngest.createFunction(
         console.log('Could not find house in database, sending event...')
 
         const addHouseEvent = {
-          cityId: event.data.cityId,
+          zipId: event.data.zipId,
           cityName: event.data.cityName,
           houseId: uuidv4(),
           foundAt: new Date(),
@@ -358,7 +358,7 @@ export const handleAddHouseToUsers = inngest.createFunction(
         lotSqft: event.data.lotSqft,
         lon: event.data.lon,
         price: event.data.price,
-        pricePerSqft: null,
+        pricePerSqft: parseFloat((event.data.price / event.data.sqft).toFixed(2)),
         sqft: event.data.sqft,
         stAddress: event.data.stAddress,
         status: null,

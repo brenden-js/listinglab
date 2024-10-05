@@ -317,16 +317,42 @@ export const houseRouter = createTRPCRouter({
                     zipCodeId = existingZipCode.id;
                 }
 
-                // Add the zip code to the user's list
-                await db.insert(zipCodeSubscriptions).values({
-                    userId: ctx.authObject.userId,
-                    zipCodeId: zipCodeId
-                });
-
-                await db.update(userApiLimits).set({zipCodesUsage: userZipCodes.length + 1}).where(eq(userApiLimits.userId, ctx.authObject.userId))
+                await inngest.send({
+                    name: "zipcode/subscribe",
+                    data: {
+                        userId: ctx.authObject.userId,
+                        zipCodeId: zipCodeId
+                    }
+                })
 
                 return {status: "Zip code added successfully"};
             }),
+  unsubscribeZipCode: protectedProcedure
+      .input(z.object({zipCodeId: z.string()}))
+      .mutation(async ({ctx, input}) => {
+        if (!ctx.authObject.userId) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You are not authorized to perform this action."
+          });
+        }
+
+        const user = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, ctx.authObject.userId)})
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Could not find user."
+          });
+        }
+
+        await db.delete(zipCodeSubscriptions).where(eq(zipCodeSubscriptions.zipCodeId, input.zipCodeId))
+
+        await db.update(userApiLimits)
+          .set({zipCodesUsage: user.zipCodesUsage - 1})
+          .where(eq(userApiLimits.userId, ctx.authObject.userId))
+
+        return {status: "Zip code unsubscribed successfully"};
+      }),
         generateText: protectedProcedure
             .input(z.object({
                 houses: z.array(z.object({id: z.string()})).min(1),

@@ -28,7 +28,7 @@ type AddGenerationToHouse = {
 
 type ScanCity = {
     data: {
-        cityId: string
+        zipId: string
         cityName: string
         state: string
     }
@@ -36,7 +36,7 @@ type ScanCity = {
 
 type AddHouseToUsers = {
     data: {
-        cityId: string
+        zipId: string
         cityName: string
         houseId: string
         zipCode: string
@@ -55,13 +55,29 @@ type AddHouseToUsers = {
     }
 }
 
+type ZipCodeSubscribe = {
+    data: {
+        zipCodeId: string
+        userId: string
+    }
+}
+
+type ZipCodeInitialScan = {
+    data: {
+        zipCodeId: string
+        userId: string
+    }
+}
+
 type Events = {
     "house/add-generation": AddGenerationToHouse;
     "house/enrich": HouseEnrich;
     "house/scan-city": ScanCity;
     "payments/checkout-session-completed": SubscriptionPurchasedEvent;
     "payments/invoice-paid": SubscriptionPurchasedEvent,
-    "house/add-house-to-users": AddHouseToUsers
+    "house/add-house-to-users": AddHouseToUsers,
+    "zipcode/subscribe": ZipCodeSubscribe
+    "zipcode/initial-scan": ZipCodeInitialScan
 }
 
 export const inngest = new Inngest(

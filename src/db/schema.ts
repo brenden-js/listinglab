@@ -108,7 +108,7 @@ export const userApiLimits = sqlLiteTable(
     stripePriceId: text("stripePriceId"),
     stripeCurrentPeriodEnd: integer("stripeCurrentPeriodEnd", {mode: "timestamp"}),
     zipCodesLimit: integer("zipCodesLimit"),
-    zipCodesUsage: integer("zipCodesUsage"),
+    zipCodesUsage: integer("zipCodesUsage").default(0).notNull(),
   }
 );
 

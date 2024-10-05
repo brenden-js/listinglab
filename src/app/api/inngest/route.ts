@@ -7,6 +7,7 @@ import {
     incrementHouseUsage,
     incrementTextUsage, newListingsInCityScan, scheduledNewListingsScan
 } from "@/inngest/functions/house";
+import {handleInitialZipCodeScan, handleNewZipCodeSubscription} from "@/inngest/functions/zipcode";
 
 
 export const {GET, POST, PUT} = serve({
@@ -19,7 +20,9 @@ export const {GET, POST, PUT} = serve({
         handleSubscriptionPurchased,
         scheduledNewListingsScan,
         newListingsInCityScan,
-        handleAddHouseToUsers
+        handleAddHouseToUsers,
+        handleNewZipCodeSubscription,
+        handleInitialZipCodeScan,
     ],
     serveHost: process.env.NODE_ENV === "development"
         ? "http://localhost:3000"

@@ -101,10 +101,10 @@ const DummyChat = () => {
     <div className="my-36 px-3" ref={chatContainerRef}>
       <div className="mx-auto max-w-3xl md:text-center">
           <h2 className="font-display text-3xl  text-slate-900 sm:text-4xl font-bold tracking-tight">
-            Skip the manual assembly of all the different data points, and start producing.
+            Skip the script editing, data gathering, and listing tracking; Start producing.
           </h2>
           <p className="mt-4 text-lg tracking-tight text-slate-700 mb-8">
-            Cut down your time to edit and publish, to minutes.
+            Drastically cut down the time and effort to edit and publish at scale.
           </p>
       </div>
       <div
