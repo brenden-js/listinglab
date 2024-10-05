@@ -227,7 +227,7 @@ export const handleAddGeneration = inngest.createFunction(
 
 export const scheduledNewListingsScan = inngest.createFunction(
   {id: 'handle-scheduled-new-listings-scan'},
-  {cron: '1/30 4-23 * * *'},
+  {cron: '6 4-23 * * *'},
   async () => {
     console.log('Running scheduled new listings scan...')
     const zipCodes = await db.query.zipCodes.findMany()

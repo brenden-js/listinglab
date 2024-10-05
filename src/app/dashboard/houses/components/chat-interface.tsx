@@ -196,7 +196,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
 
   return (
     <>
-      <div className="px-4 pb-4 flex items-center">
+      <div className="px-4 pb-4 flex flex-col sm:flex-row items-center">
         <div className="bg-secondary rounded-lg p-1.5">
           <Button variant="secondary"
                   className={cn("w-[150px] hover:bg-secondary", currentChat === 'Main' && 'bg-white hover:bg-white text-black shadow')}
@@ -207,7 +207,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
           </Button>
         </div>
         <Tabs value={currentChat} onDoubleClick={() => setShowDataView(!showDataView)}
-              onValueChange={setCurrentChat as any} className="pl-4 flex-grow">
+              onValueChange={setCurrentChat as any} className="mt-3 sm:mt-0 sm:pl-4 flex-grow">
           <TabsList>
             <TabsTrigger value="Property">Property Chat</TabsTrigger>
             <TabsTrigger value="Location">Location Chat</TabsTrigger>
@@ -336,7 +336,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
             onClick={() => setShowDataView(!showDataView)}
             className={"mb-4 w-[175px]"}
           >
-            {showDataView ? 'Back to Chat' : `View ${currentChat} Data`}
+            {showDataView ? <p className="block">Back to Chat</p> :(<><p className="hidden sm:block sm:mr-1">View</p>
+              <p>{currentChat} Data</p></>)}
           </Button>
           <ResetChatSlider houseId={house.id} topic={currentChat}/>
         </div>
@@ -349,10 +350,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={onEnterPress}
           />
-          <Button type="submit" className="w-[150px]"
+          <Button type="submit" className="w-[50px]sm:w-[150px]"
                   disabled={newMessage.trim() === "" || updateChat.isPending}>
-            <PaperPlaneIcon className="mr-2"/>
-            Send
+            <PaperPlaneIcon className="sm:mr-2"/>
+            <p className="hidden sm:block">Send</p>
           </Button>
         </form>
       </div>

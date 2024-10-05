@@ -4,18 +4,31 @@ import {Dialog, Transition} from "@headlessui/react";
 import {UserButton} from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
-import {Cross2Icon, DotsHorizontalIcon, HomeIcon} from "@radix-ui/react-icons";
+import {
+  Cross2Icon,
+  DotsHorizontalIcon,
+  HomeIcon,
+  LightningBoltIcon,
+  MagicWandIcon,
+  PersonIcon
+} from "@radix-ui/react-icons";
 import PremiumAccountButton from "@/app/dashboard/components/premium-account-button";
-
-const navigation = [
-  {name: 'Dashboard', href: '#', icon: HomeIcon, current: true},
-]
+import {usePathname} from "next/navigation";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
 export default function MobileSidebar() {
+  const path = usePathname()
+
+
+  const navigation = [
+    {name: 'Generate', href: '/dashboard', icon: MagicWandIcon, current: path === '/dashboard'},
+    {name: 'Subscriptions', href: '/dashboard/subscriptions', icon: LightningBoltIcon, current: path === '/dashboard/subscriptions'},
+    {name: 'Houses', href: '/dashboard/houses', icon: HomeIcon, current: path === '/dashboard/houses'},
+    {name: 'About', href: '/dashboard/about', icon: PersonIcon, current: path === '/dashboard/about'}
+  ]
   const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
     <>
@@ -73,7 +86,7 @@ export default function MobileSidebar() {
                   <nav aria-label="Sidebar" className="mt-5">
                     <div className="space-y-1 px-2">
                       {navigation.map((item) => (
-                        <a
+                        <Link
                           key={item.name}
                           href={item.href}
                           className={classNames(
@@ -91,7 +104,7 @@ export default function MobileSidebar() {
                             aria-hidden="true"
                           />
                           {item.name}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </nav>

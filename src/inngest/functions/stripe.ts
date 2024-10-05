@@ -5,7 +5,7 @@ import {db} from "@/db";
 import {stripe} from "@/lib/stripe";
 
 export const handleSubscriptionPurchased = inngest.createFunction(
-    {id: 'handle-checkout-session-completed'},
+    {id: 'stripe-checkout-session-completed'},
     {event: 'payments/checkout-session-completed'},
     async ({event, step}) => {
 
