@@ -6,8 +6,8 @@ import process from "process";
 import axios from "axios";
 import {ListingSearchInCityResponse} from "@/inngest/functions/helpers/house-search-type";
 
-export const handleNewZipCodeSubscription = inngest.createFunction(
-  {id: 'handle-new-zipcode-subscription'},
+export const zipCodeSubscribe = inngest.createFunction(
+  {id: 'zipcode-subscribe'},
   {event: 'zipcode/subscribe'},
   async ({event}) => {
     const user = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, event.data.userId)})
@@ -24,13 +24,13 @@ export const handleNewZipCodeSubscription = inngest.createFunction(
       .set({zipCodesUsage: user.zipCodesUsage + 1})
       .where(eq(userApiLimits.userId, event.data.userId))
 
-    await inngest.send({name: 'zipcode/initial-scan', data: {zipCodeId: event.data.zipCodeId, userId: user.userId}})
+    await inngest.send({name: 'zipcode/scan', data: {zipCodeId: event.data.zipCodeId, userId: user.userId}})
   }
 )
 
-export const handleInitialZipCodeScan = inngest.createFunction(
-  {id: 'handle-initial-zipcode-scan'},
-  {event: 'zipcode/initial-scan'},
+export const zipCodeScan = inngest.createFunction(
+  {id: 'zipcode-scan'},
+  {event: 'zipcode/scan'},
   async ({event}) => {
 
     const options = {
@@ -91,5 +91,6 @@ export const handleInitialZipCodeScan = inngest.createFunction(
     }
 
     await db.insert(houses).values(housesToAdd)
+    await db.update(zipCodes).set({lastScannedAt: new Date()}).where(eq(zipCodes.id, event.data.zipCodeId))
   }
 )

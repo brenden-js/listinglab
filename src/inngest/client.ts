@@ -62,7 +62,7 @@ type ZipCodeSubscribe = {
     }
 }
 
-type ZipCodeInitialScan = {
+type ZipCodeScan = {
     data: {
         zipCodeId: string
         userId: string
@@ -77,7 +77,7 @@ type Events = {
     "payments/invoice-paid": SubscriptionPurchasedEvent,
     "house/add-house-to-users": AddHouseToUsers,
     "zipcode/subscribe": ZipCodeSubscribe
-    "zipcode/initial-scan": ZipCodeInitialScan
+    "zipcode/scan": ZipCodeScan
 }
 
 export const inngest = new Inngest(

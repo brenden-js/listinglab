@@ -2,7 +2,7 @@ import {and, eq} from "drizzle-orm";
 import axios, {type AxiosRequestConfig, type AxiosResponse} from "axios";
 import process from "process";
 import {v4 as uuidv4} from "uuid";
-import {generations, houses, userApiLimits, zipCodeSubscriptions} from "@/db/schema";
+import {generations, houses, userApiLimits, zipCodes, zipCodeSubscriptions} from "@/db/schema";
 import {db} from "@/db";
 import {HouseDetailsResponse, RecentlySoldResponse} from "@/trpc/routers/helpers/types";
 import {GoogleNearbyPlacesAPIResponse} from "@/inngest/functions/helpers/types";
@@ -12,7 +12,7 @@ import {calculateEquityOver30Years, calculateTotalMonthlyPayment} from "@/innges
 
 
 export const incrementHouseUsage = inngest.createFunction(
-  {id: "Handle incrementing a user's house usage."},
+  {id: "house-increment-anywhere-usage"},
   {event: "house/enrich"},
   async ({event}) => {
     const userApiLimit = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, event.data.userId)})
@@ -26,7 +26,7 @@ export const incrementHouseUsage = inngest.createFunction(
 )
 
 export const handleEnrichHouse = inngest.createFunction(
-  {id: "Handle enriching house"},
+  {id: "house-enrich"},
   {event: "house/enrich"},
   async ({event, step}) => {
     const foundListing = await step.run("Get house details", async () => {
@@ -197,7 +197,7 @@ export const handleEnrichHouse = inngest.createFunction(
 )
 
 export const incrementTextUsage = inngest.createFunction(
-  {id: "increment-text-usage"},
+  {id: "house-increment-text-usage"},
   {event: "house/add-generation"},
   async ({event}) => {
     const userApiLimit = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, event.data.userId)})
@@ -211,7 +211,7 @@ export const incrementTextUsage = inngest.createFunction(
 )
 
 export const handleAddGeneration = inngest.createFunction(
-  {id: 'add-generation'},
+  {id: 'house-add-generation'},
   {event: 'house/add-generation'},
   async ({event}) => {
     await db.insert(generations).values({
@@ -256,7 +256,7 @@ export const newListingsInCityScan = inngest.createFunction(
       url: 'https://zillow-com4.p.rapidapi.com/properties/search',
       params: {
         location: `${event.data.zipId}, ${event.data.state}`,
-        limit: 5,
+        limit: 25,
         status: 'forSale',
         sort: 'daysOn',
         sortType: 'asc',
@@ -274,6 +274,9 @@ export const newListingsInCityScan = inngest.createFunction(
     if (!response) {
       return new Error('Could not get api response')
     }
+
+    // update the lastScannedAt field in the zipCode table
+    await db.update(zipCodes).set({lastScannedAt: new Date()}).where(eq(zipCodes.id, event.data.zipId))
 
     // need a new type for recently listed houses search
 

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { api } from "@/trpc/react";
-import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import React, {useEffect, useState} from "react";
+import {api} from "@/trpc/react";
+import {toast} from "sonner";
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {ScrollArea} from "@/components/ui/scroll-area";
 import {
   Card,
   CardDescription,
@@ -18,9 +18,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader, SearchIcon } from "lucide-react";
+import {Loader, SearchIcon} from "lucide-react";
 
-export const AddZipCodeDialog = ({ open, onOpenChange }: {
+export const AddZipCodeDialog = ({open, onOpenChange}: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => {
@@ -44,8 +44,8 @@ export const AddZipCodeDialog = ({ open, onOpenChange }: {
 
   const handleAddZipCode = async () => {
     if (searchZipCode.isSuccess && searchZipCode.data) {
-      const { city, state, id } = searchZipCode.data;
-      const result = await addZipCode.mutateAsync({ zipCode: id, city, state });
+      const {city, state, id} = searchZipCode.data;
+      const result = await addZipCode.mutateAsync({zipCode: id, city, state});
       if (result.status === "Zip code added successfully") {
         toast.success("Zip code added successfully");
         setZipCode("");
@@ -58,7 +58,7 @@ export const AddZipCodeDialog = ({ open, onOpenChange }: {
 
   const handleSearchZipCode = async (event: React.FormEvent) => {
     event.preventDefault();
-    await searchZipCode.mutateAsync({ zipCode });
+    await searchZipCode.mutateAsync({zipCode});
   };
 
   const handleResetSearch = () => {
@@ -109,13 +109,13 @@ export const AddZipCodeDialog = ({ open, onOpenChange }: {
                   className="flex-grow" // Allow Input to grow and take available space
                 />
                 {!searchZipCode.isPending && searchZipCode.isSuccess && (
-                    <Button variant="secondary" className="min-w-[200px]" onClick={handleResetSearch}>
-                      Try Another Zip
-                      <SearchIcon
+                  <Button variant="secondary" className="min-w-[200px]" onClick={handleResetSearch}>
+                    Try Another Zip
+                    <SearchIcon
                       className="ml-2 h-5 w-5 text-gray-400"
                       aria-hidden="true"
                     />
-                    </Button>
+                  </Button>
                 )}
                 {searchZipCode.isPending || !searchZipCode.isSuccess && (
                   <Button
@@ -199,6 +199,16 @@ const ZipCodeCard: React.FC<ZipCodeCardProps> = ({zipCode}) => {
       toast.error(error.message);
     },
   });
+
+  const handleScanZipCode = api.zipcode.manualScan.useMutation({
+    onSuccess: () => {
+      toast.success("Zip code scan started successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   return (
     <Card className="max-w-sm mx-auto">
       <CardHeader>
@@ -206,10 +216,10 @@ const ZipCodeCard: React.FC<ZipCodeCardProps> = ({zipCode}) => {
         <CardDescription className="text-sm text-gray-600">
           {zipCode.city}, {zipCode.state}
         </CardDescription>
-        <div className="flex justify-end">
+        <div className="flex justify-between">
           {/* Add flex and justify-end */}
           <Button
-            variant="destructive"
+            variant="suttleDestructive"
             disabled={handleUnsubscribeZipCode.isPending}
             onClick={() =>
               handleUnsubscribeZipCode.mutate({zipCodeId: zipCode.id})
@@ -221,6 +231,12 @@ const ZipCodeCard: React.FC<ZipCodeCardProps> = ({zipCode}) => {
             {handleUnsubscribeZipCode.isPending && (
               <Loader className="ml-2 h-4 w-4 animate-spin"/>
             )}
+          </Button>
+          <Button
+            variant={"outline"}
+            onClick={() => handleScanZipCode.mutate({zipCodeId: zipCode.id})}
+          >
+            Scan zip code
           </Button>
         </div>
       </CardHeader>

@@ -117,6 +117,7 @@ export const zipCodes = sqlLiteTable(
     id: text("id").notNull().primaryKey(),
     city: text("city").notNull(),
     state: text("state").notNull(),
+    lastScannedAt: integer("lastScannedAt", {mode: "timestamp"}),
   }
 );
 

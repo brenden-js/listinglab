@@ -62,7 +62,7 @@ export default function HousesPageOverview() {
                         className={"ml-3"}
                         onClick={() => setOpenZipCodeDialog(true)}
                     >
-                        Manage Zip Code Subscriptions
+                        Zip Codes
                     </Button>
                     <AddZipCodeDialog
                         open={openZipCodeDialog}
