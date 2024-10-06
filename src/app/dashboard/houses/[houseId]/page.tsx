@@ -33,7 +33,7 @@ const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
   if (!house.data) return <div></div>;
 
   return (
-    <div className="w-full h-full max-h-[100vh] flex flex-col">
+    <div className="w-full h-full md:max-h-[100vh] flex flex-col">
       <div className="flex items-center p-4">
         <Link href={`/dashboard/houses`} passHref>
           <Button variant="secondary" size="sm" className="mr-2">
@@ -51,7 +51,7 @@ const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
           <Accordion
             type="single"
             collapsible
-            className="bg-gray-50 px-3 rounded-lg mb-4 "
+            className="bg-gray-50 px-3 rounded-lg mb-4"
             defaultValue={typeof window === 'undefined' ?  "" : window.innerWidth > 768 ? "item-1" : ""}
           >
             <AccordionItem value="item-1">

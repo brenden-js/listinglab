@@ -17,6 +17,7 @@ import {twMerge} from "tailwind-merge";
 import {cn} from "@/lib/utils";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {APIProvider} from '@vis.gl/react-google-maps';
+import {CopyIcon} from "lucide-react";
 
 interface ChatInterfaceProps {
   showDataView: boolean;
@@ -192,8 +193,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
     }
   }
 
-  if (!house) return null;
+  const handleCopyClick = (message: string) => {
+    navigator.clipboard.writeText(message);
+    toast.success("Copied to clipboard.");
+  };
 
+  if (!house) return null;
   return (
     <>
       <div className="px-4 pb-4 flex flex-col sm:flex-row items-center">
@@ -274,11 +279,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                         initial="hidden"
                         animate="visible"
                         transition={{duration: 0.1, delay: index * 0.02}}
-                        className={`p-3 max-w-[65%] my-2 rounded-lg ${message.sender === 'You' ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100'}`}
                       >
-                        <p className="font-semibold">{message.sender}</p>
-                        <ReactMarkdown
-                          components={markdownComponents}>{message.message}</ReactMarkdown>
+                        <div
+                          className={`p-3 md:max-w-[65%] mt-2 rounded-t-lg ${message.sender === 'You' ? 'bg-blue-100' +
+                            ' ml-auto max-w-[80%]' : 'bg-gray-100'}`}>
+                          <p className="font-semibold">{message.sender}</p>
+                          <ReactMarkdown
+                            components={markdownComponents}>{message.message}
+                          </ReactMarkdown>
+                        </div>
+                        {message.sender !== 'You' && (
+                          <div className={"bg-gray-200 p-2 flex justify-center rounded-b-lg md:max-w-[65%]"}>
+                            <Button variant={"ghost"} size={"sm"} className={'mx-auto'}
+                                    onClick={() => handleCopyClick(message.message)}>
+                              <CopyIcon className="mr-2 w-4 h-4"/>
+                              Copy
+                            </Button>
+                          </div>
+                        )}
                       </motion.div>
                     ))}
                   </AnimatePresence>
@@ -293,33 +311,33 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                         transition={{duration: 0.3}}
                         className="p-3 my-2 rounded-lg bg-gray-100 inline-block"
                       >
-                                                <span className="flex space-x-1">
-                                                    <motion.span
-                                                      animate={{opacity: [0, 1, 0]}}
-                                                      transition={{duration: 1, repeat: Infinity, repeatDelay: 0.25}}
-                                                      className="w-2 h-2 bg-gray-500 rounded-full"
-                                                    />
-                                                    <motion.span
-                                                      animate={{opacity: [0, 1, 0]}}
-                                                      transition={{
-                                                        duration: 1,
-                                                        repeat: Infinity,
-                                                        repeatDelay: 0.25,
-                                                        delay: 0.2
-                                                      }}
-                                                      className="w-2 h-2 bg-gray-500 rounded-full"
-                                                    />
-                                                    <motion.span
-                                                      animate={{opacity: [0, 1, 0]}}
-                                                      transition={{
-                                                        duration: 1,
-                                                        repeat: Infinity,
-                                                        repeatDelay: 0.25,
-                                                        delay: 0.4
-                                                      }}
-                                                      className="w-2 h-2 bg-gray-500 rounded-full"
-                                                    />
-                                                </span>
+                        <span className="flex space-x-1">
+                          <motion.span
+                            animate={{opacity: [0, 1, 0]}}
+                            transition={{duration: 1, repeat: Infinity, repeatDelay: 0.25}}
+                            className="w-2 h-2 bg-gray-500 rounded-full"
+                          />
+                          <motion.span
+                            animate={{opacity: [0, 1, 0]}}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              repeatDelay: 0.25,
+                              delay: 0.2
+                            }}
+                            className="w-2 h-2 bg-gray-500 rounded-full"
+                          />
+                          <motion.span
+                            animate={{opacity: [0, 1, 0]}}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              repeatDelay: 0.25,
+                              delay: 0.4
+                            }}
+                            className="w-2 h-2 bg-gray-500 rounded-full"
+                          />
+                        </span>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -336,7 +354,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
             onClick={() => setShowDataView(!showDataView)}
             className={"mb-4 w-[175px]"}
           >
-            {showDataView ? <p className="block">Back to Chat</p> :(<><p className="hidden sm:block sm:mr-1">View</p>
+            {showDataView ? <p className="block">Back to Chat</p> : (<><p className="hidden sm:block sm:mr-1">View</p>
               <p>{currentChat} Data</p></>)}
           </Button>
           <ResetChatSlider houseId={house.id} topic={currentChat}/>
