@@ -18,6 +18,7 @@ import {cn} from "@/lib/utils";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {APIProvider} from '@vis.gl/react-google-maps';
 import {CopyIcon} from "lucide-react";
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 
 interface ChatInterfaceProps {
   showDataView: boolean;
@@ -289,12 +290,78 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                           </ReactMarkdown>
                         </div>
                         {message.sender !== 'You' && (
-                          <div className={"bg-gray-200 p-2 flex justify-center rounded-b-lg md:max-w-[65%]"}>
-                            <Button variant={"ghost"} size={"sm"} className={'mx-auto'}
+                          <div className={"bg-gray-200 p-1.5 flex justify-between rounded-b-lg md:max-w-[65%]"}>
+                            <Button variant={"ghost"} size={"sm"} className={''}
                                     onClick={() => handleCopyClick(message.message)}>
                               <CopyIcon className="mr-2 w-4 h-4"/>
                               Copy
                             </Button>
+                            <Dialog>
+                              <DialogTrigger>
+                                <p className="text-xs text-gray-500 transition-colors hover:text-gray-700 cursor-pointer mr-1.5">
+                                  Use generations <span className="text-blue-700 hover:text-gray-700">with caution.</span>
+                                </p>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl"> {/* Adjust max-width as needed */}
+                                <DialogHeader>
+                                  <DialogTitle>Caution</DialogTitle>
+                                </DialogHeader>
+                                <div className="prose">
+                                  <markdownComponents.h1>
+                                    Generative Real Estate Content
+                                  </markdownComponents.h1>
+
+                                  <markdownComponents.p>
+                                    Our real estate app now offers experimental access to content generation features
+                                    powered by generative AI
+                                    technology. This warning applies to the services and features that utilize this technology.
+                                  </markdownComponents.p>
+
+                                  <markdownComponents.h2>
+                                    Use Responsibly
+                                  </markdownComponents.h2>
+
+                                  <markdownComponents.p>
+                                    Our generative real estate content features are still experimental, and you're
+                                    responsible for your use of
+                                    suggested content. Exercise discretion and carefully review
+                                    all generated content for
+                                    accuracy, appropriateness, and compliance with real estate regulations before
+                                    relying on it or sharing it with
+                                    clients.
+                                  </markdownComponents.p>
+
+                                  <markdownComponents.h2>Content Originality</markdownComponents.h2>
+
+                                  <markdownComponents.p>
+                                    Our generative real estate features are designed to produce original content and not
+                                    replicate existing listings
+                                    or descriptions at length. We've implemented systems to minimize the chances of this
+                                    occurring, and we
+                                    continuously work to improve these systems.
+                                  </markdownComponents.p>
+
+                                  <markdownComponents.h2>Editing and Customization</markdownComponents.h2>
+
+                                  <markdownComponents.p>
+                                    While our AI generates content based on your inputs, it's essential to customize and
+                                    edit the results to
+                                    accurately reflect specific properties, market conditions, and your professional
+                                    expertise. The generated
+                                    content should serve as a starting point, not a final product.
+                                  </markdownComponents.p>
+
+                                  <markdownComponents.h2>Feedback</markdownComponents.h2>
+
+                                  <markdownComponents.p>
+                                    We value your input in improving our generative real estate content features. If you
+                                    encounter any issues,
+                                    inaccuracies, or have suggestions for enhancement, please use the feedback option
+                                    within the app to let us know.
+                                  </markdownComponents.p>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
                           </div>
                         )}
                       </motion.div>
