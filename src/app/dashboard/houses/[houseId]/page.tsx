@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {Separator} from "@/components/ui/separator";
 
 const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
   const house = api.house.getHouseDetails.useQuery(params.houseId);
@@ -45,13 +46,14 @@ const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
           {`${house.data.stAddress}, ${house.data.city}, ${house.data.state} ${house.data.zipCode}`}
         </h1>
       </div>
+      <Separator />
 
       <div className="flex flex-col md:flex-row flex-grow overflow-hidden">
-        <div className="w-full md:w-[25%] border-r border-gray-200 px-3 sm:px-5">
+        <div className="w-full md:w-[25%] border-r border-gray-200 px-3 sm:px-4">
           <Accordion
             type="single"
             collapsible
-            className="bg-gray-50 px-3 rounded-lg mb-4"
+            className="bg-gray-50 px-3 rounded-lg my-4"
             defaultValue={typeof window === 'undefined' ?  "" : window.innerWidth > 768 ? "item-1" : ""}
           >
             <AccordionItem value="item-1">

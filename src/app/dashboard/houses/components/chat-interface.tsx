@@ -20,6 +20,7 @@ import {APIProvider} from '@vis.gl/react-google-maps';
 import {CopyIcon} from "lucide-react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger} from "@/components/ui/drawer";
+import {Separator} from "@/components/ui/separator";
 
 interface ChatInterfaceProps {
   showDataView: boolean;
@@ -203,10 +204,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
   if (!house) return null;
   return (
     <>
-      <div className="px-4 pb-4 flex flex-col sm:flex-row items-center">
+      <div className="px-4 my-4 flex flex-row justify-between items-center">
         <div className="bg-secondary rounded-lg p-1.5">
           <Button variant="secondary"
-                  className={cn("w-[150px] hover:bg-secondary", currentChat === 'Main' && 'bg-white hover:bg-white text-black shadow')}
+                  className={cn("w-[100px] sm:w-[150px] hover:bg-secondary", currentChat === 'Main' && 'bg-white' +
+                    ' hover:bg-white text-black shadow')}
                   onClick={() => setCurrentChat('Main')}
                   onDoubleClick={() => setShowDataView(!showDataView)}
           >
@@ -214,14 +216,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
           </Button>
         </div>
         <Tabs value={currentChat} onDoubleClick={() => setShowDataView(!showDataView)}
-              onValueChange={setCurrentChat as any} className="mt-3 sm:mt-0 sm:pl-4 flex-grow">
+              onValueChange={setCurrentChat as any} className=" pl-2 sm:pl-4 flex-grow">
           <TabsList>
-            <TabsTrigger value="Property">Property Chat</TabsTrigger>
-            <TabsTrigger value="Location">Location Chat</TabsTrigger>
-            <TabsTrigger value="Financial">Financial Chat</TabsTrigger>
+            <TabsTrigger value="Property">Property</TabsTrigger>
+            <TabsTrigger value="Location">Location</TabsTrigger>
+            <TabsTrigger value="Financial">Financial</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
+      <Separator className=""/>
       <ScrollArea ref={scrollAreaRef} className="flex-grow pr-1 md:pr-4">
         <div className="flex-1 overflow-hidden">
           <div className="p-4 space-y-4">
@@ -284,6 +287,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                       >
                         <div
                           className={`p-3 md:max-w-[65%] mt-2 rounded-t-lg ${message.sender === 'You' ? 'bg-blue-100' +
+                            ' rounded-b-lg' +
                             ' ml-auto max-w-[80%]' : 'bg-gray-100'}`}>
                           <p className="font-semibold">{message.sender}</p>
                           <ReactMarkdown
