@@ -19,6 +19,7 @@ import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {APIProvider} from '@vis.gl/react-google-maps';
 import {CopyIcon} from "lucide-react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
+import {Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger} from "@/components/ui/drawer";
 
 interface ChatInterfaceProps {
   showDataView: boolean;
@@ -221,7 +222,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
           </TabsList>
         </Tabs>
       </div>
-      <ScrollArea ref={scrollAreaRef} className="flex-grow pr-4">
+      <ScrollArea ref={scrollAreaRef} className="flex-grow pr-1 md:pr-4">
         <div className="flex-1 overflow-hidden">
           <div className="p-4 space-y-4">
             <AnimatePresence mode="wait">
@@ -296,72 +297,79 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                               <CopyIcon className="mr-2 w-4 h-4"/>
                               Copy
                             </Button>
-                            <Dialog>
-                              <DialogTrigger>
+                            <Drawer>
+                              <DrawerTrigger>
                                 <p className="text-xs text-gray-500 transition-colors hover:text-gray-700 cursor-pointer mr-1.5">
                                   Use generations <span className="text-blue-700 hover:text-gray-700">with caution.</span>
                                 </p>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl"> {/* Adjust max-width as needed */}
-                                <DialogHeader>
-                                  <DialogTitle>Caution</DialogTitle>
-                                </DialogHeader>
-                                <div className="prose">
-                                  <markdownComponents.h1>
-                                    Generative Real Estate Content
-                                  </markdownComponents.h1>
+                              </DrawerTrigger>
+                              <DrawerContent className="max-h-[70vh]">
+                                <DrawerHeader>
+                                </DrawerHeader>
+                                <ScrollArea className={"max-w-2xl mb-8 mx-auto px-4 h-[70vh] overflow-auto"}>
+                                  <div>
+                                    <markdownComponents.h1>
+                                      Generative Real Estate Content
+                                    </markdownComponents.h1>
 
-                                  <markdownComponents.p>
-                                    Our real estate app now offers experimental access to content generation features
-                                    powered by generative AI
-                                    technology. This warning applies to the services and features that utilize this technology.
-                                  </markdownComponents.p>
+                                    <markdownComponents.p>
+                                      Our real estate app now offers experimental access to content generation features
+                                      powered by generative AI
+                                      technology. This warning applies to the services and features that utilize this
+                                      technology.
+                                    </markdownComponents.p>
 
-                                  <markdownComponents.h2>
-                                    Use Responsibly
-                                  </markdownComponents.h2>
+                                    <markdownComponents.h2>
+                                      Use Responsibly
+                                    </markdownComponents.h2>
 
-                                  <markdownComponents.p>
-                                    Our generative real estate content features are still experimental, and you're
-                                    responsible for your use of
-                                    suggested content. Exercise discretion and carefully review
-                                    all generated content for
-                                    accuracy, appropriateness, and compliance with real estate regulations before
-                                    relying on it or sharing it with
-                                    clients.
-                                  </markdownComponents.p>
+                                    <markdownComponents.p>
+                                      Our generative real estate content features are still experimental, and
+                                      you&apos;re
+                                      responsible for your use of
+                                      suggested content. Exercise discretion and carefully review
+                                      all generated content for
+                                      accuracy, appropriateness, and compliance with real estate regulations before
+                                      relying on it or sharing it with
+                                      clients.
+                                    </markdownComponents.p>
 
-                                  <markdownComponents.h2>Content Originality</markdownComponents.h2>
+                                    <markdownComponents.h2>Content Originality</markdownComponents.h2>
 
-                                  <markdownComponents.p>
-                                    Our generative real estate features are designed to produce original content and not
-                                    replicate existing listings
-                                    or descriptions at length. We've implemented systems to minimize the chances of this
-                                    occurring, and we
-                                    continuously work to improve these systems.
-                                  </markdownComponents.p>
+                                    <markdownComponents.p>
+                                      Our generative real estate features are designed to produce original content and
+                                      not
+                                      replicate existing listings
+                                      or descriptions at length. We&apos;ve implemented systems to minimize the chances
+                                      of this
+                                      occurring, and we
+                                      continuously work to improve these systems.
+                                    </markdownComponents.p>
 
-                                  <markdownComponents.h2>Editing and Customization</markdownComponents.h2>
+                                    <markdownComponents.h2>Editing and Customization</markdownComponents.h2>
 
-                                  <markdownComponents.p>
-                                    While our AI generates content based on your inputs, it's essential to customize and
-                                    edit the results to
-                                    accurately reflect specific properties, market conditions, and your professional
-                                    expertise. The generated
-                                    content should serve as a starting point, not a final product.
-                                  </markdownComponents.p>
+                                    <markdownComponents.p>
+                                      While our AI generates content based on your inputs, it&apos;s essential to
+                                      customize and
+                                      edit the results to
+                                      accurately reflect specific properties, market conditions, and your professional
+                                      expertise. The generated
+                                      content should serve as a starting point, not a final product.
+                                    </markdownComponents.p>
 
-                                  <markdownComponents.h2>Feedback</markdownComponents.h2>
+                                    <markdownComponents.h2>Feedback</markdownComponents.h2>
 
-                                  <markdownComponents.p>
-                                    We value your input in improving our generative real estate content features. If you
-                                    encounter any issues,
-                                    inaccuracies, or have suggestions for enhancement, please use the feedback option
-                                    within the app to let us know.
-                                  </markdownComponents.p>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
+                                    <markdownComponents.p>
+                                      We value your input in improving our generative real estate content features. If
+                                      you
+                                      encounter any issues,
+                                      inaccuracies, or have suggestions for enhancement, please use the feedback option
+                                      within the app to let us know.
+                                    </markdownComponents.p>
+                                  </div>
+                                </ScrollArea>
+                              </DrawerContent>
+                            </Drawer>
                           </div>
                         )}
                       </motion.div>
