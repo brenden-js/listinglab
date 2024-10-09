@@ -41,3 +41,5 @@ next-env.d.ts
 # open-next
 .open-next
 /.idea/codeStyles/codeStyleConfig.xml
+/.worker-next/
+/.wrangler/

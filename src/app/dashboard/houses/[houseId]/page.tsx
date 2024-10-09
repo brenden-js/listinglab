@@ -53,7 +53,7 @@ const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
           <Accordion
             type="single"
             collapsible
-            className="bg-gray-50 px-3 rounded-lg my-4"
+            className="bg-gray-50 px-3 rounded-lg my-0 mt-4 sm:my-4"
             defaultValue={typeof window === 'undefined' ?  "" : window.innerWidth > 768 ? "item-1" : ""}
           >
             <AccordionItem value="item-1">
