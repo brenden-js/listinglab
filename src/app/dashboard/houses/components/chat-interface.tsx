@@ -165,7 +165,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
   }, [chatData[currentChat], updateChat.isPending]);
 
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement> | undefined) => {
+    if (e){
+     e.preventDefault();
+    }
     if (newMessage.trim() === "") return;
 
     if (!house) return;
@@ -192,7 +195,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
   const onEnterPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.keyCode == 13 && e.shiftKey == false) {
       e.preventDefault();
-      handleSendMessage();
+      handleSendMessage(undefined);
     }
   }
 
@@ -437,17 +440,22 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
               <p>{currentChat} Data</p></>)}
           </Button>
           <ResetChatSlider houseId={house.id} topic={currentChat}/>
+          <Button type="submit" className="w-[50px]sm:w-[150px] sm:hidden block"
+                  disabled={newMessage.trim() === "" || updateChat.isPending}>
+            <PaperPlaneIcon className="sm:mr-2"/>
+            <p className="hidden sm:block">Send</p>
+          </Button>
         </div>
         <form className="flex space-x-2" onSubmit={handleSendMessage}>
           <Textarea
             placeholder="Type your message here..."
-            className="flex-grow p-2 border rounded-lg"
+            className="flex-grow p-2 border rounded-lg sm:text-md text-[16px]"
             disabled={updateChat.isPending}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={onEnterPress}
           />
-          <Button type="submit" className="w-[50px]sm:w-[150px]"
+          <Button type="submit" className="w-[50px]sm:w-[150px] sm:flex hidden"
                   disabled={newMessage.trim() === "" || updateChat.isPending}>
             <PaperPlaneIcon className="sm:mr-2"/>
             <p className="hidden sm:block">Send</p>
