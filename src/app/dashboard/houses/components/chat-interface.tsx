@@ -6,7 +6,11 @@ import {toast} from "sonner";
 import {defaultChatData} from "@/app/dashboard/houses/components/default-chats";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {AnimatePresence, motion} from "framer-motion";
-import {FinancialView, LocationView, PropertyView} from "@/app/dashboard/houses/components/chat-data-views";
+import {
+  FinancialView,
+  LocationView,
+  PropertyView
+} from "@/app/dashboard/houses/components/chat-data-views";
 import Image from "next/image";
 import {Button} from "@/components/ui/button";
 import {ResetChatSlider} from "@/app/dashboard/houses/components/reset-chat-slider";
@@ -18,9 +22,24 @@ import {cn} from "@/lib/utils";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {APIProvider} from '@vis.gl/react-google-maps';
 import {CopyIcon} from "lucide-react";
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
-import {Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger} from "@/components/ui/drawer";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription, DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader, DrawerTitle,
+  DrawerTrigger
+} from "@/components/ui/drawer";
 import {Separator} from "@/components/ui/separator";
+import {Input} from "@/components/ui/input";
+import {Card} from "@/components/ui/card";
+
 
 interface ChatInterfaceProps {
   showDataView: boolean;
@@ -30,6 +49,12 @@ interface ChatInterfaceProps {
 
 type ChatType = 'Property' | 'Location' | 'Financial' | 'Main';
 
+// Define an interface for your prompts
+interface Prompt {
+  promptId: string;
+  prompt: string;
+  name: string;
+}
 
 const baseTextStyles = "text-gray-800 leading-relaxed";
 const headingStyles = "font-semibold tracking-tight";
@@ -164,10 +189,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
     scrollToBottom();
   }, [chatData[currentChat], updateChat.isPending]);
 
-
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement> | undefined) => {
-    if (e){
-     e.preventDefault();
+    if (e) {
+      e.preventDefault();
     }
     if (newMessage.trim() === "") return;
 
@@ -193,7 +217,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
   };
 
   const onEnterPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.keyCode == 13 && e.shiftKey == false) {
+    if (e.keyCode === 13 && e.shiftKey === false) {
       e.preventDefault();
       handleSendMessage(undefined);
     }
@@ -203,6 +227,46 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
     navigator.clipboard.writeText(message);
     toast.success("Copied to clipboard.");
   };
+
+  const getPrompts = api.user.getPrompts.useQuery()
+
+  const promptMutation = api.user.addPrompt.useMutation({
+    onSuccess: () => {
+      toast.success("Added prompt")
+      getPrompts.refetch()
+      setNewPromptOpen(false)
+    }
+  });
+
+
+  // Define your prompts here
+  const prompts: Prompt[] = [
+    {
+      promptId: "default-1",
+      prompt: "Can you provide an investment analysis for this property, considering factors like market trends, potential rental income, and cash flow?",
+      name: "Analyze Investment Potential",
+    },
+    {
+      promptId: "default-2",
+      prompt: "Tell me about the neighborhood where this property is located. What are the schools, parks, restaurants, and shopping options like?",
+      name: "Describe Neighborhood",
+    },
+    {
+      promptId: "default-3",
+      prompt: "How does this property compare to similar listings in the same price range and location?",
+      name: "Compare to Other Listings",
+    },
+  ]
+
+  // Function to handle adding a prompt to the chat
+  const handleAddPrompt = (prompt: Prompt) => {
+    toast.success("Prompt added to chat!", {position: "top-center"})
+    setNewMessage(prompt.prompt)
+  };
+
+  const [newPrompt, setNewPrompt] = useState<{ name: string, prompt: string }>({name: '', prompt: ''});
+
+  const [newPromptOpen, setNewPromptOpen] = useState(false);
 
   if (!house) return null;
   return (
@@ -219,13 +283,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
           </Button>
         </div>
         <Tabs value={currentChat} onDoubleClick={() => setShowDataView(!showDataView)}
-              onValueChange={setCurrentChat as any} className=" pl-2 sm:pl-4 flex-grow">
+              onValueChange={setCurrentChat as any} className=" px-2 sm:pl-4 flex-grow">
           <TabsList>
             <TabsTrigger value="Property">Property</TabsTrigger>
             <TabsTrigger value="Location">Location</TabsTrigger>
             <TabsTrigger value="Financial">Financial</TabsTrigger>
           </TabsList>
         </Tabs>
+        <ResetChatSlider houseId={house.id} topic={currentChat}/>
       </div>
       <Separator className=""/>
       <ScrollArea ref={scrollAreaRef} className="flex-grow pr-1 md:pr-4">
@@ -244,7 +309,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                     <PropertyView house={house}/>
                   )}
                   {currentChat === 'Financial' && house.investment !== null && (
-                    <FinancialView investment={JSON.parse(house.investment)} listingPrice={house.price!}/>
+                    <FinancialView investment={JSON.parse(house.investment)}
+                                   listingPrice={house.price!}/>
                   )}
                   <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
                     {currentChat === 'Location' && house.nearbyPlaces !== null && (
@@ -276,6 +342,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                   animate={{opacity: 1, y: 0}}
                   transition={{duration: 0.05}}
                 >
+                  <div className="flex items-center mb-6 mt-3 justify-center sm:hidden">
+                    <ResetChatSlider houseId={house.id} topic={currentChat}/>
+                  </div>
+
                   <AnimatePresence initial={false}>
                     {chatData[currentChat].map((message: {
                       sender: string;
@@ -298,7 +368,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                           </ReactMarkdown>
                         </div>
                         {message.sender !== 'You' && (
-                          <div className={"bg-gray-200 p-1.5 flex justify-between rounded-b-lg md:max-w-[65%]"}>
+                          <div
+                            className={"bg-gray-200 p-1.5 flex justify-between rounded-b-lg md:max-w-[65%]"}>
                             <Button variant={"ghost"} size={"sm"} className={''}
                                     onClick={() => handleCopyClick(message.message)}>
                               <CopyIcon className="mr-2 w-4 h-4"/>
@@ -306,21 +377,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                             </Button>
                             <Drawer>
                               <DrawerTrigger>
-                                <p className="text-xs text-gray-500 transition-colors hover:text-gray-700 cursor-pointer mr-1.5">
-                                  Use generations <span className="text-blue-700 hover:text-gray-700">with caution.</span>
+                                <p
+                                  className="text-xs text-gray-500 transition-colors hover:text-gray-700 cursor-pointer mr-1.5">
+                                  Use generations <span
+                                  className="text-blue-700 hover:text-gray-700">with caution.</span>
                                 </p>
                               </DrawerTrigger>
                               <DrawerContent className="max-h-[70vh]">
                                 <DrawerHeader>
                                 </DrawerHeader>
-                                <ScrollArea className={"max-w-2xl mb-8 mx-auto px-4 h-[70vh] overflow-auto"}>
+                                <ScrollArea
+                                  className={"max-w-2xl mb-8 mx-auto px-4 h-[70vh] overflow-auto"}>
                                   <div>
                                     <markdownComponents.h1>
                                       Generative Real Estate Content
                                     </markdownComponents.h1>
 
                                     <markdownComponents.p>
-                                      Our real estate app now offers experimental access to content generation features
+                                      Our real estate app now offers experimental access to content generation
+                                      features
                                       powered by generative AI
                                       technology. This warning applies to the services and features that utilize this
                                       technology.
@@ -341,25 +416,30 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                                       clients.
                                     </markdownComponents.p>
 
-                                    <markdownComponents.h2>Content Originality</markdownComponents.h2>
+                                    <markdownComponents.h2>Content
+                                      Originality
+                                    </markdownComponents.h2>
 
                                     <markdownComponents.p>
                                       Our generative real estate features are designed to produce original content and
                                       not
                                       replicate existing listings
-                                      or descriptions at length. We&apos;ve implemented systems to minimize the chances
-                                      of this
+                                      or descriptions at length. We&apos;ve implemented systems to minimize the
+                                      chances of this
                                       occurring, and we
                                       continuously work to improve these systems.
                                     </markdownComponents.p>
 
-                                    <markdownComponents.h2>Editing and Customization</markdownComponents.h2>
+                                    <markdownComponents.h2>Editing and
+                                      Customization
+                                    </markdownComponents.h2>
 
                                     <markdownComponents.p>
                                       While our AI generates content based on your inputs, it&apos;s essential to
                                       customize and
                                       edit the results to
-                                      accurately reflect specific properties, market conditions, and your professional
+                                      accurately reflect specific properties, market conditions, and your
+                                      professional
                                       expertise. The generated
                                       content should serve as a starting point, not a final product.
                                     </markdownComponents.p>
@@ -370,7 +450,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
                                       We value your input in improving our generative real estate content features. If
                                       you
                                       encounter any issues,
-                                      inaccuracies, or have suggestions for enhancement, please use the feedback option
+                                      inaccuracies, or have suggestions for enhancement, please use the feedback
+                                      option
                                       within the app to let us know.
                                     </markdownComponents.p>
                                   </div>
@@ -436,11 +517,96 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({showDataView, setSh
             onClick={() => setShowDataView(!showDataView)}
             className={"mb-4 w-[175px]"}
           >
-            {showDataView ? <p className="block">Back to Chat</p> : (<><p className="hidden sm:block sm:mr-1">View</p>
-              <p>{currentChat} Data</p></>)}
+            {showDataView ?
+              <p className="block">Back to Chat</p> : (<>
+                <p className="hidden sm:block sm:mr-1">View</p>
+                <p>{currentChat} Data</p>
+              </>)}
           </Button>
-          <ResetChatSlider houseId={house.id} topic={currentChat}/>
-          <Button type="submit" className="w-[50px]sm:w-[150px] sm:hidden block"
+          {/* Drawer for Prompts */}
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button variant="outline" className="w-[175px]">
+                Prompts
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="w-full min-h-[50vh] max-h-[90vh]">
+              <DrawerHeader>
+                <DrawerTitle className="mx-auto">Prompts</DrawerTitle>
+              </DrawerHeader>
+              <div className="mx-auto">
+                <Dialog open={newPromptOpen} onOpenChange={setNewPromptOpen}>
+                  <DialogTrigger className={""}>
+                    <Button variant="outline" className="w-[175px]">
+                      Create new prompt
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="w-[100vw] sm:min-w-[50vw] h-[100vh] sm:h-[50vh]">
+                    <DialogHeader>
+                      <DialogTitle>Add a prompt</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input value={newPrompt.name} placeholder="Prompt name"
+                             onChange={(e) => setNewPrompt({...newPrompt, name: e.target.value})}
+                             className="w-full text-[16px]"/>
+                      <Textarea value={newPrompt.prompt} placeholder="Prompt"
+                                onChange={(e) => setNewPrompt({...newPrompt, prompt: e.target.value})}
+                                className="w-full text-[16px]"/>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="default"
+                        className=""
+                        onClick={() => {
+                          promptMutation.mutate({name: newPrompt.name, prompt: newPrompt.prompt})
+                        }
+                        }
+                        disabled={promptMutation.isPending}
+                      >
+                        Save
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <Separator className="my-4"/>
+              <div className="flex flex-col items-center mx-auto max-w-2xl space-x-2 p-4 space-y-2">
+                <h4 className="text-lg font-medium text-gray-900">My prompts</h4>
+                <div className="space-x-2 flex flex-overflow-wrap items-center">
+                  {getPrompts.data?.map((prompt: Prompt) => (
+                    <div key={prompt.promptId} className="p-3 text-sm border rounded-lg hover:cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => {
+                        handleAddPrompt(prompt);
+                      }}
+                    >
+                      {prompt.name}
+                    </div>
+                  ))}
+                </div>
+                {getPrompts.data?.length === 0 && (
+                  <div className="mx-auto text-center text-gray-500 text-sm">
+                    No prompts found. Add some to get started!
+                  </div>
+                )}
+              </div>
+              <Separator className="my-4"/>
+              <div className="mx-auto max-w-2xl space-x-2 p-4 space-y-2 ">
+                <h4 className="mx-auto text-center text-lg font-medium text-gray-900">Templates</h4>
+                <div className="space-x-2 flex flex-overflow-wrap items-center">
+                  {prompts.map((prompt, index) => (
+                    <div key={prompt.promptId} className="p-3 text-sm border rounded-lg hover:cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => {
+                              handleAddPrompt(prompt)
+                            }}>
+                      {prompt.name}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
+
+          <Button type="submit" className="w-[50px] sm:w-[150px] sm:hidden block"
                   disabled={newMessage.trim() === "" || updateChat.isPending}>
             <PaperPlaneIcon className="sm:mr-2"/>
             <p className="hidden sm:block">Send</p>
