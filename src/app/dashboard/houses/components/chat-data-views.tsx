@@ -129,7 +129,7 @@ export const LocationView: React.FC<LocationViewProps> = ({ nearbyPlaces, lat, l
       </div>
       <div className={"mt-4 grid gap-3 grid-cols-3"}>
         {places.map((place, index) => (
-          <Card className={""} key={index}>
+          <Card className={"col-span-3 xl:col-span-1"} key={index}>
             <CardHeader>
               <h3 className={"text-lg font-bold"}>{place.displayName.text}</h3>
               <h4>{place.editorialSummary?.text}</h4>
@@ -212,19 +212,19 @@ export const FinancialView: React.FC<FinancialViewProps> = ({investment, listing
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div className="">
+      <div className="col-span-2 sm:col-span-1">
         <MortgagePaymentChart loan={fhaLoan} loanType="FHA"/>
       </div>
-      <div className="">
+      <div className="col-span-2 sm:col-span-1">
         <MortgagePaymentChart loan={conventionalLoan} loanType="Conventional"/>
       </div>
       <div className="col-span-2">
         <AppreciationChart/>
       </div>
-      <div>
+      <div className={"col-span-2 sm:col-span-1"}>
         <EquityChart listingPrice={listingPrice} loanType={'fha'}/>
       </div>
-      <div>
+      <div className={"col-span-2 sm:col-span-1"}>
         <EquityChart listingPrice={listingPrice} loanType={'conventional'}/>
       </div>
     </div>

@@ -59,7 +59,6 @@ const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
             <AccordionItem value="item-1">
               <AccordionTrigger>House Details</AccordionTrigger>
               <AccordionContent>
-                <ScrollArea className="h-full">
                   <div className="space-y-4">
                     <h2 className="text-xl font-bold">
                       {house.data.price
@@ -103,7 +102,6 @@ const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
                       />
                     )}
                   </div>
-                </ScrollArea>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
