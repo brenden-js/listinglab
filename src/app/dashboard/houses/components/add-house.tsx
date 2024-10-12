@@ -47,13 +47,12 @@ export const AddHouse = () => {
       if (!open) setNewHousePreview(undefined)
     }}>
       <DialogTrigger asChild>
-        <button
-          type="button"
-          className="p-3 flex hover:bg-gray-50 transition-colors items-center w-full duration-100 rounded-lg border-2 border-dashed border-gray-300 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+        <Button
+          variant="outline"
         >
           <PlusIcon className="mx-auto text-gray-400"/>
           <span className="block text-sm font-medium text-gray-900 hover:text-gray-700 transition-colors">Add house</span>
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[650px]">
         <DialogHeader>

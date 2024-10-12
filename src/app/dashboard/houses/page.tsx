@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { api } from "@/trpc/react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Table,
   TableBody,
@@ -23,16 +24,35 @@ import {
   getSortedRowModel,
   ColumnFiltersState,
   getFilteredRowModel,
+  RowSelectionState,
 } from "@tanstack/react-table"
-
 import { HouseDialogProvider } from "@/app/dashboard/contexts/house-dialog-context"
 import { AddZipCodeDialog } from "@/app/dashboard/houses/components/zip-dialog"
 import { AddHouse } from "@/app/dashboard/houses/components/add-house"
-import {House} from "@/app/dashboard/contexts/prompts";
-import Link from "next/link";
-
+import { House } from "@/app/dashboard/contexts/prompts"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 const columns: ColumnDef<House>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "stAddress",
     header: "Address",
@@ -88,6 +108,7 @@ const columns: ColumnDef<House>[] = [
 ]
 
 export default function HousesPageOverview() {
+  const router = useRouter()
   const currentZipCodes = api.house.getUserZipCodes.useQuery()
   const { data: housesData, isLoading: housesLoading } = api.house.getHouses.useQuery()
   const [selectedZipCode, setSelectedZipCode] = useState<string | undefined>(undefined)
@@ -96,6 +117,8 @@ export default function HousesPageOverview() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState("")
+  const [selectedHouses, setSelectedHouses] = useState<House[]>([])
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   useEffect(() => {
     if (currentZipCodes.isSuccess && currentZipCodes.data.length > 0) {
@@ -122,6 +145,25 @@ export default function HousesPageOverview() {
 
   const filteredHouses = getFilteredHouses()
 
+  const onRowSelectionChange = useCallback((updater: ((prev: RowSelectionState) => RowSelectionState) | RowSelectionState) => {
+    let newSelection: RowSelectionState
+    if (typeof updater === 'function') {
+      newSelection = updater(rowSelection)
+    } else {
+      newSelection = updater
+    }
+
+    const selectedCount = Object.values(newSelection).filter(Boolean).length
+    if (selectedCount <= 5) {
+      setRowSelection(newSelection)
+    }
+  }, [rowSelection])
+
+  useEffect(() => {
+    const selectedHouses = filteredHouses.filter((_, index) => rowSelection[index])
+    setSelectedHouses(selectedHouses)
+  }, [rowSelection, filteredHouses])
+
   const table = useReactTable({
     data: filteredHouses,
     columns,
@@ -136,13 +178,21 @@ export default function HousesPageOverview() {
       sorting,
       columnFilters,
       globalFilter,
+      rowSelection,
     },
+    enableRowSelection: true,
+    onRowSelectionChange: onRowSelectionChange,
     initialState: {
       pagination: {
         pageSize: 30,
       },
     },
   })
+
+  const chatWithSelectedHouses = () => {
+    const selectedIds = selectedHouses.map((house) => house!.id).join('/')
+    router.push(`/dashboard/houses/multi/${selectedIds}`)
+  }
 
   return (
     <HouseDialogProvider>
@@ -160,8 +210,8 @@ export default function HousesPageOverview() {
         </div>
         <Separator />
         <div className="p-3">
-          <div className={"flex justify-between"}>
-            <div className="flex gap-2 mb-4">
+          <div className="flex justify-between mb-4">
+            <div className="flex gap-2">
               <Button
                 variant={activeFilter === "all" ? "default" : "outline"}
                 onClick={() => setActiveFilter("all")}
@@ -181,8 +231,14 @@ export default function HousesPageOverview() {
                 New
               </Button>
             </div>
-            <div className="">
-              <AddHouse/>
+            <div className="flex gap-2">
+              <Button
+                onClick={chatWithSelectedHouses}
+                disabled={selectedHouses.length < 2}
+              >
+                Chat with selected houses ({selectedHouses.length})
+              </Button>
+              <AddHouse />
             </div>
           </div>
 
