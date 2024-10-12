@@ -1,8 +1,8 @@
 "use client"
 import React, {useCallback, useState} from 'react';
-import {House} from "@/app/dashboard/contexts/prompts";
-import {MortgagePaymentChart} from "@/app/dashboard/houses/components/chart-mortgage";
-import {Place} from "@/inngest/functions/helpers/types";
+import {House} from "../contexts/prompts";
+import {MortgagePaymentChart} from "./chart-mortgage";
+import {Place} from "../../../inngest/functions/helpers/types";
 import {
   Map,
   AdvancedMarker,
@@ -12,10 +12,10 @@ import {
   useAdvancedMarkerRef, AdvancedMarkerProps
 } from "@vis.gl/react-google-maps";
 import {PinIcon} from "lucide-react";
-import {Card, CardHeader} from "@/components/ui/card";
-import {Badge} from "@/components/ui/badge";
-import {AppreciationChart} from "@/app/dashboard/houses/components/chart-appreciation";
-import EquityChart from "@/app/dashboard/houses/components/chart-equity";
+import {Card, CardHeader} from "../../../components/ui/card";
+import {Badge} from "../../../components/ui/badge";
+import {AppreciationChart} from "./chart-appreciation";
+import EquityChart from "./chart-equity";
 
 
 // Property component

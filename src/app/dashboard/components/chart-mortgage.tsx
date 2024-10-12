@@ -9,14 +9,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "../../../components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import {LoanInfo} from "@/app/dashboard/houses/components/chat-data-views";
+} from "../../../components/ui/chart";
+import {LoanInfo} from "./chat-data-views";
 
 interface MortgagePaymentChartData {
   name: string;

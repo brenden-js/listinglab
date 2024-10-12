@@ -1,23 +1,23 @@
 import React, {useEffect, useState} from "react";
-import {api} from "@/trpc/react";
+import {api} from "../../../trpc/react";
 import {toast} from "sonner";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
+import {Input} from "../../../components/ui/input";
+import {Button} from "../../../components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import {ScrollArea} from "@/components/ui/scroll-area";
+} from "../../../components/ui/dialog";
+import {ScrollArea} from "../../../components/ui/scroll-area";
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "../../../components/ui/card";
 import {Loader, SearchIcon} from "lucide-react";
 
 export const AddZipCodeDialog = ({open, onOpenChange}: {

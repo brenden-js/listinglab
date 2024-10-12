@@ -2,7 +2,7 @@
 import {Separator} from "@/components/ui/separator";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {api} from "@/trpc/react";
-import PremiumAccountButton from "@/app/dashboard/components/premium-account-button";
+import PremiumAccountButton from "../components/premium-account-button";
 
 export default function Component() {
   const apiLimits = api.user.getSubscription.useQuery()

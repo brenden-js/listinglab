@@ -1,14 +1,14 @@
 import React, {useState} from "react";
-import {House} from "@/app/dashboard/contexts/prompts";
-import {useHouseDialog} from "@/app/dashboard/contexts/house-dialog-context";
-import {api} from "@/trpc/react";
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {LiveDataFeed} from "@/app/dashboard/components/live-data-feed";
-import {Button} from "@/components/ui/button";
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {ChatInterface} from "@/app/dashboard/houses/components/chat-interface";
-import {cn} from "@/lib/utils";
+import {House} from "../contexts/prompts";
+import {useHouseDialog} from "../contexts/house-dialog-context";
+import {api} from "../../../trpc/react";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "../../../components/ui/dialog";
+import {ScrollArea} from "../../../components/ui/scroll-area";
+import {LiveDataFeed} from "./live-data-feed";
+import {Button} from "../../../components/ui/button";
+import {Tabs, TabsList, TabsTrigger} from "../../../components/ui/tabs";
+import {ChatInterface} from "./chat-interface";
+import {cn} from "../../../lib/utils";
 
 export const HouseDialog: React.FC<{
     house: House,

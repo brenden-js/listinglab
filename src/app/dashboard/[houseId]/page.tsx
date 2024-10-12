@@ -1,10 +1,10 @@
 "use client"
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { LiveDataFeed } from "@/app/dashboard/components/live-data-feed";
-import { Button } from "@/components/ui/button";
-import { ChatInterface } from "@/app/dashboard/houses/components/chat-interface";
+import { ScrollArea } from "../../../components/ui/scroll-area";
+import { LiveDataFeed } from "../components/live-data-feed";
+import { Button } from "../../../components/ui/button";
+import { ChatInterface } from "../components/chat-interface";
 import React, { useEffect, useState } from "react";
-import { api } from "@/trpc/react";
+import { api } from "../../../trpc/react";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import {
@@ -12,8 +12,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import {Separator} from "@/components/ui/separator";
+} from "../../../components/ui/accordion";
+import {Separator} from "../../../components/ui/separator";
 
 const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
   const house = api.house.getHouseDetails.useQuery(params.houseId);
@@ -36,7 +36,7 @@ const HouseDetailsPage = ({ params }: { params: { houseId: string } }) => {
   return (
     <div className="w-full h-full md:max-h-[100vh] flex flex-col">
       <div className="flex items-center p-4">
-        <Link href={`/dashboard/houses`} passHref>
+        <Link href={`/dashboard`} passHref>
           <Button variant="secondary" size="sm" className="mr-2">
             <ArrowLeftIcon className="mr-2" />
             Houses

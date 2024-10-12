@@ -7,14 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import {Card, CardContent, CardHeader} from "@/components/ui/card";
-import {Button} from "@/components/ui/button";
-import {api} from "@/trpc/react";
+} from "../../../components/ui/dialog";
+import {Card, CardContent, CardHeader} from "../../../components/ui/card";
+import {Button} from "../../../components/ui/button";
+import {api} from "../../../trpc/react";
 import {useContext, useState} from "react";
-import {Input} from "@/components/ui/input";
+import {Input} from "../../../components/ui/input";
 import {PlusIcon, ReloadIcon} from "@radix-ui/react-icons";
-import {CurrentPromptContext, UnhydratedHouse} from "@/app/dashboard/contexts/prompts";
+import {CurrentPromptContext, UnhydratedHouse} from "../contexts/prompts";
 import {toast} from "sonner";
 import Link from "next/link";
 
@@ -89,7 +89,7 @@ export const AddHouse = () => {
               <CardHeader>
                 <CardContent className="pt-5 flex items-center justify-between">
                   {newHousePreview.stAddress}, {newHousePreview.city} {newHousePreview.zipCode} found!
-                  <Link href={`/dashboard/houses/${newHousePreview.id}`} passHref>
+                  <Link href={`/dashboard/${newHousePreview.id}`} passHref>
                     <Button variant={'default'}>Go to house</Button>
                   </Link>
                 </CardContent>

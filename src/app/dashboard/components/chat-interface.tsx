@@ -1,25 +1,25 @@
 "use client"
 import React, {useEffect, useRef, useState} from "react";
-import {api} from "@/trpc/react";
-import {House} from "@/app/dashboard/contexts/prompts";
+import {api} from "../../../trpc/react";
+import {House} from "../contexts/prompts";
 import {toast} from "sonner";
-import {defaultChatData} from "@/app/dashboard/houses/components/default-chats";
-import {ScrollArea} from "@/components/ui/scroll-area";
+import {defaultChatData} from "./default-chats";
+import {ScrollArea} from "../../../components/ui/scroll-area";
 import {AnimatePresence, motion} from "framer-motion";
 import {
   FinancialView,
   LocationView,
   PropertyView
-} from "@/app/dashboard/houses/components/chat-data-views";
+} from "./chat-data-views";
 import Image from "next/image";
-import {Button} from "@/components/ui/button";
-import {ResetChatSlider} from "@/app/dashboard/houses/components/reset-chat-slider";
-import {Textarea} from "@/components/ui/textarea";
+import {Button} from "../../../components/ui/button";
+import {ResetChatSlider} from "./reset-chat-slider";
+import {Textarea} from "../../../components/ui/textarea";
 import {PaperPlaneIcon} from "@radix-ui/react-icons";
 import ReactMarkdown from 'react-markdown';
 import {twMerge} from "tailwind-merge";
-import {cn} from "@/lib/utils";
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {cn} from "../../../lib/utils";
+import {Tabs, TabsList, TabsTrigger} from "../../../components/ui/tabs";
 import {APIProvider} from '@vis.gl/react-google-maps';
 import {CopyIcon} from "lucide-react";
 import {
@@ -29,16 +29,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger
-} from "@/components/ui/dialog";
+} from "../../../components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
   DrawerHeader, DrawerTitle,
   DrawerTrigger
-} from "@/components/ui/drawer";
-import {Separator} from "@/components/ui/separator";
-import {Input} from "@/components/ui/input";
-import {Card} from "@/components/ui/card";
+} from "../../../components/ui/drawer";
+import {Separator} from "../../../components/ui/separator";
+import {Input} from "../../../components/ui/input";
+import {Card} from "../../../components/ui/card";
 
 
 interface ChatInterfaceProps {

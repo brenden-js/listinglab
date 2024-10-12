@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import ReactMarkdown from 'react-markdown';
-import { markdownComponents } from "@/app/dashboard/houses/components/chat-interface";
+import { markdownComponents } from "../../dashboard/components/chat-interface";
 import { Input } from "@/components/ui/input";
 
 interface Message {

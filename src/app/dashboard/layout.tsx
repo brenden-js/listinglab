@@ -2,8 +2,8 @@ import {UserButton} from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import {headers} from "next/headers";
-import {SideNavigation} from "@/app/dashboard/components/side-navigation";
-import MobileSidebar from "@/app/dashboard/components/sidebar";
+import {SideNavigation} from "./components/side-navigation";
+import MobileSidebar from "./components/sidebar";
 import {TRPCReactProvider} from "@/trpc/react";
 import {PromptsProvider} from "@/app/dashboard/contexts/prompts";
 

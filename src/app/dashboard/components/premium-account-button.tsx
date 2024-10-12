@@ -1,8 +1,8 @@
 "use client"
-import {Button} from "@/components/ui/button";
+import {Button} from "../../../components/ui/button";
 import {LightningBoltIcon} from "@radix-ui/react-icons";
 import {useEffect} from "react";
-import {api} from "@/trpc/react";
+import {api} from "../../../trpc/react";
 
 
 export default function PremiumAccountButton() {

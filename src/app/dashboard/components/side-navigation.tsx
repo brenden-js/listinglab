@@ -17,9 +17,8 @@ export const SideNavigation = () => {
 
 
   const navigation = [
-    {name: 'Generate', href: '/dashboard', icon: MagicWandIcon, current: path === '/dashboard'},
     {name: 'Subscriptions', href: '/dashboard/subscriptions', icon: LightningBoltIcon, current: path === '/dashboard/subscriptions'},
-    {name: 'Houses', href: '/dashboard/houses', icon: HomeIcon, current: path === '/dashboard/houses'},
+    {name: 'Listings', href: '/dashboard', icon: HomeIcon, current: path === '/dashboard'},
     {name: 'About', href: '/dashboard/about', icon: PersonIcon, current: path === '/dashboard/about'}
   ]
 

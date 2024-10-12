@@ -1,7 +1,7 @@
 import React from "react";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {Badge} from "@/components/ui/badge";
-import {House} from "@/app/dashboard/contexts/prompts";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "../../../components/ui/card";
+import {Badge} from "../../../components/ui/badge";
+import {House} from "../contexts/prompts";
 import {formatDistanceToNow} from 'date-fns'; // Import date-fns function
 interface HousePreviewCardProps {
   house: House;

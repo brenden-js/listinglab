@@ -1,10 +1,9 @@
 "use client"
 import { cn } from "@/lib/utils"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { LiveDataFeed } from "@/app/dashboard/components/live-data-feed"
+import { LiveDataFeed } from "../../components/live-data-feed"
 import { Button } from "@/components/ui/button"
 import React from "react"
-import { api } from "@/trpc/react"
+import {api} from "@/trpc/react";
 import Link from "next/link"
 import { ArrowLeftIcon } from "@radix-ui/react-icons"
 import {
@@ -12,10 +11,10 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MultiChatInterface } from "@/app/dashboard/houses/multi/[[...houseIds]]/multichat-interface"
+import { MultiChatInterface } from "./multichat-interface"
 
 interface MultiHouseDetailsPageProps {
   houseIds: string[]
@@ -37,7 +36,7 @@ export default function MultiHouseDetailsPage({ houseIds }: MultiHouseDetailsPag
   return (
     <div className="w-full h-full md:max-h-[100vh] flex flex-col">
       <div className="flex items-center p-4">
-        <Link href="/dashboard/houses" passHref>
+        <Link href="/dashboard" passHref>
           <Button variant="secondary" size="sm" className="mr-2">
             <ArrowLeftIcon className="mr-2" />
             Houses

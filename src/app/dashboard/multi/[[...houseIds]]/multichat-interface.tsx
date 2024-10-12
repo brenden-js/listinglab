@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import { api } from "@/trpc/react"
-import { House } from "@/app/dashboard/contexts/prompts"
 import { toast } from "sonner"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { AnimatePresence, motion } from "framer-motion"

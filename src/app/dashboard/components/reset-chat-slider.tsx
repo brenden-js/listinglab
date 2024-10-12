@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import {ArrowRightIcon} from "@radix-ui/react-icons";
-import {api} from "@/trpc/react";
-import {defaultChatData} from "@/app/dashboard/houses/components/default-chats";
+import {api} from "../../../trpc/react";
+import {defaultChatData} from "./default-chats";
 
 export const ResetChatSlider = ({houseId, topic}: {
     houseId: string,
