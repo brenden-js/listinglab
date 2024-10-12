@@ -52,7 +52,7 @@ export default $config({
                 clerkPublic, clerkSecret, dbUrl, dbToken, openAiKey, houseApiKey, googleApiKey, stripeSecretKey,
                 stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestSigningKey, inngestEventKey, publicGoogleApiKey
             ],
-            domain: getDomain(),
+            domain: undefined,
             environment: {
                 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerkPublic.value,
                 CLERK_SECRET_KEY: clerkSecret.value,
