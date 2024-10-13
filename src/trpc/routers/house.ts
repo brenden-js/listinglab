@@ -444,7 +444,10 @@ export const houseRouter = createTRPCRouter({
         // Prepare the chat data
         let chatData = input.chatData;
 
-        chatData.push({sender: "System", message: `You will be answering prompts about the following houses: ${JSON.stringify(housesData)}`});
+        chatData.push({
+          sender: "System",
+          message: `You will be answering prompts about the following houses: ${JSON.stringify(housesData)}`
+        });
 
         // Add the new chat message
         chatData.push({sender: "You", message: `input.newChat`});
@@ -647,6 +650,83 @@ export const houseRouter = createTRPCRouter({
           filteredChatData,
           chatTopic: input.topic,
         };
+      }),
+    getCustomFilters: protectedProcedure
+      .input(
+        z.object({
+          query: z.string(),
+        })
+      )
+      .mutation(async ({ctx, input}) => {
+        if (!ctx.authObject.userId) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You are not authorized.",
+          });
+        }
+
+        const userId = ctx.authObject.userId;
+
+        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY!);
+        const model = genAI.getGenerativeModel({model: "gemini-1.5-pro-exp-0801"});
+
+        const prompt = `
+      You are an AI assistant helping to convert natural language queries into JSON filters for a house listing database. 
+      The available columns for filtering are: stAddress, city, zipCode, price, beds, baths, createdAt, and seen.
+      
+      Given the following query, generate a JSON object with two properties:
+      1. "filters": An array of objects, each representing a column filter with "id" (column name), "value", and "operator" (e.g., "equals", "gt", "lt").
+      2. "globalFilter": A string for general text search across all columns.
+
+      For numeric values like price, beds, and baths, use appropriate operators (e.g., "gt" for greater than, "lt" for less than).
+      For date values (createdAt), use ISO date strings.
+      For boolean values (seen), use true or false.
+
+      Query: "${input.query}"
+
+      Respond only with the JSON object, no additional text.
+    `;
+
+        try {
+          const aiResponse = await model.generateContent(prompt);
+          const responseText = aiResponse.response.text();
+
+          let parsedResponse;
+          try {
+            parsedResponse = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error("Failed to parse AI response:", parseError);
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to parse the AI response.",
+            });
+          }
+
+          if (!parsedResponse || typeof parsedResponse !== "object" || !Array.isArray(parsedResponse.filters)) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Invalid response format from AI.",
+            });
+          }
+
+          // Convert the filters to the format expected by the table component
+          const formattedFilters = parsedResponse.filters.map((filter: any) => ({
+            id: filter.id,
+            value: filter.value,
+            operator: filter.operator,
+          }));
+
+          return {
+            filters: formattedFilters,
+            globalFilter: parsedResponse.globalFilter || "",
+          };
+        } catch (error) {
+          console.error("Error generating custom filters:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to generate custom filters. Please try again.",
+          });
+        }
       }),
   },
 )

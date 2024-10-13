@@ -25,7 +25,7 @@ export const zipcodeRouter = createTRPCRouter({
         }
       }
 
-      await inngest.send({name: 'zipcode/scan', data: {zipCodeId: input.zipCodeId, userId: ctx.authObject.userId}})
+      await inngest.send({name: 'zipcode/new-subscription-scan', data: {zipCodeId: input.zipCodeId, userId: ctx.authObject.userId}})
 
       return {message: 'Zip code scan started'}
     }),

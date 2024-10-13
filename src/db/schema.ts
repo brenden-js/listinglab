@@ -37,7 +37,7 @@ export const houses = sqlLiteTable(
     lat: real("lat"),
     lotSqft: integer("lotSqft"),
     lon: real("lon"),
-    price: integer("price"),
+    price: integer("price").notNull(),
     pricePerSqft: real("pricePerSqft"),
     sqft: integer("sqft"),
     stAddress: text("stAddress").notNull(),

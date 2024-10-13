@@ -62,10 +62,39 @@ type ZipCodeSubscribe = {
     }
 }
 
-type ZipCodeScan = {
+type ZipCodeNewSubscriptionScan = {
     data: {
         zipCodeId: string
         userId: string
+    }
+}
+
+type ZipCodeFindNewListings = {
+    data: {
+        zipId: string
+        cityName: string
+        state: string
+    }
+}
+
+type ZipCodeAddListingToSubscribers = {
+    data: {
+        zipId: string
+        cityName: string
+        houseId: string
+        zipCode: string
+        foundAt: Date
+        baths: number
+        beds: number
+        city: string
+        lat: number
+        lotSqft: number | undefined
+        lon: number
+        price: number
+        sqft: number
+        stAddress: string
+        state: string
+        yearBuilt: number
     }
 }
 
@@ -77,7 +106,9 @@ type Events = {
     "payments/invoice-paid": SubscriptionPurchasedEvent,
     "house/add-house-to-users": AddHouseToUsers,
     "zipcode/subscribe": ZipCodeSubscribe
-    "zipcode/scan": ZipCodeScan
+    "zipcode/new-subscription-scan": ZipCodeNewSubscriptionScan
+    'zipcode/scheduled-new-listings-scan': ZipCodeFindNewListings
+    'zipcode/add-listing-to-subscribers': ZipCodeAddListingToSubscribers
 }
 
 export const inngest = new Inngest(
