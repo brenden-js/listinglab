@@ -5,14 +5,6 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "AwsApiAccessKey": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "AwsApiSecretKey": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
     "ClerkPublicKey": {
       "type": "sst.sst.Secret"
       "value": string
@@ -53,10 +45,6 @@ declare module "sst" {
       "type": "sst.aws.Nextjs"
       "url": string
     }
-    "OpenAiKey": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
     "PublicGoogleApiKey": {
       "type": "sst.sst.Secret"
       "value": string
@@ -70,10 +58,6 @@ declare module "sst" {
       "value": string
     }
     "StripeWebhookSecret": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "TogetherApiKey": {
       "type": "sst.sst.Secret"
       "value": string
     }

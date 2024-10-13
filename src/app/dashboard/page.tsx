@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { api } from "../../trpc/react"
-import { Button } from "../../components/ui/button"
-import { Separator } from "../../components/ui/separator"
-import { Input } from "../../components/ui/input"
-import { Checkbox } from "../../components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Table,
   TableBody,
@@ -13,18 +13,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table"
+} from "@/components/ui/table"
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
-  SortingState,
   getSortedRowModel,
-  ColumnFiltersState,
   getFilteredRowModel,
-  RowSelectionState,
+  ColumnFiltersState,
+  SortingState,
 } from "@tanstack/react-table"
 import { HouseDialogProvider } from "./contexts/house-dialog-context"
 import { AddZipCodeDialog } from "./components/zip-dialog"
@@ -32,6 +31,8 @@ import { AddHouse } from "./components/add-house"
 import { House } from "./contexts/prompts"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
+import { Search } from "lucide-react"
 
 const columns: ColumnDef<House>[] = [
   {
@@ -71,16 +72,26 @@ const columns: ColumnDef<House>[] = [
     }
   },
   {
+    accessorKey: "city",
+    header: "City",
+    cell: ({ row }) => row.getValue("city"),
+  },
+  {
+    accessorKey: "zipCode",
+    header: "Zip Code",
+    cell: ({ row }) => row.getValue("zipCode"),
+  },
+  {
     accessorKey: "price",
     header: "Price",
     cell: ({ row }) => {
-      const price = row.getValue("price") as number | null
-      const formatted = price
-        ? new Intl.NumberFormat("en-US", {
+      const price = parseFloat(row.getValue("price"))
+      const formatted = isNaN(price)
+        ? "N/A"
+        : new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "USD",
           }).format(price)
-        : "N/A"
       return <div className="font-medium">{formatted}</div>
     },
   },
@@ -96,14 +107,14 @@ const columns: ColumnDef<House>[] = [
     accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date
+      const date = new Date(row.getValue("createdAt"))
       return date.toLocaleDateString()
     },
   },
   {
     accessorKey: "seen",
     header: "Seen",
-    cell: ({ row }) => ((row.getValue("seen") as number | null) ? "Yes" : "No"),
+    cell: ({ row }) => (row.getValue("seen") ? "Yes" : "No"),
   },
 ]
 
@@ -117,77 +128,51 @@ export default function HousesPageOverview() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState("")
-  const [selectedHouses, setSelectedHouses] = useState<House[]>([])
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
 
   useEffect(() => {
     if (currentZipCodes.isSuccess && currentZipCodes.data.length > 0) {
       setSelectedZipCode(currentZipCodes.data[0].id)
     }
-  }, [currentZipCodes])
+  }, [currentZipCodes.isSuccess, currentZipCodes.data])
 
-  const getFilteredHouses = () => {
+  const filteredHouses = useMemo(() => {
     if (!housesData) return []
 
-    switch (activeFilter) {
-      case "today":
-        return housesData.filter(
-          (house) =>
-            house.createdAt &&
-            new Date(house.createdAt).toDateString() === new Date().toDateString()
-        )
-      case "new":
-        return housesData.filter((house) => !house.seen)
-      default:
-        return housesData
-    }
-  }
-
-  const filteredHouses = getFilteredHouses()
-
-  const onRowSelectionChange = useCallback((updater: ((prev: RowSelectionState) => RowSelectionState) | RowSelectionState) => {
-    let newSelection: RowSelectionState
-    if (typeof updater === 'function') {
-      newSelection = updater(rowSelection)
-    } else {
-      newSelection = updater
-    }
-
-    const selectedCount = Object.values(newSelection).filter(Boolean).length
-    if (selectedCount <= 5) {
-      setRowSelection(newSelection)
-    }
-  }, [rowSelection])
-
-  useEffect(() => {
-    const selectedHouses = filteredHouses.filter((_, index) => rowSelection[index])
-    setSelectedHouses(selectedHouses)
-  }, [rowSelection, filteredHouses])
+    return housesData.filter(house => {
+      if (activeFilter === "today") {
+        return new Date(house.createdAt).toDateString() === new Date().toDateString()
+      }
+      if (activeFilter === "new") {
+        return !house.seen
+      }
+      return true
+    })
+  }, [housesData, activeFilter])
 
   const table = useReactTable({
     data: filteredHouses,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting,
       columnFilters,
       globalFilter,
-      rowSelection,
     },
-    enableRowSelection: true,
-    onRowSelectionChange: onRowSelectionChange,
     initialState: {
       pagination: {
         pageSize: 30,
       },
     },
   })
+
+  const selectedHouses = table.getSelectedRowModel().rows.map(row => row.original)
 
   const chatWithSelectedHouses = () => {
     const selectedIds = selectedHouses.map((house) => house!.id).join('/')
@@ -231,7 +216,31 @@ export default function HousesPageOverview() {
                 New
               </Button>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <AnimatePresence>
+                {isSearchExpanded && (
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: "auto", opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Input
+                      placeholder="Search houses..."
+                      value={globalFilter ?? ""}
+                      onChange={(event) => setGlobalFilter(String(event.target.value))}
+                      className="max-w-sm"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
               <Button
                 onClick={chatWithSelectedHouses}
                 disabled={selectedHouses.length < 2}
@@ -240,15 +249,6 @@ export default function HousesPageOverview() {
               </Button>
               <AddHouse />
             </div>
-          </div>
-
-          <div className="flex items-center py-4">
-            <Input
-              placeholder="Search houses..."
-              value={globalFilter ?? ""}
-              onChange={(event) => setGlobalFilter(String(event.target.value))}
-              className="max-w-sm"
-            />
           </div>
 
           {housesLoading ? (

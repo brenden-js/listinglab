@@ -17,7 +17,6 @@ export default $config({
         const dbUrl = new sst.Secret("DbUrl")
         const dbToken = new sst.Secret("DbToken")
 
-        const openAiKey = new sst.Secret("OpenAiKey")
         const googleApiKey = new sst.Secret("GoogleApiKey")
         const publicGoogleApiKey = new sst.Secret("PublicGoogleApiKey")
         const googleAiKey = new sst.Secret("GoogleAiKey")
@@ -28,13 +27,8 @@ export default $config({
         const stripeSecretKey = new sst.Secret("StripeSecretKey")
         const stripeWebhookSecret = new sst.Secret("StripeWebhookSecret")
 
-        const awsApiAccessKey = new sst.Secret("AwsApiAccessKey")
-        const awsApiSecretKey = new sst.Secret("AwsApiSecretKey")
-
         const inngestSigningKey = new sst.Secret("InngestSigningKey")
         const inngestEventKey = new sst.Secret("InngestEventKey")
-
-        const togetherApiKey = new sst.Secret("TogetherApiKey")
 
         const prodDomain = {
             name: "listinglab.ai",
@@ -49,8 +43,8 @@ export default $config({
 
         const next = new sst.aws.Nextjs("ListingLab", {
             link: [
-                clerkPublic, clerkSecret, dbUrl, dbToken, openAiKey, houseApiKey, googleApiKey, stripeSecretKey,
-                stripePublicKey, stripeWebhookSecret, awsApiAccessKey, inngestSigningKey, inngestEventKey, publicGoogleApiKey
+                clerkPublic, clerkSecret, dbUrl, dbToken, houseApiKey, googleApiKey, stripeSecretKey,
+                stripePublicKey, stripeWebhookSecret, inngestSigningKey, inngestEventKey, publicGoogleApiKey
             ],
             domain: undefined,
             environment: {
@@ -62,7 +56,6 @@ export default $config({
                 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/dashboard',
                 DATABASE_URL: dbUrl.value,
                 DATABASE_TOKEN: dbToken.value,
-                OPENAI_SECRET_KEY: openAiKey.value,
                 GOOGLE_API_KEY: googleApiKey.value,
                 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: publicGoogleApiKey.value,
                 HOUSE_DATA_API_KEY: houseApiKey.value,
@@ -70,11 +63,8 @@ export default $config({
                 STRIPE_SECRET_KEY: stripeSecretKey.value,
                 STRIPE_WEBHOOK_SECRET: stripeWebhookSecret.value,
                 NEXT_PUBLIC_APP_URL: $app.stage === 'snoob' ? 'https://listinglab.ai' : 'http://localhost:3000',
-                AWS_API_ACCESS_KEY: awsApiAccessKey.value,
-                AWS_API_SECRET_KEY: awsApiSecretKey.value,
                 INNGEST_SIGNING_KEY: inngestSigningKey.value,
                 INNGEST_EVENT_KEY: inngestEventKey.value,
-                TOGETHER_API_KEY: togetherApiKey.value,
                 GOOGLE_AI_KEY: googleAiKey.value,
                 ZIPCODE_API_KEY: zipCodeApiKey.value,
             },
