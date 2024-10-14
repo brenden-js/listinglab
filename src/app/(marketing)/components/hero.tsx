@@ -10,6 +10,7 @@ import logoAWS from '@/images/logos/aws.svg'
 import {Button} from '@/components/ui/button'
 import Link from "next/link";
 import PopupVideoPlayer from "@/app/(marketing)/components/pop-up-video";
+import VideoPlayer from "@/app/(marketing)/components/video-player";
 
 
 interface Company {
@@ -48,7 +49,7 @@ export function Hero() {
                 </p>
 
                 <div className="mt-10 flex justify-center">
-                    <PopupVideoPlayer/>
+                    <VideoPlayer playbackId={'tsQnlVSO01DYbligero017QzqKWjvKarDwSnIfukI6Fiw'}/>
                 </div>
             </div>
         </div>
