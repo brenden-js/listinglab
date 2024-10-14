@@ -9,7 +9,7 @@ import {v4 as uuidv4} from "uuid";
 import {Root} from "./helpers/rapid-api-types";
 
 export const newZipCodeSubscribe = inngest.createFunction(
-  {id: 'zipcode-subscribe'},
+  {id: 'zipcode-subscribe', retries: 0},
   {event: 'zipcode/subscribe'},
   async ({event}) => {
     const user = await db.query.userApiLimits.findFirst({where: eq(userApiLimits.userId, event.data.userId)})
@@ -34,7 +34,7 @@ export const newZipCodeSubscribe = inngest.createFunction(
 )
 
 export const newSubscriptionZipCodeScan = inngest.createFunction(
-  {id: 'zipcode-new-subscription-scan'},
+  {id: 'zipcode-new-subscription-scan', retries: 0},
   {event: 'zipcode/new-subscription-scan'},
   async ({event}) => {
 
@@ -89,7 +89,7 @@ export const newSubscriptionZipCodeScan = inngest.createFunction(
         price: listing.price.value,
         pricePerSqft: listing.pricePerSqFt.value,
         sqft: listing.sqFt.value,
-        stAddress: listing.streetLine.value as string,
+        stAddress: listing.streetLine.value ? listing.streetLine.value : 'No street address found',
         status: null,
         state: listing.state,
         stories: listing.stories,
@@ -107,7 +107,7 @@ export const newSubscriptionZipCodeScan = inngest.createFunction(
 
 
 export const scheduledZipCodeScan = inngest.createFunction(
-  {id: 'zipcode-get-all-zipcodes'},
+  {id: 'zipcode-get-all-zipcodes', retries: 1},
   {cron: '0 7 * * *'},
   async () => {
     const zipCodes = await db.query.zipCodes.findMany()
@@ -129,7 +129,7 @@ export const scheduledZipCodeScan = inngest.createFunction(
 
 
 export const scheduledFindNewListings = inngest.createFunction(
-  {id: 'zipcode-scheduled-new-listings-scan', concurrency: 1},
+  {id: 'zipcode-scheduled-new-listings-scan', concurrency: 0},
   {event: 'zipcode/scheduled-new-listings-scan'},
   async ({event}) => {
     const options = {
