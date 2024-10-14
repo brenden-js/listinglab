@@ -5,14 +5,51 @@ import {stripe} from "@/lib/stripe";
 import {absoluteUrl} from "@/lib/utils";
 import {TRPCError} from "@trpc/server";
 import {v4 as uuidv4} from "uuid";
-import {createTRPCRouter, protectedProcedure} from "@/trpc/trpc";
+import {createTRPCRouter, protectedProcedure, publicProcedure} from "@/trpc/trpc";
 import {clerkClient} from "@clerk/nextjs/server";
-import {prompts, userApiLimits} from "@/db/schema";
+import {prompts, userApiLimits, waitlist} from "@/db/schema";
 import {db} from "@/db";
 import {getOrCreateApiLimits} from "@/trpc/routers/helpers/api-restrictions";
 
 
 export const userRouter = createTRPCRouter({
+  joinWaitlist: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        state: z.string().length(2).toUpperCase(),
+        wantsUpdates: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+  try {
+    await db.insert(waitlist).values({
+      email: input.email,
+      state: input.state,
+      wantsUpdates: input.wantsUpdates,
+      createdAt: new Date()
+    });
+
+    console.log('Successfully joined waitlist:', input);
+
+    return {
+      success: true,
+      message: `Successfully added ${input.email} from ${input.state} to the waitlist. ${input.wantsUpdates ? 'Will receive updates.' : 'Opted out of updates.'}`,
+    };
+  } catch (error) {
+    console.error('Error joining waitlist:', error);
+
+    // Check for specific error types
+    if (error instanceof Error) {
+      if (error.message.includes('UNIQUE constraint failed: waitlist.email')) {
+        throw new Error('This email is already on the waitlist.');
+      }
+    }
+
+    // Generic error message for other types of errors
+    throw new Error('An error occurred while joining the waitlist. Please try again later.');
+  }
+}),
   addPreference: protectedProcedure
       .input(z.object({name: z.string().min(1), preference: z.string()}))
       .mutation(async ({ctx, input}) => {

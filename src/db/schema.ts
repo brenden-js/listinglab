@@ -4,9 +4,17 @@ import {
   sqliteTableCreator,
   text,
 } from "drizzle-orm/sqlite-core";
-import {relations} from "drizzle-orm";
+import {relations, sql} from "drizzle-orm";
 
-export const sqlLiteTable = sqliteTableCreator((name) => `homementor-ai_${name}`);
+export const sqlLiteTable = sqliteTableCreator((name) => `listinglab_${name}`);
+
+export const waitlist = sqlLiteTable('waitlist', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  email: text('email').notNull().unique(),
+  state: text('state', { length: 2 }).notNull(),
+  wantsUpdates: integer('wants_updates', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
 
 
 export const prompts = sqlLiteTable(

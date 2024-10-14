@@ -104,13 +104,13 @@ export function Header() {
             </div>
           </div>
           <div className="flex items-center gap-x-5 md:gap-x-8">
-            <div className="hidden md:block">
-              <NavLink href="/sign-in">Sign in</NavLink>
-            </div>
-            <Link href="/sign-up">
+            {/*<div className="hidden md:block">*/}
+            {/*  <NavLink href="/sign-in">Sign in</NavLink>*/}
+            {/*</div>*/}
+            <Link href="/waitlist">
               <Button>
               <span>
-                Sign up
+                Join waitlist
               </span>
               </Button>
             </Link>

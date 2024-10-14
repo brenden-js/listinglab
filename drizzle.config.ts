@@ -2,9 +2,9 @@ import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
   schema: "./src/db/schema.ts",
-  dialect: 'sqlite',
+  dialect: 'turso',
   dbCredentials: {
     url: process.env.DATABASE_URL!,
-    token: process.env.DATABASE_TOKEN!,
+    authToken: process.env.DATABASE_TOKEN!,
   },
 });
