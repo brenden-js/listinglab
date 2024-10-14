@@ -63,12 +63,12 @@ export const LiveDataFeed = ({house, isPending, houseId}: { house: House, isPend
   return (
     <>
       <Button
-        disabled={!!house.claimed || isPending}
+        disabled={!!house.claimed || claimHouse.isPending}
         onClick={handleClaimHouse}
         className="relative"
       >
         Get Data
-        {isPending && (
+        {claimHouse.isPending && (
           <Loader2 className="ml-2 h-4 w-4 animate-spin"/>
         )}
       </Button>
