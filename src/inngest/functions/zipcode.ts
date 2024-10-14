@@ -6,6 +6,7 @@ import process from "process";
 import axios from "axios";
 import {ListingSearchInCityResponse} from "@/inngest/functions/helpers/house-search-type";
 import {v4 as uuidv4} from "uuid";
+import {Root} from "./helpers/rapid-api-types";
 
 export const newZipCodeSubscribe = inngest.createFunction(
   {id: 'zipcode-subscribe'},
@@ -25,7 +26,10 @@ export const newZipCodeSubscribe = inngest.createFunction(
       .set({zipCodesUsage: user.zipCodesUsage + 1})
       .where(eq(userApiLimits.userId, event.data.userId))
 
-    await inngest.send({name: 'zipcode/new-subscription-scan', data: {zipCodeId: event.data.zipCodeId, userId: user.userId}})
+    await inngest.send({
+      name: 'zipcode/new-subscription-scan',
+      data: {zipCodeId: event.data.zipCodeId, userId: user.userId}
+    })
   }
 )
 
@@ -36,19 +40,17 @@ export const newSubscriptionZipCodeScan = inngest.createFunction(
 
     const options = {
       method: 'GET',
-      url: 'https://zillow-com4.p.rapidapi.com/properties/search',
+      url: 'https://redfin-com-data.p.rapidapi.com/property/search',
       params: {
-        location: `${event.data.zipCodeId}`,
-        limit: 25,
-        status: 'forSale',
-        sort: 'daysOn',
-        sortType: 'asc',
-        priceType: 'listPrice',
-        listingType: 'agent'
+        location: event.data.zipCodeId,
+        sort: 'Newest',
+        search_type: 'ForSale',
+        home_type: 'House,Townhouse,Condo,MultiFamily',
+        status: 'Active'
       },
       headers: {
-        'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
-        'x-rapidapi-host': 'zillow-com4.p.rapidapi.com'
+        'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY!,
+        'x-rapidapi-host': 'redfin-com-data.p.rapidapi.com'
       }
     };
 
@@ -58,45 +60,55 @@ export const newSubscriptionZipCodeScan = inngest.createFunction(
       return new Error('Could not get api response')
     }
 
-    let formatted = response.data as ListingSearchInCityResponse
+    let formatted = response.data as Root
 
     const housesToAdd = []
 
-    for (const listing of formatted.data) {
+    let counter = 0
+
+    for (const listing of formatted.data.homes) {
+      if (counter > 50) {
+        break
+      }
+      if (!listing.streetLine) {
+        console.log('No streetLine found, skipping...')
+        continue
+      }
       housesToAdd.push({
         id: crypto.randomUUID(),
         createdAt: new Date(),
-        baths: listing.bathrooms,
-        beds: listing.bedrooms,
-        city: listing.address.city,
+        baths: listing.baths,
+        beds: listing.beds,
+        city: listing.city,
         description: null,
         details: null,
         garage: null,
-        lat: listing.location.latitude,
-        lotSqft: listing.lotSizeWithUnit?.lotSize,
-        lon: listing.location.longitude,
+        lat: listing.latLong.value.latitude,
+        lotSqft: listing.lotSize.value,
+        lon: listing.latLong.value.longitude,
         price: listing.price.value,
-        pricePerSqft: parseFloat((listing.price.value / listing.livingArea).toFixed(2)),
-        sqft: listing.livingArea,
-        stAddress: listing.address.streetAddress,
+        pricePerSqft: listing.pricePerSqFt.value,
+        sqft: listing.sqFt.value,
+        stAddress: listing.streetLine.value as string,
         status: null,
-        state: listing.address.state,
-        stories: null,
+        state: listing.state,
+        stories: listing.stories,
         styles: null,
         userId: event.data.userId,
-        yearBuilt: listing.yearBuilt,
-        zipCode: listing.address.zipcode,
+        yearBuilt: listing.yearBuilt.value,
+        zipCode: listing.zip,
       })
     }
 
     await db.insert(houses).values(housesToAdd)
+    counter++
   }
 )
 
 
 export const scheduledZipCodeScan = inngest.createFunction(
-  { id: 'zipcode-get-all-zipcodes' },
-  { cron: '0 19 * * *' },
+  {id: 'zipcode-get-all-zipcodes'},
+  {cron: '0 7 * * *'},
   async () => {
     const zipCodes = await db.query.zipCodes.findMany()
     if (!zipCodes.length) {
@@ -110,7 +122,7 @@ export const scheduledZipCodeScan = inngest.createFunction(
         cityName: zipCode.city,
         state: zipCode.state
       }
-      await inngest.send({ name: 'zipcode/scheduled-new-listings-scan', data: event })
+      await inngest.send({name: 'zipcode/scheduled-new-listings-scan', data: event})
     }
   }
 )
@@ -122,19 +134,17 @@ export const scheduledFindNewListings = inngest.createFunction(
   async ({event}) => {
     const options = {
       method: 'GET',
-      url: 'https://zillow-com4.p.rapidapi.com/properties/search',
+      url: 'https://redfin-com-data.p.rapidapi.com/property/search',
       params: {
-        location: `${event.data.zipId}, ${event.data.state}`,
-        limit: 25,
-        status: 'forSale',
-        sort: 'daysOn',
-        sortType: 'asc',
-        priceType: 'listPrice',
-        listingType: 'agent'
+        location: event.data.zipId,
+        sort: 'Newest',
+        search_type: 'ForSale',
+        home_type: 'House,Townhouse,Condo,MultiFamily',
+        status: 'Active'
       },
       headers: {
-        'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY,
-        'x-rapidapi-host': 'zillow-com4.p.rapidapi.com'
+        'x-rapidapi-key': process.env.HOUSE_DATA_API_KEY!,
+        'x-rapidapi-host': 'redfin-com-data.p.rapidapi.com'
       }
     };
 
@@ -144,14 +154,18 @@ export const scheduledFindNewListings = inngest.createFunction(
       return new Error('Could not get api response')
     }
 
-    let formatted = response.data as ListingSearchInCityResponse
+    let formatted = response.data as Root
 
-    for (const listing of formatted.data) {
+    for (const listing of formatted.data.homes) {
+      if (!listing.streetLine.value) {
+        console.log('No streetline found')
+        continue
+      }
       const foundListing = await db.query.houses.findFirst(
         {
           where: (houses, {eq, and}) => and(
-            eq(houses.stAddress, listing.address.streetAddress),
-            eq(houses.zipCode, listing.address.zipcode)
+            eq(houses.stAddress, listing.streetLine.value!),
+            eq(houses.zipCode, listing.zip)
           )
         }
       )
@@ -163,18 +177,18 @@ export const scheduledFindNewListings = inngest.createFunction(
           cityName: event.data.cityName,
           houseId: uuidv4(),
           foundAt: new Date(),
-          baths: listing.bathrooms,
-          beds: listing.bedrooms,
-          city: listing.address.city,
-          lat: listing.location.latitude,
-          lon: listing.location.longitude,
-          lotSqft: listing.lotSizeWithUnit?.lotSize,
+          baths: listing.baths,
+          beds: listing.beds,
+          city: listing.city,
+          lat: listing.latLong.value.latitude,
+          lon: listing.latLong.value.longitude,
+          lotSqft: listing.lotSize.value,
           price: listing.price.value,
-          sqft: listing.livingArea,
-          stAddress: listing.address.streetAddress,
-          state: listing.address.state,
-          yearBuilt: listing.yearBuilt,
-          zipCode: listing.address.zipcode,
+          sqft: listing.sqFt.value,
+          stAddress: listing.streetLine.value!,
+          state: listing.state,
+          yearBuilt: listing.yearBuilt.value,
+          zipCode: listing.zip,
         }
         await inngest.send({name: 'zipcode/add-listing-to-subscribers', data: addHouseEvent})
       } else {
@@ -184,7 +198,6 @@ export const scheduledFindNewListings = inngest.createFunction(
     }
   }
 )
-
 
 
 export const scheduledAddListingToSubscribers = inngest.createFunction(
