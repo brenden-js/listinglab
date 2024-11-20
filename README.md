@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ListingLab 🏠
 
-## Getting Started
+AI-powered real estate content generator that creates personalized content from listing data. Built with modern tech stack and designed for easy AWS deployment.
 
-First, run the development server:
+## ⚠️ Important Notice
+
+This is a proof-of-concept application and is not intended for commercial use due to potential copyright and data licensing restrictions with real estate listing data. Use for testing and demonstration purposes only.
+
+## 🚀 Features
+
+- **AI Content Generation**: Leverages Google Gemini to create:
+  - Blog posts
+  - Social media updates
+  - Marketing emails
+  - Listing descriptions
+
+- **Automated Listing Updates**: Uses Inngest cron functions to scan for new listings 3x daily in subscribed cities
+
+- **Data Visualization**:
+  - Mortgage calculators
+  - Property appreciation forecasts
+  - Market trend analysis
+
+- **Property Dashboard**:
+  - ZIP code-based property viewing
+  - At-a-glance market insights
+  - Comprehensive listing details
+
+- **Subscription Management**:
+  - ZIP code-based subscriptions
+  - Recurring monthly payments via Stripe
+  - User access control
+
+## 🛠️ Tech Stack
+
+- **Frontend**: 
+  - Next.js
+  - TypeScript
+  - Tailwind CSS
+
+- **Backend**:
+  - tRPC for type-safe APIs
+  - Clerk for authentication
+  - Turso (SQLite) for data storage
+  - Drizzle for type-safe database queries
+
+- **Infrastructure**:
+  - SST for AWS deployment
+  - Inngest for scheduled tasks
+  - Stripe for payment processing
+
+## 🌟 Key Features
+
+- Type-safe from database to frontend using TypeScript and tRPC
+- Secure authentication and user management with Clerk
+- Automated listing updates with Inngest cron jobs
+- Easy deployment to AWS using SST
+- ZIP code-based subscription model
+- Real-time property market insights
+
+## 🚧 Current Status
+
+This application is currently in proof-of-concept stage and requires:
+- Additional testing
+- Bug fixes
+- Data licensing considerations
+- Production hardening
+
+## 📝 Notes
+
+- The application uses real estate listing data which may have licensing restrictions
+- Intended as a demonstration of technical capabilities
+- Not currently suitable for commercial deployment
+- Requires proper data licensing agreements for production use
+
+## 💻 Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Run development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔑 Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Check `.env.example` for the required environment variables.
